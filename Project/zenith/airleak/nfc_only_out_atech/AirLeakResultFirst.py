@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
-    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, AIR_LEAK_PREPROCESS, logger, NG, LEAK
+    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, LEAK
 from process_package.mssql_connect import insert_pprd
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -45,7 +45,7 @@ class AirLeak(AirLeakUi):
         window_center(self)
 
     def init_serial(self, nfc_list):
-        self.fill_available_ports()
+
         for nfc in nfc_list:
             if re.search(f'{NFC}[1-9]', nfc.serial_name):
                 self.nfc[nfc.serial_name] = nfc
@@ -57,6 +57,7 @@ class AirLeak(AirLeakUi):
             self.status_signal.emit("READY", BLUE)
 
         # machine connect from config value port
+        self.fill_available_ports()
         self.connect_machine_button(1)
 
     def connect_event(self):

@@ -5,6 +5,9 @@ from process_package.defined_serial_port import ports
 
 
 class QRNFCWriterUI(QWidget):
+    """
+    등록 공정 UI
+    """
     def __init__(self):
         super(QRNFCWriterUI, self).__init__()
         self.comport_list = ComboBox()

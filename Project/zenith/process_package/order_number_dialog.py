@@ -17,6 +17,9 @@ class OderNumberDialog(OrderNumberDialogUI):
 
         self.df = None
 
+        self.connect_event()
+
+    def connect_event(self):
         # button event connect
         self.search_button.clicked.connect(self.get_db_button_clicked)
         self.saveButton.clicked.connect(self.save_button_clicked)

@@ -1,7 +1,6 @@
 import pandas as pd
 import pymssql
-from pymssql import _mssql
-from pymssql import _pymssql
+from pymssql import _mssql, _pymssql, ProgrammingError
 import uuid
 import decimal
 
@@ -43,22 +42,27 @@ def insert_pprd(dm=None, result=None, keyword=None, pcode='NULL', ecode='NULL'):
 
 def insert_pprh(*args):
     order, dm = args
-    conn, cursor = get_mssql_conn()
-    cursor.execute(f"""
-        IF EXISTS(
-            SELECT DM from PPRH
-            where DM = '{dm}'
-        )
-            BEGIN
-            select 99 cnt
-            END
-        ELSE
-            BEGIN
-            INSERT INTO PPRH (DM, AUFNR, ITIME)
-            VALUES ('{dm}', '{order}', GETDATE())
-            END
-        """)
-    conn.commit()
+    try:
+        conn, cursor = get_mssql_conn()
+        cursor.execute(f"""
+            IF EXISTS(
+                SELECT DM from PPRH
+                where DM = '{dm}'
+            )
+                BEGIN
+                select 99 cnt
+                END
+            ELSE
+                BEGIN
+                INSERT INTO PPRH (DM, AUFNR, ITIME)
+                VALUES ('{dm}', '{order}', GETDATE())
+                END
+            """)
+        conn.commit()
+    except ProgrammingError as e:
+        pass
+    except Exception as e:
+        logger.error(f"{type(e)}: {e}")
 
 
 def select_order_number_with_date_material_model(date,

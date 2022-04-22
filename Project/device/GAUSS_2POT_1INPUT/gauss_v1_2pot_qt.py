@@ -50,7 +50,7 @@ class Main(QWidget):
 
     @pot_values.setter
     def pot_values(self, values):
-        if isinstance(values, list) and len(self._pot_values) == POT_COUNT:
+        if isinstance(values, list) and len(values) == POT_COUNT:
             self._pot_values = values
             self.update_probe_value_display()
 
