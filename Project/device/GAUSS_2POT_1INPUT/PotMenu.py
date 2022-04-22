@@ -8,7 +8,7 @@ class PotMenu(QFrame):
         super().__init__()
         self.config = config
         self.pot_num = 0
-        self.button = list()
+        self.button = []
         self.init_ui()
 
     def init_ui(self):

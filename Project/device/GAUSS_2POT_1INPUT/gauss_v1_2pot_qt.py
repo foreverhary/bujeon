@@ -7,6 +7,7 @@ from clickable import clickable
 from PotMenu import PotMenu
 from CalFrame import CalFrame
 from MinMaxFrame import MinMaxFrame
+from common.common import logger
 from defined_variable import *
 import qdarkstyle
 import sys
@@ -34,7 +35,7 @@ class Main(QWidget):
         try:
             self.ser.open()
         except Exception as e:
-            print(e)
+            logger.error(e)
             sys.exit()
         self.init_ui()
         self.eventConnecter()
@@ -119,11 +120,11 @@ class Main(QWidget):
                 self.value_signal.emit(list(map(int, pot_values)))
                 # self.ser.flushInput()
             except serial.SerialException as e:
-                print(e)
+                logger.error(e)
                 QCoreApplication.instance().quit()
                 break
             except Exception as e:
-                print(type(e))
+                logger.error(type(e))
 
     def probe_clicked(self, pot_num):
         self.potMenuFrame.setPotNumber(pot_num)
