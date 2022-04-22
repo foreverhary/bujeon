@@ -2,12 +2,12 @@ import serial
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame
 from PyQt5.QtCore import QCoreApplication, Qt, QFile, pyqtSignal
 from Config import Config
+from logger import logger
 from ProbeGridLayout import ProbeGridLayout
 from clickable import clickable
 from PotMenu import PotMenu
 from CalFrame import CalFrame
 from MinMaxFrame import MinMaxFrame
-from common.common import logger
 from defined_variable import *
 import qdarkstyle
 import sys
@@ -50,8 +50,8 @@ class Main(QWidget):
 
     @pot_values.setter
     def pot_values(self, values):
-        self._pot_values = values
-        if len(self._pot_values) == POT_COUNT:
+        if isinstance(values, list) and len(self._pot_values) == POT_COUNT:
+            self._pot_values = values
             self.update_probe_value_display()
 
     def received_value_signal(self, value):

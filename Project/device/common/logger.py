@@ -3,7 +3,7 @@ import logging.handlers
 import os
 
 fileMaxByte = 1024 * 1024 * 10  # 10MB
-fileName = '/home/pi/log.log'
+fileName = os.path.expanduser('~') + '/log.log'
 consolLevel = logging.DEBUG
 fileLevel = logging.DEBUG
 
@@ -43,3 +43,6 @@ def get_logger(name="My Logger", filename=fileName):
     logger.addHandler(file_handler)
 
     return logger
+
+
+logger = get_logger("My Logger", filename=fileName)

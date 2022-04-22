@@ -1,1 +1,5 @@
-.svn
+# 모든 설정 폴더 무시
+.svn/
+.idea/
+__pycache__/
+
