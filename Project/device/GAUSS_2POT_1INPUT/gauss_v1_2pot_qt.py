@@ -124,7 +124,7 @@ class Main(QWidget):
                 QCoreApplication.instance().quit()
                 break
             except Exception as e:
-                logger.error(type(e))
+                logger.error(f"{type(e)}: {e}")
 
     def probe_clicked(self, pot_num):
         self.potMenuFrame.setPotNumber(pot_num)
