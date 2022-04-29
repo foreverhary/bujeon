@@ -11,17 +11,17 @@ def check_char(char):
 # os keyboard event로 들어오는 키값 확인
 def keyboard_event_check_char(char):
     return (
-        not '0' <= char <= '9'
-        and not 'A' <= char <= 'Z'
-        and not 'a' <= char <= 'z'
+            not '0' <= char <= '9'
+            and not 'A' <= char <= 'Z'
+            and not 'a' <= char <= 'z'
     )
 
 
 # NFC UID 확인
 def check_nfc_uid(string):
-    if return_value := re.search('UID: '+'0x[0-9A-F]{2} ?' * 7, string):
+    if return_value := re.search('UID: ' + '0x[0-9A-F]{2} ?' * 7, string):
         return return_value.group(0)
-    elif return_value := re.search('UID: '+'0x[0-9A-F]{2} ?' * 4, string):
+    elif return_value := re.search('UID: ' + '0x[0-9A-F]{2} ?' * 4, string):
         return return_value.group(0)
     return ''
 
