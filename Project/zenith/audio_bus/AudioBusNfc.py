@@ -1,6 +1,7 @@
 import os.path
 import sys
 
+import pandas
 import pandas as pd
 import pymssql
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
@@ -45,7 +46,7 @@ class AudioBus(AudioBusUI):
         self.summary_file_observer = Target(signal=self.summary_signal)
         try:
             self.error_code = get_process_error_code_dict(FUNCTION)
-        except pymssql.OperationalError:
+        except (pymssql.OperationalError, pandas.io.sql.DatabaseError):
             pass
         self.result = {name: True for name in self.error_code}
         logger.debug(self.result)
@@ -56,7 +57,8 @@ class AudioBus(AudioBusUI):
 
     def show_main_window(self, nfc_list):
         self.load_window.close()
-        if self.init_signal_event_and_serial(nfc_list):
+        self.init_event()
+        if self.init_nfc_serial(nfc_list):
             self.start_file_observe()
         style_sheet_setting(self.app)
 
@@ -98,24 +100,27 @@ class AudioBus(AudioBusUI):
             logger.error(e)
         self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", LIGHT_SKY_BLUE)
         self.init_result_true()
+        for index in range(1, 3):
+            self.nfc[f"{NFC}{index}"].unit_count = 0
 
     def get_ecode(self):
         return ','.join([
-                self.error_code[key] for key, value in self.result.items() if not value
-            ])
+            self.error_code[key] for key, value in self.result.items() if not value
+        ])
 
     def init_result_true(self):
         self.result = {key: True for key in self.result}
 
-    def init_signal_event_and_serial(self, nfc_list):
+    def init_event(self):
         self.audio_bus_config_window.close_signal.connect(self.start_file_observe)
         self.status_update_signal.connect(self.update_label)
         self.grade_signal.connect(self.grade_process)
         self.summary_signal.connect(self.summary_process)
 
+    def init_nfc_serial(self, nfc_list):
         nfc_in_count = nfc_out_count = 0
         for nfc in nfc_list:
-            nfc.previous_process_list = FUNCTION_PREPROCESS
+            nfc.previous_processes = FUNCTION_PREPROCESS
             if NFC_IN in nfc.serial_name and int(nfc.serial_name[-1]) < NFC_IN_COUNT + 1:
                 self.nfc[nfc.serial_name] = nfc
                 nfc.signal.previous_process_signal.connect(self.previous_process_receive)
@@ -123,6 +128,7 @@ class AudioBus(AudioBusUI):
                 nfc.start_previous_process_check_thread()
                 nfc_in_count += 1
             elif NFC in nfc.serial_name and int(nfc.serial_name[-1]) < NFC_OUT_COUNT + 1:
+                nfc.timeout = 1
                 self.nfc[nfc.serial_name] = nfc
                 nfc.signal.nfc_write_done_signal.connect(self.update_sql)
                 nfc_out_count += 1

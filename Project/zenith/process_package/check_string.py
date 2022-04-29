@@ -19,9 +19,9 @@ def keyboard_event_check_char(char):
 
 # NFC UID 확인
 def check_nfc_uid(string):
-    if return_value := re.search('0x[0-9A-F]{2} ?' * 7, string):
+    if return_value := re.search('UID: '+'0x[0-9A-F]{2} ?' * 7, string):
         return return_value.group(0)
-    elif return_value := re.search('0x[0-9A-F]{2} ?' * 4, string):
+    elif return_value := re.search('UID: '+'0x[0-9A-F]{2} ?' * 4, string):
         return return_value.group(0)
     return ''
 

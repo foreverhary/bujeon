@@ -36,7 +36,7 @@ class SensorProcess(SensorUI):
     def nfc_check(self):
         nfc_in_count = nfc_out_count = 0
         for nfc in self.nfc:
-            nfc.previous_process_list = SENSOR_PREPROCESS
+            nfc.previous_processes = SENSOR_PREPROCESS
             if nfc.serial_name not in self.__dict__:
                 self.__setattr__(nfc.serial_name, nfc)
                 if NFC_IN in nfc.serial_name:

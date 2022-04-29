@@ -30,7 +30,7 @@ void setup(void) {
   while(! versiondata){
     versiondata = nfc.getFirmwareVersion();
   }
-  Serial.println("NFC 4");
+  Serial.println("NFC 2");
   nfc.SAMConfig();
   keep_going = true;
 }
