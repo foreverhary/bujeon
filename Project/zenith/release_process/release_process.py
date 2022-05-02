@@ -2,103 +2,86 @@ import sys
 
 import pymssql
 import qdarkstyle
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QFontDatabase, QFont
 from PyQt5.QtWidgets import QApplication, QDesktopWidget
 from pynput import keyboard
 from pynput.keyboard import Key
 
+from process_package.SplashScreen import SplashScreen
 from process_package.check_string import keyboard_event_check_char
+from process_package.defined_variable_function import window_center, style_sheet_setting, NFC_IN, FUNCTION_PROCESS, \
+    PROCESS_OK_RESULTS, PROCESS_NAMES
 from process_package.logger import get_logger
 from process_package.mssql_connect import *
 from release_process_ui import ReleaseProcessUI
 from process_package.style.style import STYLE
 
+NFC_IN_COUNT = 1
+
 
 class ReleaseProcess(ReleaseProcessUI):
     key_enter_input_signal = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, app):
         super(ReleaseProcess, self).__init__()
+        self.app = app
+        self.nfc = None
 
-        # set logger
-        self.logger = get_logger('LOG')
+        self.load_window = SplashScreen("Release")
+        self.load_window.start_signal.connect(self.show_main_window)
 
-        # init variable
-        self.msg = ''
-        self.key_enter_input_signal.connect(self.key_enter_process)
+    def show_main_window(self, nfcs):
+        self.load_window.close()
+        self.init_event()
+        self.init_nfc_serial(nfcs)
+        style_sheet_setting(self.app)
 
+        # self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.show()
+        self.dm_input_label.setText('AA1100001')
+        self.result_input_label.setText("""
+        this
+        is
+        spa
+        """)
 
-        # center
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        window_center(self)
 
-    def on_press(self, key):
-        try:
-            if keyboard_event_check_char(key.char):
-                raise TypeError
-            self.msg += key.char
-        except TypeError:
-            pass
-        except AttributeError:
-            if key == Key.enter:
-                self.key_enter_input_signal.emit()
-            elif key == Key.space:
-                self.msg += ' '
+    def init_event(self):
+        pass
 
-    def key_enter_process(self):
-        self.dmInputLabel.setText(self.msg)
-        self.check_db_ok_ng()
-        self.msg = ''
-
-    def check_db_ok_ng(self):
-        dm = self.dmInputLabel.text()
-        try:
-            results = check_all_ok(dm)
-            if results:
-                upperResults = list(map(lambda x: x.upper(), results))
-                if 'NG' in upperResults or 'FAIL' in upperResults:
-                    self.set_result_display('NG')
-                else:
-                    self.set_result_display('OK')
-                    self.update_out('OK', dm)
+    def init_nfc_serial(self, nfcs):
+        nfc_in_count = 0
+        for nfc in nfcs:
+            if NFC_IN in nfc.serial_name:
+                nfc.previous_processes = PROCESS_NAMES
+                self.nfc = nfc
+                nfc.signal.previous_process_signal.connect(self.received_previous_process)
+                nfc.start_previous_process_check_thread()
+                nfc_in_count += 1
             else:
-                self.set_result_display('NG')
-        except AttributeError as e:
-            self.logger.warning(f"Data is None or just Error, {e}")
-            self.set_result_display('NG')
-        except pymssql.InterfaceError as e:
-            self.logger.error(f"DB InterFaceError, {e}")
-        except pymssql.DatabaseError as e:
-            self.logger.error(f"DatabaseError, {e}")
+                nfc.close()
 
-    def set_result_display(self, result='NG'):
-        self.resultInputLabel.setText(result)
-        self.resultInputLabel.set_text_property(color=('red', 'blue')[result != 'NG'])
+        return nfc_in_count == NFC_IN_COUNT
 
-    def keyPressEvent(self, event):
-        pass
-
-    def on_release(self, key):
-        pass
+    # @pyqtSignal(object)
+    def received_previous_process(self, nfc):
+        msg = ''
+        if nfc.check_pre_process():
+            msg += nfc.nfc_previous_process[FUNCTION_PROCESS]
+        else:
+            for process, result in nfc.nfc_previous_process.items():
+                if result not in PROCESS_OK_RESULTS:
+                    if msg:
+                        msg += '\n'
+                    msg += f"{process} : {result}"
+        self.dm_input_label.setText(nfc.dm)
+        self.result_input_label.setText(msg)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = ReleaseProcess()
-    app.setStyleSheet(STYLE)
-    a = qdarkstyle.load_stylesheet_pyqt5()
-    # app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    fontDB = QFontDatabase()
-    fontDB.addApplicationFont("./font/D2Coding-Ver1.3.2-20180524-all.ttc")
-    app.setFont(QFont('D2Coding-Ver1.3.2-20180524-all'))
-    # ex.orderInput.setBackgroundColor('yellow')
-    listener = keyboard.Listener(
-        on_press=ex.on_press,
-        on_release=ex.on_release
-    )
-    listener.start()
+    ex = ReleaseProcess(app)
     sys.exit(app.exec_())

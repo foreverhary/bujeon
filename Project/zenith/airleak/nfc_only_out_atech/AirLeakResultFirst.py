@@ -63,10 +63,10 @@ class AirLeak(AirLeakUi):
 
     def connect_event(self):
         self.status_signal.connect(self.status_update)
-        self.serial_machine.signal.machine_result_signal.connect(self.machine_result)
+        self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
 
     @pyqtSlot(list)
-    def machine_result(self, result):
+    def receive_machine_result(self, result):
         logger.info(result)
         self.result = result[0]
         self.result_label.setText(self.result)

@@ -1,7 +1,7 @@
 import sys
 from threading import Thread
 
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot
 from PyQt5.QtWidgets import QApplication
 
 from process_package.Config import get_order_number
@@ -55,6 +55,7 @@ class QRNFCWriter(QRNFCWriterUI):
             if nfc.serial_name == f"{NFC}1":
                 self.nfc = nfc
                 self.nfc.signal.qr_write_done_signal.connect(self.status_update)
+                self.nfc.signal.serial_error_signal.connect(self.receive_serial_error)
                 ready_nfc = True
             else:
                 nfc.close()
@@ -76,6 +77,10 @@ class QRNFCWriter(QRNFCWriterUI):
         self.key_enter_input_signal.connect(self.key_enter_process)
         self.order_config_window.orderNumberSendSignal.connect(self.input_order_number)
         self.status_signal.connect(self.status_update)
+
+    @pyqtSlot(str)
+    def receive_serial_error(self, msg):
+        self.status_update_signal.emit(self.status_label, msg, RED)
 
     def status_update(self, msg, color):
         self.status_label.setText(msg)

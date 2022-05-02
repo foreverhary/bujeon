@@ -123,8 +123,8 @@ class AudioBus(AudioBusUI):
             nfc.previous_processes = FUNCTION_PREPROCESS
             if NFC_IN in nfc.serial_name and int(nfc.serial_name[-1]) < NFC_IN_COUNT + 1:
                 self.nfc[nfc.serial_name] = nfc
-                nfc.signal.previous_process_signal.connect(self.previous_process_receive)
-                nfc.signal.serial_error_signal.connect(self.serial_error_receive)
+                nfc.signal.previous_process_signal.connect(self.receive_previous_process)
+                nfc.signal.serial_error_signal.connect(self.receive_serial_error)
                 nfc.start_previous_process_check_thread()
                 nfc_in_count += 1
             elif NFC in nfc.serial_name and int(nfc.serial_name[-1]) < NFC_OUT_COUNT + 1:
@@ -142,12 +142,17 @@ class AudioBus(AudioBusUI):
         return (nfc_in_count, nfc_out_count) == (NFC_IN_COUNT, NFC_OUT_COUNT)
 
     @pyqtSlot(str)
-    def serial_error_receive(self, msg):
+    def receive_serial_error(self, msg):
         self.status_update_signal.emit(self.status_label, msg, RED)
 
-    @pyqtSlot(tuple)
-    def previous_process_receive(self, info):
-        serial_name, msg, color = info
+    @pyqtSlot(object)
+    def receive_previous_process(self, nfc):
+        if nfc.check_pre_process():
+            msg = f"{nfc.dm} is PASS"
+            color = LIGHT_SKY_BLUE
+        else:
+            msg = f"{nfc.dm} is FAIL"
+            color = RED
         self.status_update_signal.emit(self.previous_process_label, msg, color)
 
     @pyqtSlot(object, str, str)

@@ -10,7 +10,7 @@ from process_package.defined_variable_function import SENSOR_PREPROCESS, logger,
 
 
 class SerialNFCSignal(QObject):
-    previous_process_signal = pyqtSignal(tuple)
+    previous_process_signal = pyqtSignal(object)
     qr_write_done_signal = pyqtSignal(str, str)
     nfc_write_done_signal = pyqtSignal(object)
     serial_error_signal = pyqtSignal(str)
@@ -113,17 +113,10 @@ class SerialNFC(Serial):
             try:
                 split_data = self.readline().decode().replace('\r\n', '').split(',')
 
-                if not self.is_valid_input_with_message(split_data):
+                if not self.is_valid_input(split_data):
                     continue
                 self.nfc_previous_process = split_data[2:]
-                if self.check_pre_process():
-                    self.signal.previous_process_signal.emit(
-                        (self.serial_name, f"{self.dm} is PASS", LIGHT_SKY_BLUE)
-                    )
-                else:
-                    self.signal.previous_process_signal.emit(
-                        (self.serial_name, f"{self.dm} is FAIL", RED)
-                    )
+                self.signal.previous_process_signal.emit(self)
             except (UnicodeDecodeError, ValueError) as e:
                 logger.error(f"{type(e)} : {e}")
             except SerialException:
@@ -137,7 +130,7 @@ class SerialNFC(Serial):
         try:
             nfc_serial_input = self.readline().decode().replace('\r\n', '')
             self.uid, *self.dm = nfc_serial_input.split(',')
-            logger.debug(self.uid)
+            logger.debug(nfc_serial_input)
         except Exception as e:
             logger.error(f"{type(e)} : {e}")
             self.uid, self.dm = '', ''
@@ -162,14 +155,16 @@ class SerialNFC(Serial):
             self.flushInput()
             self.flushOutput()
             while self.read_nfc_valid() != ','.join([self.uid, self.write_dm]):
+                logger.debug(self.write_dm)
                 self.write(f"{self.write_dm}".encode())
                 self.read_nfc_valid()
-                self.read_nfc_valid()
+                # self.read_nfc_valid()
             self.write_dm = None
             self.signal.qr_write_done_signal.emit("WRITE DONE, TRY NEXT QR SCAN", LIGHT_SKY_BLUE)
         except Exception as e:
             logger.error(f"{type(e)} : {e}")
-            self.signal.qr_write_done_signal.emit("CHECK NFC AND RESTART PROGRAM!!", RED)
+            self.signal.serial_error_signal.emit("ERROR NFC PLEASE RESTART PROGRAM")
+            # self.signal.qr_write_done_signal.emit("CHECK NFC AND RESTART PROGRAM!!", RED)
 
     def make_write_nfc(self):
         self.write_msg = self.dm
@@ -191,6 +186,7 @@ class SerialNFC(Serial):
                 logger.debug(self.write_msg)
                 if self.is_need_to_write() and not self.write_msg:
                     self.write(f"{self.make_write_nfc()}".encode())
+                    self.read_nfc_valid()
 
                 if self.check_write_done(split_data[1:]):
                     self.write_done()
