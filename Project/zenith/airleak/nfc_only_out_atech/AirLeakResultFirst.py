@@ -1,5 +1,6 @@
 import re
 import sys
+from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtGui import QIcon
@@ -8,7 +9,7 @@ from PyQt5.QtWidgets import QApplication
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
-    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, LEAK, AIR_LEAK_PREPROCESS
+    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, LEAK, AIR_LEAK_PREPROCESS, FREQ, DUR
 from process_package.mssql_connect import insert_pprd
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -81,6 +82,7 @@ class AirLeak(AirLeakUi):
 
     @pyqtSlot(object)
     def update_sql(self, nfc):
+        Beep(FREQ, DUR)
         for output_label in self.unit_list:
             if output_label.text() == '':
                 output_label.setText(nfc.dm)

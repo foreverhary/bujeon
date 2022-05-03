@@ -1,21 +1,13 @@
 import sys
+from winsound import Beep
 
-import pymssql
-import qdarkstyle
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QFontDatabase, QFont
-from PyQt5.QtWidgets import QApplication, QDesktopWidget
-from pynput import keyboard
-from pynput.keyboard import Key
+from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
-from process_package.check_string import keyboard_event_check_char
 from process_package.defined_variable_function import window_center, style_sheet_setting, NFC_IN, FUNCTION_PROCESS, \
-    PROCESS_OK_RESULTS, PROCESS_NAMES
-from process_package.logger import get_logger
-from process_package.mssql_connect import *
+    PROCESS_OK_RESULTS, PROCESS_NAMES, FREQ, DUR, NG, RED, LIGHT_SKY_BLUE
 from release_process_ui import ReleaseProcessUI
-from process_package.style.style import STYLE
 
 NFC_IN_COUNT = 1
 
@@ -34,18 +26,17 @@ class ReleaseProcess(ReleaseProcessUI):
     def show_main_window(self, nfcs):
         self.load_window.close()
         self.init_event()
-        self.init_nfc_serial(nfcs)
+        if self.init_nfc_serial(nfcs):
+            self.status_label.set_text_property(color=LIGHT_SKY_BLUE)
+            self.status_label.setText('NFC READY')
+        else:
+            self.status_label.set_text_property(color=RED)
+            self.status_label.setText('CHECK NFC AND RESTART PROGRAM')
         style_sheet_setting(self.app)
 
         # self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.show()
-        self.dm_input_label.setText('AA1100001')
-        self.result_input_label.setText("""
-        this
-        is
-        spa
-        """)
 
         window_center(self)
 
@@ -68,17 +59,20 @@ class ReleaseProcess(ReleaseProcessUI):
 
     # @pyqtSignal(object)
     def received_previous_process(self, nfc):
+        Beep(FREQ, DUR)
         msg = ''
         if nfc.check_pre_process():
             msg += nfc.nfc_previous_process[FUNCTION_PROCESS]
+            self.result_input_label.set_text_property(color=LIGHT_SKY_BLUE)
         else:
             for process, result in nfc.nfc_previous_process.items():
                 if result not in PROCESS_OK_RESULTS:
                     if msg:
                         msg += '\n'
                     msg += f"{process} : {result}"
+            self.result_input_label.set_text_property(color=RED)
         self.dm_input_label.setText(nfc.dm)
-        self.result_input_label.setText(msg)
+        self.result_input_label.setText(msg or NG)
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ import decimal
 # mssql server
 from process_package.Config import get_config_mssql
 from process_package.defined_variable_function import MSSQL_IP, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE, MSSQL_PORT, \
-    logger
+    logger, NULL
 
 
 def get_mssql_conn():
@@ -31,11 +31,11 @@ def select_order_process_with_dm(dm, keyword):
     return cursor.fetchone()
 
 
-def insert_pprd(dm=None, result=None, keyword=None, pcode='NULL', ecode='NULL'):
+def insert_pprd(dm=None, result=None, keyword=None, pcode='', ecode=''):
     aufnr, aplzl = select_order_process_with_dm(dm, keyword)
     conn, cursor = get_mssql_conn()
     sql = f"INSERT INTO PPRD (DM, AUFNR, APLZL, ITIME, RESULT, PCODE, ECODE) " \
-          f"values('{dm}', '{aufnr}', '{aplzl}', GETDATE(), '{result}', '{pcode}', '{ecode}')"
+          f"values('{dm}', '{aufnr}', '{aplzl}', GETDATE(), '{result}', '{pcode or NULL}', '{ecode or NULL}')"
     cursor.execute(sql)
     conn.commit()
 

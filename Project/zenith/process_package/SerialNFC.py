@@ -35,7 +35,7 @@ class SerialNFC(Serial):
         self.port, self.baudrate, self.timeout, self.serial_name = port, baudrate, timeout, serial_name
 
         # uid and dm
-        self.write_msg = self.uid = self.dm = self.write_dm = ''
+        self.write_msg = self.uid = self.dm = self.write_dm = self.check_dm = ''
         self.dm_list = []
 
         self.unit_count = 0
@@ -115,8 +115,11 @@ class SerialNFC(Serial):
 
                 if not self.is_valid_input(split_data):
                     continue
+                if self.dm == self.check_dm:
+                    continue
                 self.nfc_previous_process = split_data[2:]
                 self.signal.previous_process_signal.emit(self)
+                self.check_dm = self.dm
             except (UnicodeDecodeError, ValueError) as e:
                 logger.error(f"{type(e)} : {e}")
             except SerialException:

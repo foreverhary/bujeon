@@ -1,6 +1,4 @@
-import threading
-
-from PyQt5.QtCore import Qt, QCoreApplication
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox
 

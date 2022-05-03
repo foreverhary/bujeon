@@ -72,6 +72,8 @@ DONE = 'DONE'
 PASS = "PASS"
 FAIL = 'FAIL'
 
+NULL = 'NULL'
+
 AIR_LEAK_PROCESS = 'AIR'
 MIC_PROCESS = 'MIC'
 FUNCTION_PROCESS = 'FUN'
@@ -97,7 +99,6 @@ NFC = 'NFC'
 
 # file name
 CONFIG_FILE_NAME = 'config.ini'
-SENSOR_CONFIG_FILENAME = 'sensor.ini'
 AIR_LEAK_CONFIG_FILENAME = 'airleak.ini'
 
 # AIR LEAK
@@ -121,7 +122,20 @@ AUD = 'AUD'
 
 # SENSOR
 SENSOR = 'SENSOR'
+CON_OS = 'CON O/S'
+POGO_OS = 'POGO O/S'
+VBAT_ID = 'VBAT ID'
+C_TEST = 'C TEST'
+LED = 'LED'
+PCM = 'PCM'
+PROX_TEST = 'PROX TEST'
+BATTERY = 'BATTERY'
+MIC = 'MIC'
+Hall_IC = 'Hall IC'
 
+# Beep
+FREQ = 2500
+DUR = 200
 
 def window_center(window):
     qr = window.frameGeometry()

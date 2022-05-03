@@ -5,7 +5,8 @@ from process_package.Config import get_config_value, set_config_value
 from process_package.PyQtCustomComponent import Button, ComboBox, Label
 from process_package.SerialMachine import SerialMachine
 from process_package.defined_serial_port import ports, get_serial_available_list
-from process_package.defined_variable_function import SENSOR_ATECH, SENSOR_CONFIG_FILENAME, COMPORT_SECTION
+from process_package.defined_variable_function import SENSOR_ATECH, COMPORT_SECTION, \
+    CONFIG_FILE_NAME
 
 NFC_IN_COUNT = 1
 NFC_OUT_COUNT = 1
@@ -16,9 +17,6 @@ class SensorUI(QWidget):
     def __init__(self):
         super(SensorUI, self).__init__()
         self.setLayout(layout := QVBoxLayout())
-
-        # serial
-        serial_layout = QHBoxLayout()
 
         # previous process
         layout.addLayout(previous_process_layout := QHBoxLayout())
@@ -97,7 +95,7 @@ class SensorChannelLayout(QGroupBox):
             button = self.connectButton
             self.serialComboBox.setCurrentText(
                 get_config_value(
-                    SENSOR_CONFIG_FILENAME,
+                    CONFIG_FILE_NAME,
                     COMPORT_SECTION,
                     f"machine_comport_{self.channel}"
                 )
@@ -107,7 +105,7 @@ class SensorChannelLayout(QGroupBox):
 
         if self.serial_machine.connect_with_button_color(self.serialComboBox.currentText(), button):
             set_config_value(
-                SENSOR_CONFIG_FILENAME,
+                CONFIG_FILE_NAME,
                 COMPORT_SECTION,
                 f'machine_comport_{self.channel}',
                 self.serial_machine.port

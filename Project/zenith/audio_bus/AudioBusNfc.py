@@ -1,5 +1,6 @@
 import os.path
 import sys
+from winsound import Beep
 
 import pandas
 import pandas as pd
@@ -14,7 +15,7 @@ from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_right, logger, NFC_IN, \
     FUNCTION_PREPROCESS, NFC, LIGHT_SKY_BLUE, RED, GRADE_FILE_PATH, WHITE, SUMMARY_FILE_PATH, A, B, C, C_GRADE_MIN, \
     C_GRADE_MAX, B_GRADE_MAX, A_GRADE_MAX, NG, \
-    FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD
+    FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR
 from process_package.mssql_connect import get_process_error_code_dict, insert_pprd
 
 NFC_IN_COUNT = 1
@@ -105,7 +106,7 @@ class AudioBus(AudioBusUI):
 
     def get_ecode(self):
         return ','.join([
-            self.error_code[key] for key, value in self.result.items() if not value
+            str(self.error_code[key]) for key, value in self.result.items() if not value
         ])
 
     def init_result_true(self):
@@ -147,6 +148,7 @@ class AudioBus(AudioBusUI):
 
     @pyqtSlot(object)
     def receive_previous_process(self, nfc):
+        Beep(FREQ, DUR)
         if nfc.check_pre_process():
             msg = f"{nfc.dm} is PASS"
             color = LIGHT_SKY_BLUE
@@ -202,8 +204,8 @@ class AudioBus(AudioBusUI):
                 if key in name and 'Failed' in result_value:
                     self.result[key] = False
 
-        # if False in self.result.values():
-        #     self.grade = NG
+        if False in self.result.values():
+            self.grade = NG
 
     def start_file_observe(self):
         if self.start_grade_file_observe() and self.start_summary_file_observe():

@@ -53,8 +53,7 @@ class SerialMachine(Serial):
         self.flushInput()
         while True:
             try:
-                if result := self.readline().decode():
-                    logger.info(result)
+                if result := self.readline().decode().replace('\r', '').replace('\n', '').upper().split(','):
                     self.signal.machine_result_signal.emit(result)
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")

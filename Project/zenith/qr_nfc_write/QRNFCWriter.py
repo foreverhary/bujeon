@@ -1,5 +1,6 @@
 import sys
 from threading import Thread
+from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot
 from PyQt5.QtWidgets import QApplication
@@ -8,7 +9,8 @@ from process_package.Config import get_order_number
 from process_package.LineReadKeyboard import LineReadKeyboard
 from process_package.SplashScreen import SplashScreen
 from process_package.check_string import check_dm
-from process_package.defined_variable_function import BLUE, RED, style_sheet_setting, window_center, logger, WHITE, NFC
+from process_package.defined_variable_function import BLUE, RED, style_sheet_setting, window_center, logger, WHITE, NFC, \
+    FREQ, DUR
 from process_package.mssql_connect import insert_pprh
 from process_package.mssql_dialog import MSSQLDialog
 from process_package.order_number_dialog import OderNumberDialog
@@ -54,7 +56,7 @@ class QRNFCWriter(QRNFCWriterUI):
         for nfc in nfc_list:
             if nfc.serial_name == f"{NFC}1":
                 self.nfc = nfc
-                self.nfc.signal.qr_write_done_signal.connect(self.status_update)
+                self.nfc.signal.qr_write_done_signal.connect(self.received_qr_write)
                 self.nfc.signal.serial_error_signal.connect(self.receive_serial_error)
                 ready_nfc = True
             else:
@@ -81,6 +83,10 @@ class QRNFCWriter(QRNFCWriterUI):
     @pyqtSlot(str)
     def receive_serial_error(self, msg):
         self.status_update_signal.emit(self.status_label, msg, RED)
+
+    def received_qr_write(self, msg, color):
+        Beep(FREQ, DUR)
+        self.status_update(msg, color)
 
     def status_update(self, msg, color):
         self.status_label.setText(msg)
