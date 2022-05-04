@@ -30,7 +30,7 @@ void setup(void) {
   while(! versiondata){
     versiondata = nfc.getFirmwareVersion();
   }
-  Serial.println("NFC 1");
+  Serial.println("NFC 4");
   nfc.SAMConfig();
   keep_going = true;
 }
@@ -53,7 +53,7 @@ void loop(void) {
   }
   if(cmd[0] == 0xff){
     nfc.shutDown();
-    Serial.println("OK");
+//    Serial.println("OK");
     keep_going = false;
     return;
   }

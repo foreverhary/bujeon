@@ -129,6 +129,32 @@ class SerialNFC(Serial):
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")
 
+    def start_read_nfc_for_ksd_air_leak(self):
+        self.th = Thread(target=self.read_nfc_for_ksd_thread, daemon=True)
+        self.th.start()
+
+    def read_nfc_for_ksd_thread(self):
+        self.is_close_open()
+        while True:
+            nfc_serial_input = self.get_serial_data_decode_with_linefeed()
+            if NFC in nfc_serial_input:
+                continue
+            nfc_serial_input = nfc_serial_input.split(',')
+            for index, param in enumerate(nfc_serial_input):
+                if 'CH' in param:
+                    param[-1]
+
+    def get_parse_ksd_data(self, serial_input):
+        serial_input = serial_input.split(',')
+        return next(
+            (
+                [int(param[-1]), serial_input[index + 1]]
+                for index, param in enumerate(serial_input)
+                if 'CH' in param
+            ),
+            '',
+        )
+
     def read_nfc_valid(self):
         try:
             nfc_serial_input = self.readline().decode().replace('\r\n', '')
@@ -230,6 +256,8 @@ class SerialNFC(Serial):
                 p, r = item.split(':')
                 if p not in PROCESS_NAMES or r not in PROCESS_RESULTS:
                     raise ValueError
+        except ValueError:
+            return False
         except Exception as e:
             logger.error(f"{type(e)} : {e}")
             return False
@@ -250,6 +278,13 @@ class SerialNFC(Serial):
     def is_open_close(self):
         if self.is_open:
             self.close()
+
+    def is_close_open(self):
+        if not self.is_open:
+            self.open()
+
+    def get_serial_data_decode_with_linefeed(self):
+        return self.readline().decode().replace('\r', '').replace('\n', '')
 
 
 if __name__ == '__main__':

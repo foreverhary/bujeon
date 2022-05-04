@@ -4,7 +4,7 @@ from threading import Thread
 from PyQt5.QtCore import pyqtSignal, QObject
 from serial import Serial, SerialException
 
-from process_package.defined_variable_function import logger, AIR_LEAK_ATECH, SENSOR_ATECH
+from process_package.defined_variable_function import logger, AIR_LEAK_ATECH, SENSOR_ATECH, AIR_LEAK_KSD
 
 
 class SerialMachineSignal(QObject):
@@ -45,6 +45,8 @@ class SerialMachine(Serial):
         if not self.th.is_alive():
             if self.serial_name == AIR_LEAK_ATECH:
                 self.th = Thread(target=self.air_leak_read_thread, daemon=True)
+            elif self.serial_name == AIR_LEAK_KSD:
+                self.th = Thread(target=self.air_leak_read_thread, daemon=True)
             elif SENSOR_ATECH in self.serial_name:
                 self.th = Thread(target=self.ir_sensor_read_thread, daemon=True)
             self.th.start()
@@ -57,6 +59,13 @@ class SerialMachine(Serial):
                     self.signal.machine_result_signal.emit(result)
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")
+
+    def kds_air_leak_read_thread(self):
+        self.flushInput()
+        while True:
+            if result := self.readline().decode().replace('\r', '').replace('\n', ''):
+                logger.debug(result)
+
 
     def air_leak_read_thread(self):
         self.flushInput()
