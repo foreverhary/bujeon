@@ -40,6 +40,8 @@ class AirLeakAutomation(AirLeakAutomationUi):
     def show_main_window(self, nfc_list):
         self.load_window.close()
         self.init_serial(nfc_list)
+        self.input_nfc_status()
+        self.fill_machine_comport_combobox()
         style_sheet_setting(self.app)
 
         self.show()
@@ -56,13 +58,14 @@ class AirLeakAutomation(AirLeakAutomationUi):
             else:
                 nfc.close()
 
+    def input_nfc_status(self):
         if self.nfc.__len__() == AIR_LEAK_NFC_COUNT:
             self.status_signal.emit("READY", BLUE)
             self.start_odd_nfc()
         else:
             self.status_signal.emit("NFC ERROR, CHECK NFC AND RESTART PROGRAM!!", RED)
 
-        # machine connect from config value port
+    def fill_machine_comport_combobox(self):
         self.fill_available_ports()
         self.connect_machine_button(1)
 

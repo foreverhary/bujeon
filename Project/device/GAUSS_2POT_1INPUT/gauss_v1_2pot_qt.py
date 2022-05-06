@@ -1,3 +1,5 @@
+import time
+
 import serial
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame
 from PyQt5.QtCore import QCoreApplication, Qt, QFile, pyqtSignal
@@ -32,6 +34,7 @@ class Main(QWidget):
         self.ser = Serial()
         self.ser.port = 'com9' if 'Window' in platform.platform() else '/dev/ttyUSB0'
         self.ser.baudrate = 115200
+        self.ser.timeout = 0.5
         try:
             self.ser.open()
         except Exception as e:
@@ -117,7 +120,11 @@ class Main(QWidget):
                 # pot_values = list(map(float, self.ser.readline().decode().split(",")))
                 # if len(pot_values) != POT_COUNT:
                 pot_values = list(map(float, self.ser.readline().decode().split(",")))
-                self.value_signal.emit(list(map(int, pot_values)))
+                if pot_values:
+                    self.value_signal.emit(list(map(int, pot_values)))
+                else:
+                    self.ser.close()
+                    self.ser.open()
                 # self.ser.flushInput()
             except serial.SerialException as e:
                 logger.error(e)

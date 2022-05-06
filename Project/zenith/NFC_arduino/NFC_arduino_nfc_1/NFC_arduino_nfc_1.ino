@@ -30,7 +30,7 @@ void setup(void) {
   while(! versiondata){
     versiondata = nfc.getFirmwareVersion();
   }
-  Serial.println("NFC 4");
+  Serial.println("NFC 1");
   nfc.SAMConfig();
   keep_going = true;
 }
@@ -53,7 +53,6 @@ void loop(void) {
   }
   if(cmd[0] == 0xff){
     nfc.shutDown();
-//    Serial.println("OK");
     keep_going = false;
     return;
   }
@@ -61,101 +60,97 @@ void loop(void) {
   if(!keep_going){
     return;
   }
-  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 2000);
   
-
-  if (success){
+  if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 2000)){
     if(cmd_index > 0){
-      uint8_t data[58] = {0,};
-      uint8_t len = cmd_index + 3;
-      uint8_t pageBuffer[4] = {0,};
-      uint8_t pageHeader[12] = {
-        0x01,
-        0x03,
-        0xa0,
-        0x0c,
-        0x34,
-        0x03,
-        (uint8_t)(len + 5),
-        0xd1,
-        0x01,
-        (uint8_t)(len + 1),
-        0x54,
-        0x02
-      };
-      memcpy(pageBuffer, pageHeader, 4);
-      nfc.mifareultralight_WritePage(4, pageBuffer);
-      memcpy(pageBuffer, pageHeader + 4, 4);
-      nfc.mifareultralight_WritePage(5, pageBuffer);
-      memcpy(pageBuffer, pageHeader + 8, 4);
-      nfc.mifareultralight_WritePage(6, pageBuffer);
-      
-      data[0] = 'e';
-      data[1] = 'n';
-      data[len] = 0xFE;
-      memcpy(&data[2], cmd, cmd_index);
-
-      uint8_t currentPage = 7;
-      char *cmdcopy = data;
-      while (len){
-        if(len < 4){
-          memset(pageBuffer, 0, 4);
-          memcpy(pageBuffer, cmdcopy, len);
-          if(!(nfc.mifareultralight_WritePage(currentPage, pageBuffer))){
-            return 0;
-          }
-          return 1;
-        }else if(len == 4){
-          memcpy(pageBuffer, cmdcopy, len);
-          if(!(nfc.mifareultralight_WritePage(currentPage, pageBuffer))){
-            return 0;
-          }
-          return 1;
-        }else{
-          memcpy(pageBuffer, cmdcopy, 4);
-          if(!(nfc.mifareultralight_WritePage(currentPage, pageBuffer))){
-            return 0;
-          }
-          currentPage++;
-          cmdcopy += 4;
-          len -= 4;
-        }
-      }
-      return;
-    }
-    Serial.print("UID: ");
-    PrintCharHex(uid, uidLength);
-    Serial.print(",");
-    if (uidLength == 7){
-      uint32_t i = 7;
-      bool data_out = false;
-      while(true){
+      WriteNfc(cmd, cmd_index);
+    }else{
+      if (uidLength == 7){
+        uint8_t out_data[200] = {0,};
+        uint8_t* pOut = out_data;
+        uint32_t i = 7;
         uint8_t data[4] ={0,};
-        nfc.mifareultralight_ReadPage(i, data);
-        if(i == 7){
-          Serial.print((char)data[2]);
-          Serial.print((char)data[3]);
-        }
-        else{
-          for(uint8_t pdata=0;pdata<4;pdata++){
-            if(data[pdata] == 0xfe or data[pdata] == 0x00){
-              data_out = true;
-              break;
-            }
-            else{
-              Serial.print((char)data[pdata]);
+        while(nfc.mifareultralight_ReadPage(i, data)){
+          if(i == 7){
+              *pOut++ = (char)data[2];
+              *pOut++ = (char)data[3];
+          }
+          else{
+            for(uint8_t pdata=0;pdata<4;pdata++){
+              if(data[pdata] == 0xfe or data[pdata] == 0x00){
+                Serial.print("UID: ");
+                PrintCharHex(uid, uidLength);
+                
+                if(strlen(out_data)){
+                  Serial.print(",");
+                  PrintChar(out_data, strlen(out_data));
+                }
+                Serial.println();
+                return;
+              }else{
+                *pOut++ = (char)data[pdata];
+              }
             }
           }
+          i++;
+          memset(data, 0 , 4);
         }
-        if(data_out == true){
-          break;
-        }
-        i++;
-      }
-      
-      Serial.println();
+      }      
     }
-  }else{
+  }
+}
+
+void WriteNfc(uint8_t* cmd, uint8_t cmd_index)
+{
+  uint8_t data[58] = {0,};
+  uint8_t len = cmd_index + 2;
+  uint8_t pageBuffer[4] = {0,};
+  uint8_t pageHeader[12] = {
+    0x01,
+    0x03,
+    0xa0,
+    0x0c,
+    0x34,
+    0x03,
+    (uint8_t)(len + 4),
+    0xd1,
+    0x01,
+    (uint8_t)(len),
+    0x54,
+    0x02
+  };
+  memcpy(pageBuffer, pageHeader, 4);
+  nfc.mifareultralight_WritePage(4, pageBuffer);
+  memcpy(pageBuffer, pageHeader + 4, 4);
+  nfc.mifareultralight_WritePage(5, pageBuffer);
+  memcpy(pageBuffer, pageHeader + 8, 4);
+  nfc.mifareultralight_WritePage(6, pageBuffer);
+  
+  data[0] = 'e';
+  data[1] = 'n';
+  data[len] = 0xFE;
+  len++;
+  memcpy(&data[2], cmd, cmd_index);
+
+  uint8_t currentPage = 7;
+  char *cmdcopy = data;
+  while (len){
+    if(len <= 4){
+      memset(pageBuffer, 0xfe, 4);
+      memcpy(pageBuffer, cmdcopy, len);
+      if(!(nfc.mifareultralight_WritePage(currentPage, pageBuffer))){
+        return 0;
+      }
+      break;
+    }else{
+      memcpy(pageBuffer, cmdcopy, 4);
+      if(!(nfc.mifareultralight_WritePage(currentPage, pageBuffer))){
+        return 0;
+      }
+      currentPage++;
+      cmdcopy += 4;
+      len -= 4;
+    }
   }
 }
 

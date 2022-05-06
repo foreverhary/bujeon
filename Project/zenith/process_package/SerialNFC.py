@@ -279,7 +279,6 @@ class SerialNFC(Serial):
             self.uid, self.dm, *rest = split_data
         except ValueError:
             self.uid = self.dm = ''
-        logger.debug(split_data)
         return self.uid and self.dm
 
     def is_valid_input(self, split_data):
