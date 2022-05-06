@@ -9,12 +9,14 @@ from process_package.defined_variable_function import logger, AIR_LEAK_ATECH, SE
 
 class SerialMachineSignal(QObject):
     machine_result_signal = pyqtSignal(list)
+    machine_result_ksd_signal = pyqtSignal(tuple)
 
 
 class SerialMachine(Serial):
     """
     Serial from Machine(Air Leak, IR Sensor)
     """
+
     def __init__(self, port=None, baudrate=None, timeout=None, serial_name=None):
         super(SerialMachine, self).__init__()
 
@@ -46,7 +48,7 @@ class SerialMachine(Serial):
             if self.serial_name == AIR_LEAK_ATECH:
                 self.th = Thread(target=self.air_leak_read_thread, daemon=True)
             elif self.serial_name == AIR_LEAK_KSD:
-                self.th = Thread(target=self.air_leak_read_thread, daemon=True)
+                self.th = Thread(target=self.kds_air_leak_read_thread, daemon=True)
             elif SENSOR_ATECH in self.serial_name:
                 self.th = Thread(target=self.ir_sensor_read_thread, daemon=True)
             self.th.start()
@@ -63,9 +65,14 @@ class SerialMachine(Serial):
     def kds_air_leak_read_thread(self):
         self.flushInput()
         while True:
-            if result := self.readline().decode().replace('\r', '').replace('\n', ''):
-                logger.debug(result)
+            if serial_read_line := self.get_serial_readline_with_decode():
+                self.signal.machine_result_ksd_signal.emit(self.get_channel_and_result(serial_read_line))
 
+    def get_channel_and_result(self, read_line):
+        split_read_line = read_line.split(',')
+        for index, item in enumerate(split_read_line):
+            if 'CH' in item:
+                return int(item[-1]), split_read_line[index + 1]
 
     def air_leak_read_thread(self):
         self.flushInput()
@@ -78,6 +85,9 @@ class SerialMachine(Serial):
             except SerialException:
                 self.is_open_close()
                 break
+
+    def get_serial_readline_with_decode(self):
+        return self.readline().decode().replace('\r', '').replace('\n', '')
 
     def is_open_close(self):
         if self.is_open:

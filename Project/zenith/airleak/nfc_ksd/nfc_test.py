@@ -4,7 +4,7 @@ from threading import Thread
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QApplication
 from serial import Serial, SerialException
 
-serial_name = ['com7', 'com19', 'com13', 'com10']
+serial_name = ['com7', 'com19', 'com10', 'com13']
 
 
 def serial_thread(s):

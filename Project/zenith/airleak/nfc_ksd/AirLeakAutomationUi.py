@@ -8,7 +8,7 @@ from process_package.check_string import check_dm
 from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import AIR_LEAK_DM_UNIT_SIZE, AIR_LEAK_RESULT_SIZE, AIR_LEAK_UNIT_COUNT, \
     UNIT, RESULT, AIR_LEAK_RESULT_FONT_SIZE, AIR_LEAK_DM_UNIT_FONT_SIZE, COMPORT_SECTION, \
-    MACHINE_COMPORT_1, AIR_LEAK_ATECH, CONFIG_FILE_NAME, AIR_LEAK_KSD
+    MACHINE_COMPORT_1, AIR_LEAK_ATECH, CONFIG_FILE_NAME, AIR_LEAK_KSD, OK, LIGHT_SKY_BLUE, RED
 
 SLOT_MINIMUM_WIDTH = 300
 AIR_LEAK_NFC_COUNT = 4
@@ -40,6 +40,10 @@ class AirLeakSlot(QGroupBox):
         if isinstance(result, str):
             self._result = result
             self.result_label.setText(result)
+            if result == OK:
+                self.result_label.set_text_property(color=LIGHT_SKY_BLUE)
+            else:
+                self.result_label.set_text_property(color=RED)
 
     def create_component(self):
         self.setLayout(layout := QVBoxLayout())
@@ -79,7 +83,7 @@ class AirLeakAutomationUi(QWidget):
         self.status_label = status_label
         self.status_label.setMinimumWidth(AIR_LEAK_RESULT_SIZE)
 
-        self.serial_machine = SerialMachine(baudrate=9600, serial_name=AIR_LEAK_KSD)
+        self.serial_machine = SerialMachine(baudrate=38400, serial_name=AIR_LEAK_KSD)
         self.machine_port_connect_button.clicked.connect(self.connect_machine_button)
 
     def keyPressEvent(self, event):

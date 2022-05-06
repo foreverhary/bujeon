@@ -1,5 +1,6 @@
 import re
 import sys
+from threading import Timer
 from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
@@ -50,13 +51,14 @@ class AirLeakAutomation(AirLeakAutomationUi):
         for nfc in nfcs:
             nfc.previous_processes = AIR_LEAK_PREPROCESS
             if re.search(f'{NFC}[1-9]', nfc.serial_name):
-                self.nfc[int(nfc.serial_name[-1])] = nfc
-                nfc.signal.nfc_write_done_signal.connect(self.update_sql)
+                self.nfc[nfc.num] = nfc
+                nfc.signal.dm_read_done_signal.connect(self.received_nfc_read_done)
             else:
                 nfc.close()
 
         if self.nfc.__len__() == AIR_LEAK_NFC_COUNT:
             self.status_signal.emit("READY", BLUE)
+            self.start_odd_nfc()
         else:
             self.status_signal.emit("NFC ERROR, CHECK NFC AND RESTART PROGRAM!!", RED)
 
@@ -66,55 +68,46 @@ class AirLeakAutomation(AirLeakAutomationUi):
 
     def connect_event(self):
         self.status_signal.connect(self.status_update)
-        self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
+        self.serial_machine.signal.machine_result_ksd_signal.connect(self.receive_machine_result)
 
     def is_odd_nfc_alive(self):
-        for key, nfc in self.nfc.items():
-            if key % 2:
-                if nfc.th.is_alive()
-        pass
+        return any(key % 2 and nfc.th.is_alive() for key, nfc in self.nfc.items())
 
     def is_even_nfc_alive(self):
-        # TODO
-        pass
+        return any(key % 2 == 0 and nfc.th.is_alive() for key, nfc in self.nfc.items())
 
     def start_odd_nfc(self):
+        logger.debug("")
         for key, nfc in self.nfc.items():
             if key % 2:
-                nfc.start_previous_process_check_thread()
+                nfc.start_read_dm_thread()
+            else:
+                nfc.power_down()
 
     def start_even_nfc(self):
+        logger.debug("")
         for key, nfc in self.nfc.items():
             if key % 2 == 0:
-                nfc.start_previous_process_check_thread()
+                nfc.start_read_dm_thread()
+            else:
+                nfc.power_down()
 
-    @pyqtSlot(list)
-    def receive_machine_result(self, result):
-        logger.info(result)
-        self.result = result[0]
-        self.result_label.setText(self.result)
-        self.result_label.set_text_property(color=(LIGHT_SKY_BLUE, RED)[self.result == NG])
-        for unit_label in self.unit_list:
-            unit_label.setText('')
-        self.nfc[f"{NFC}1"].start_nfc_write(
-            unit_count=AIR_LEAK_UNIT_COUNT,
-            process_result=f"{AIR_LEAK_PROCESS}:{self.result}"
-        )
-        self.status_signal.emit("MACHINE RESULT RECEIVED ➡️ TAG NFC ZIG", LIGHT_SKY_BLUE)
+    @pyqtSlot(tuple)
+    def receive_machine_result(self, channel_data):
+        logger.debug(channel_data)
+        channel, result = channel_data
+        self.slots[channel - 1].result = result
+        self.update_sql(channel - 1)
 
     @pyqtSlot(object)
-    def update_sql(self, nfc):
-        Beep(FREQ, DUR)
-        for output_label in self.unit_list:
-            if output_label.text() == '':
-                output_label.setText(nfc.dm)
-                try:
-                    insert_pprd(nfc.dm, self.result, LEAK)
-                except Exception as e:
-                    logger.error(f"{type(e)} : {e}")
-                break
-        if not nfc.unit_count:
-            self.status_signal.emit("UNIT WRITE DONE!!", LIGHT_SKY_BLUE)
+    def received_nfc_read_done(self, nfc):
+        logger.debug(nfc.num)
+        self.slots[nfc.num - 1].dm = nfc.dm
+        if nfc.num % 2:
+            if not self.is_odd_nfc_alive():
+                self.start_even_nfc()
+        elif not self.is_even_nfc_alive():
+            self.start_odd_nfc()
 
     @pyqtSlot(str, str)
     def status_update(self, msg, color):
@@ -124,6 +117,9 @@ class AirLeakAutomation(AirLeakAutomationUi):
     def mousePressEvent(self, event):
         if event.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
+
+    def update_sql(self, slot):
+        insert_pprd(self.slots[slot].dm, self.slots[slot].result, LEAK)
 
     def closeEvent(self, event):
         pass

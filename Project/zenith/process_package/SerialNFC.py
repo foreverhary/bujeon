@@ -14,6 +14,7 @@ class SerialNFCSignal(QObject):
     qr_write_done_signal = pyqtSignal(str, str)
     nfc_write_done_signal = pyqtSignal(object)
     serial_error_signal = pyqtSignal(str)
+    dm_read_done_signal = pyqtSignal(object)
 
 
 class SerialNFC(Serial):
@@ -33,9 +34,11 @@ class SerialNFC(Serial):
 
         # default serial value + name
         self.port, self.baudrate, self.timeout, self.serial_name = port, baudrate, timeout, serial_name
+        self.num = 0
 
         # uid and dm
-        self.write_msg = self.uid = self.dm = self.write_dm = self.check_dm = ''
+        self.write_msg = self.uid = self.dm = self.write_dm = ''
+        self.check_dm = None
         self.dm_list = []
 
         self.unit_count = 0
@@ -94,6 +97,7 @@ class SerialNFC(Serial):
                 if re.search(NFC, check_string):
                     self.timeout = None
                     self.serial_name = check_string.replace(' ', '').upper()
+                    self.num = int(self.serial_name[-1])
                     return_value = True
                 else:
                     self.is_open_close()
@@ -102,6 +106,25 @@ class SerialNFC(Serial):
         except (SerialException, UnicodeDecodeError) as e:
             self.is_open_close()
         return return_value
+
+    def start_read_dm_thread(self):
+        self.keep_threading = True
+        if not self.th.is_alive():
+            self.th = Thread(target=self.read_dm_thread, daemon=True)
+            self.th.start()
+
+    def read_dm_thread(self):
+        self.close_and_open()
+        self.flushInput()
+        logger.debug(self.serial_name)
+        while True:
+            if not self.keep_threading:
+                break
+            if self.split_uid_dm(self.get_serial_readline_with_decode().split(',')) \
+                    and self.dm != self.check_dm:
+                self.check_dm = self.dm
+                self.keep_threading = False
+                self.signal.dm_read_done_signal.emit(self)
 
     def start_previous_process_check_thread(self):
         self.th = Thread(target=self.previous_process_check_thread, daemon=True)
@@ -129,31 +152,11 @@ class SerialNFC(Serial):
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")
 
-    def start_read_nfc_for_ksd_air_leak(self):
-        self.th = Thread(target=self.read_nfc_for_ksd_thread, daemon=True)
-        self.th.start()
-
-    def read_nfc_for_ksd_thread(self):
-        self.is_close_open()
-        while True:
-            nfc_serial_input = self.get_serial_data_decode_with_linefeed()
-            if NFC in nfc_serial_input:
-                continue
-            nfc_serial_input = nfc_serial_input.split(',')
-            for index, param in enumerate(nfc_serial_input):
-                if 'CH' in param:
-                    param[-1]
-
-    def get_parse_ksd_data(self, serial_input):
-        serial_input = serial_input.split(',')
-        return next(
-            (
-                [int(param[-1]), serial_input[index + 1]]
-                for index, param in enumerate(serial_input)
-                if 'CH' in param
-            ),
-            '',
-        )
+    def power_down(self):
+        if self.is_open:
+            self.write(b'\xff')
+            self.close()
+            logger.debug(self.serial_name)
 
     def read_nfc_valid(self):
         try:
@@ -271,9 +274,22 @@ class SerialNFC(Serial):
         )
         return return_value
 
+    def split_uid_dm(self, split_data):
+        try:
+            self.uid, self.dm, *rest = split_data
+        except ValueError:
+            self.uid = self.dm = ''
+        logger.debug(split_data)
+        return self.uid and self.dm
+
     def is_valid_input(self, split_data):
         self.uid, self.dm, *rest = split_data
         return self.uid and self.dm and self.is_valid_pre_process(rest)
+
+    def close_and_open(self):
+        if self.is_open:
+            self.close()
+        self.open()
 
     def is_open_close(self):
         if self.is_open:
@@ -283,7 +299,7 @@ class SerialNFC(Serial):
         if not self.is_open:
             self.open()
 
-    def get_serial_data_decode_with_linefeed(self):
+    def get_serial_readline_with_decode(self):
         return self.readline().decode().replace('\r', '').replace('\n', '')
 
 
