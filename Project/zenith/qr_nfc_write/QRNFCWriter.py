@@ -105,8 +105,9 @@ class QRNFCWriter(QRNFCWriterUI):
             self.start_nfc_read()
 
     def start_nfc_read(self):
-        self.status_signal.emit("TAG NFC ZIG", WHITE)
-        self.nfc.start_nfc_write(self.dm_label.text())
+        if self.nfc:
+            self.status_signal.emit("TAG NFC ZIG", WHITE)
+            self.nfc.start_nfc_write(self.dm_label.text())
 
     def input_order_number(self):
         try:

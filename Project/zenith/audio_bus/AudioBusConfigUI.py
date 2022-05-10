@@ -50,6 +50,11 @@ class AudioBusConfigUI(QDialog):
         main_config.addWidget(self.grade_path_button, 1, 2)
         main_config.addWidget(self.result_path_button, 2, 2)
 
+        # disble component
+        comport_label.setDisabled(True)
+        self.comport_combobox.setDisabled(True)
+        self.comport_connect_button.setDisabled(True)
+
         main_config_box.setLayout(main_config)
 
         # Result

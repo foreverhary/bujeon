@@ -2,7 +2,8 @@ import configparser
 import os
 
 from process_package.defined_variable_function import CONFIG_FILE_NAME, POP_SECTION, ORDER_NUMBER, COMPORT_SECTION, \
-    MSSQL_SECTION, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE, AUDIO_BUS_SECTION
+    MSSQL_SECTION, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE, AUDIO_BUS_SECTION, GRADE_FILE_PATH, \
+    SUMMARY_FILE_PATH, A_GRADE_MIN, A_GRADE_MAX, B_GRADE_MIN, B_GRADE_MAX, C_GRADE_MIN, C_GRADE_MAX
 
 
 class Empty:
@@ -78,6 +79,17 @@ class Config:
         config[MSSQL_SECTION][MSSQL_ID] = 'POPDB'
         config[MSSQL_SECTION][MSSQL_PASSWORD] = 'bjpop6981'
         config[MSSQL_SECTION][MSSQL_DATABASE] = 'POP_LIV'
+
+        config.add_section(AUDIO_BUS_SECTION)
+        config[AUDIO_BUS_SECTION][GRADE_FILE_PATH] = 'D:/work/400.test'
+        config[AUDIO_BUS_SECTION][SUMMARY_FILE_PATH] = 'D:/work'
+        config[AUDIO_BUS_SECTION][A_GRADE_MIN] = '123'
+        config[AUDIO_BUS_SECTION][A_GRADE_MAX] = '125'
+        config[AUDIO_BUS_SECTION][B_GRADE_MIN] = '125.1'
+        config[AUDIO_BUS_SECTION][B_GRADE_MAX] = '127'
+        config[AUDIO_BUS_SECTION][C_GRADE_MIN] = '121'
+        config[AUDIO_BUS_SECTION][C_GRADE_MAX] = '122.9'
+
         with open(self.filename, 'w') as configfile:
             config.write(configfile)
 
