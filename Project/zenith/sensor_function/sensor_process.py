@@ -131,7 +131,7 @@ class SensorProcess(SensorUI):
         )
         self.status_update_signal.emit(
             self.status_label,
-            "MACHINE RESULT RECEIVED ➡️ TAG NFC ZIG",
+            "MACHINE RESULT RECEIVED ➡️ TAG NFC",
             LIGHT_SKY_BLUE)
 
     @pyqtSlot(object)

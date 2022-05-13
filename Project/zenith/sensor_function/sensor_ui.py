@@ -67,14 +67,15 @@ class SensorChannelLayout(QGroupBox):
         comportLayout.addWidget(self.connectButton)
         comportLayout.addWidget(self.serialComboBox)
 
-        dm_label = CustomLabel(f"CH{channel} DM")
+        dm_label = CustomLabel("DM")
         self.dmInput = CustomLabel('')
         layout.addWidget(dm_label)
         layout.addWidget(self.dmInput)
 
-        result_label = CustomLabel(f"CH{channel} RESULT")
+        result_label = CustomLabel("RESULT")
         self.resultInput = CustomLabel('')
         self.resultInput.setFixedHeight(350)
+        self.resultInput.set_text_property(size=80)
 
         layout.addWidget(result_label)
         layout.addWidget(self.resultInput)

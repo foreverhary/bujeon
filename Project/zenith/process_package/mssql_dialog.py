@@ -1,5 +1,6 @@
 import sys
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
 
 from process_package.Config import set_config_mssql, get_config_mssql
@@ -18,6 +19,8 @@ class MSSQLDialog(MSSQLDialogUI):
         # button event connect
         self.saveButton.clicked.connect(self.save_button_clicked)
         self.cancelButton.clicked.connect(self.cancel_button_clicked)
+
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
     def save_button_clicked(self):
         set_config_mssql(MSSQL_IP, self.ip_line_edit.text())

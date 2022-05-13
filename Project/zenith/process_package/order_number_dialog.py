@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QApplication
 
 from process_package.Config import set_order_number
@@ -18,6 +18,7 @@ class OderNumberDialog(OrderNumberDialogUI):
         self.df = None
 
         self.connect_event()
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
     def connect_event(self):
         # button event connect

@@ -10,8 +10,8 @@ from process_package.LineReadKeyboard import LineReadKeyboard
 from process_package.SplashScreen import SplashScreen
 from process_package.check_string import check_dm
 from process_package.defined_variable_function import BLUE, RED, style_sheet_setting, window_center, logger, WHITE, NFC, \
-    FREQ, DUR
-from process_package.mssql_connect import insert_pprh
+    FREQ, DUR, OK, LIGHT_SKY_BLUE
+from process_package.mssql_connect import insert_pprh, select_result_with_dm_keyword
 from process_package.mssql_dialog import MSSQLDialog
 from process_package.order_number_dialog import OderNumberDialog
 from qr_nfc_write.QRNFCWriterUI import QRNFCWriterUI
@@ -101,8 +101,16 @@ class QRNFCWriter(QRNFCWriterUI):
     def key_enter_process(self, line_data):
         if dm := check_dm(line_data):
             self.dm_label.setText(dm)
-            insert_pprh(get_order_number(), dm)
-            self.start_nfc_read()
+            if touch_result := select_result_with_dm_keyword(dm, 'touch'):
+                if touch_result[0] == OK:
+                    self.preprocess_label.set_text_property(color=LIGHT_SKY_BLUE)
+                    self.preprocess_label.setText("PREPROCESS OK")
+                else:
+                    self.preprocess_label.set_text_property(color=RED)
+                    self.preprocess_label.setText("PREPROCESS NG")
+            else:
+                self.preprocess_label.set_text_property(color=RED)
+                self.preprocess_label.setText("DM IS NOT REGISTERED\nOR\nNETWORK FAIL!!")
 
     def start_nfc_read(self):
         if self.nfc:
@@ -111,7 +119,8 @@ class QRNFCWriter(QRNFCWriterUI):
 
     def input_order_number(self):
         try:
-            self.order_label.setText(get_order_number())
+            # self.order_label.setText(get_order_number())
+            pass
         except KeyError:
             logger.error('Need Config')
 

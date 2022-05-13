@@ -65,6 +65,37 @@ def insert_pprh(*args):
         logger.error(f"{type(e)}: {e}")
 
 
+def select_touch_result_from_pprd(dm):
+    conn, cursor = get_mssql_conn()
+    sql = f"select * from PPRD where DM = {dm}"
+    cursor.execute(sql)
+    return cursor.f
+
+
+def select_aplzl_with_order_keyword(order, keyword):
+    conn, cursor = get_mssql_conn()
+    sql = f"select APLZL from AUFK where AUFNR = '{order}' and LTXA1 like '%{keyword}%'"
+    cursor.execute(sql)
+    return cursor.fetchone()
+
+
+def select_result_with_dm_keyword(dm, keyword):
+    try:
+        conn, cursor = get_mssql_conn()
+        sql = f"""
+            select top 1 C.RESULT from PPRH as A
+            left join AUFK as B on A.AUFNR = B.AUFNR
+            left join PPRD as C on A.DM = C.DM and B.APLZL = C.APLZL
+            where A.DM = '{dm}' and B.LTXA1 like '%{keyword}%' order by C.ITIME desc
+        """
+        cursor.execute(sql)
+        return cursor.fetchone()
+    except pymssql._pymssql.OperationalError as e:
+        pass
+    except Exception as e:
+        logger.error(f"{type(e)}:{e}")
+
+
 def select_order_number_with_date_material_model(date,
                                                  order_keyword='',
                                                  material_keyword='',
