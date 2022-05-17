@@ -1,50 +1,86 @@
+import os
+
 import pandas as pd
 import pymssql
-from pymssql import _mssql, _pymssql, ProgrammingError
+from PyQt5.QtCore import QObject, pyqtSignal
+from pymssql import _mssql, _pymssql
+from pymssql._pymssql import OperationalError, ProgrammingError, InterfaceError, IntegrityError
 import uuid
 import decimal
 
 # mssql server
 from process_package.Config import get_config_mssql
 from process_package.defined_variable_function import MSSQL_IP, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE, MSSQL_PORT, \
-    logger, NULL
+    logger, NULL, get_time
 
 
-def get_mssql_conn():
-    conn = pymssql.connect(server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
-                           user=get_config_mssql(MSSQL_ID),
-                           password=get_config_mssql(MSSQL_PASSWORD),
-                           database=get_config_mssql(MSSQL_DATABASE),
-                           autocommit=True,
-                           login_timeout=1,
-                           timeout=1)
-    return conn, conn.cursor()
+class Signal(QObject):
+    pre_process_result_signal = pyqtSignal(str)
 
 
-def select_order_process_with_dm(dm, keyword):
-    conn, cursor = get_mssql_conn()
-    sql = f"SELECT A.AUFNR, B.APLZL " \
-          f"FROM PPRH as A " \
-          f"LEFT JOIN AUFK as B on A.AUFNR = B.AUFNR " \
-          f"WHERE DM = '{dm}' and LTXA1 like '%{keyword}%'"
-    cursor.execute(sql)
-    return cursor.fetchone()
+class MSSQL:
+    def __init__(self, keyword=''):
+        super(MSSQL, self).__init__()
+        self.keyword = keyword
+        self.signal = Signal()
+        self.con, self.cur = None, None
+        self.aufnr = ''
+        self.aplzl = ''
 
+    def set_aplzl(self):
+        if self.aufnr and self.keyword:
+            sql = f"""
+                    SELECT 
+                        APLZL 
+                    FROM 
+                        AUFK 
+                    WHERE 
+                        AUFNR = {self.aufnr} and 
+                        LTXA1 LIKE '%{self.keyword}%'
+                """
+            self.cur.execute(sql)
+            if fetch := self.cur.fetchone():
+                self.aplzl = fetch[0]
 
-def insert_pprd(dm=None, result=None, keyword=None, pcode='', ecode=''):
-    aufnr, aplzl = select_order_process_with_dm(dm, keyword)
-    conn, cursor = get_mssql_conn()
-    sql = f"INSERT INTO PPRD (DM, AUFNR, APLZL, ITIME, RESULT, PCODE, ECODE) " \
-          f"values('{dm}', '{aufnr}', '{aplzl}', GETDATE(), '{result}', '{pcode or NULL}', '{ecode or NULL}')"
-    cursor.execute(sql)
-    conn.commit()
+    def set_aufnr_with_dm(self, dm):
+        sql = f"SELECT AUFNR FROM PPRH WHERE DM = '{dm}'"
+        self.cur.execute(sql)
+        if fetch := self.cur.fetchone():
+            if fetch[0] != self.aufnr:
+                self.aufnr = fetch[0]
+            return True
 
+    def insert_pprd(self, itime, dm=None, result=None, pcode='', ecode=''):
+        if not self.set_aufnr_with_dm(dm):
+            raise TypeError
+        self.set_aplzl()
+        sql = f"""
+            INSERT INTO PPRD 
+            (
+                DM, 
+                AUFNR, 
+                APLZL, 
+                ITIME, 
+                RESULT, 
+                PCODE, 
+                ECODE
+            )
+            values
+            (
+                '{dm}', 
+                '{self.aufnr}', 
+                '{self.aplzl}', 
+                '{itime}', 
+                '{result}', 
+                '{pcode or NULL}', 
+                '{ecode or NULL}')
+            """
+        self.cur.execute(sql)
+        self.con.commit()
+        return True
 
-def insert_pprh(*args):
-    order, dm = args
-    try:
-        conn, cursor = get_mssql_conn()
-        cursor.execute(f"""
+    def insert_pprh(self, itime, order, dm):
+        self.cur.execute(f"""
             IF EXISTS(
                 SELECT DM from PPRH
                 where DM = '{dm}'
@@ -55,52 +91,103 @@ def insert_pprh(*args):
             ELSE
                 BEGIN
                 INSERT INTO PPRH (DM, AUFNR, ITIME)
-                VALUES ('{dm}', '{order}', GETDATE())
+                VALUES ('{dm}', '{order}', '{itime}')
                 END
             """)
-        conn.commit()
-    except ProgrammingError as e:
-        pass
-    except Exception as e:
-        logger.error(f"{type(e)}: {e}")
+        self.con.commit()
+        return True
 
+    def select_aplzl_with_order_keyword(self):
+        sql = f"select APLZL from AUFK where AUFNR = '{self.aufnr}' and LTXA1 like '%{self.keyword}%'"
+        self.cur.execute(sql)
+        if fetch := self.cur.fetchone():
+            return fetch[0]
 
-def select_touch_result_from_pprd(dm):
-    conn, cursor = get_mssql_conn()
-    sql = f"select * from PPRD where DM = {dm}"
-    cursor.execute(sql)
-    return cursor.f
-
-
-def select_aplzl_with_order_keyword(order, keyword):
-    conn, cursor = get_mssql_conn()
-    sql = f"select APLZL from AUFK where AUFNR = '{order}' and LTXA1 like '%{keyword}%'"
-    cursor.execute(sql)
-    return cursor.fetchone()
-
-
-def select_result_with_dm_keyword(dm, keyword):
-    try:
-        conn, cursor = get_mssql_conn()
+    def select_result_with_dm_keyword(self, dm, keyword):
         sql = f"""
             select top 1 C.RESULT from PPRH as A
             left join AUFK as B on A.AUFNR = B.AUFNR
             left join PPRD as C on A.DM = C.DM and B.APLZL = C.APLZL
             where A.DM = '{dm}' and B.LTXA1 like '%{keyword}%' order by C.ITIME desc
         """
-        cursor.execute(sql)
-        return cursor.fetchone()
-    except pymssql._pymssql.OperationalError as e:
-        pass
-    except Exception as e:
-        logger.error(f"{type(e)}:{e}")
+        self.cur.execute(sql)
+        if fetch := self.cur.fetchone():
+            self.signal.pre_process_result_signal.emit(fetch[0])
+        else:
+            self.signal.pre_process_result_signal.emit('')
+
+    def get_process_error_code(self, process):
+        sql = f"SELECT NGNU, NGNM FROM PNGC WHERE PCODE = '{process}'"
+        return pd.read_sql(sql, self.con)
+
+    def get_process_error_code_dict(self, process):
+        return {row[1][1]: row[1][0] for row in self.get_process_error_code(process).iterrows()}
+
+    def get_mssql_conn(self):
+        logger.debug("get_mssql_conn start")
+        self.con = pymssql.connect(
+            server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
+            user=get_config_mssql(MSSQL_ID),
+            password=get_config_mssql(MSSQL_PASSWORD),
+            database=get_config_mssql(MSSQL_DATABASE),
+            autocommit=True,
+            login_timeout=0,
+            timeout=0,
+        )
+        logger.debug("get_mssql_conn end")
+        self.cur = self.con.cursor()
+
+    def get_time(self):
+        sql = "SELECT GETDATE()"
+        self.cur.execute(sql)
+
+    def __call__(self, func, *args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except (OperationalError,
+                IntegrityError,
+                InterfaceError,
+                TypeError,
+                AttributeError) as e:
+            logger.error(f"{type(e)} : {e}")
+            logger.error(f"{func.__name__} Need to Save!!")
+            if "insert" in func.__name__:
+                self.save_query_db_fail(func, *args)
+            self.con = None
+            return False
+        except Exception as e:
+            logger.error(f"{type(e)} : {e}")
+            logger.error(f"{func.__name__} To Do error proces")
+
+    def save_query_db_fail(self, func, *args):
+        if "pprh" in func.__name__:
+            table = "PPRH"
+        if "pprd" in func.__name__:
+            table = "PPRD"
+
+        if not os.path.isdir('./log'):
+            os.mkdir('log')
+        with open("./log/save_db.log", 'a') as f:
+            merge_args = [table] + list(args) + ['0\n']
+            f.write("\t".join(merge_args))
+
+def get_mssql_conn():
+    return pymssql.connect(
+        server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
+        user=get_config_mssql(MSSQL_ID),
+        password=get_config_mssql(MSSQL_PASSWORD),
+        database=get_config_mssql(MSSQL_DATABASE),
+        autocommit=True,
+        login_timeout=0.5,
+        timeout=3,
+    )
 
 
 def select_order_number_with_date_material_model(date,
                                                  order_keyword='',
                                                  material_keyword='',
                                                  model_keyword=''):
-    conn, cursor = get_mssql_conn()
+    conn = get_mssql_conn()
     sql = f"""
         select A.AUFNR as order_number, A.GSTRP as date, 
                 B.APLZL as process_number, B.KTSCH as process_code, B.LTXA1 as process_name, 
@@ -117,15 +204,7 @@ def select_order_number_with_date_material_model(date,
     return pd.read_sql(sql, conn)
 
 
-def get_process_error_code(process):
-    conn, cursor = get_mssql_conn()
-    sql = f"SELECT NGNU, NGNM FROM PNGC WHERE PCODE = '{process}'"
-    return pd.read_sql(sql, conn)
-
-
-def get_process_error_code_dict(process):
-    return {row[1][1]: row[1][0] for row in get_process_error_code(process).iterrows()}
-
-
 if __name__ == '__main__':
-    insert_pprd(dm='AA1100001', result='NG', keyword='AUD', pcode='FUNCTION', ecode='1,2')
+    mssql = MSSQL('touch')
+    # print(mssql(mssql.select_order_with_dm, 'AA1100001'))
+    print(mssql(mssql.insert_pprd, get_time(), 'AQ1100001', 'OK'))

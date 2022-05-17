@@ -30,7 +30,7 @@ class OderNumberDialog(OrderNumberDialogUI):
         self.orderNumberComboBox.currentIndexChanged.connect(self.order_number_changed)
 
     def save_button_clicked(self):
-        set_order_number(self.orderNumberComboBox.currentText())
+        set_order_number(self.orderNumberEdit.text())
         self.orderNumberSendSignal.emit()
         self.close()
 
@@ -56,6 +56,7 @@ class OderNumberDialog(OrderNumberDialogUI):
 
     def order_number_changed(self):
         order_number = self.orderNumberComboBox.currentText()
+        self.orderNumberEdit.setText(order_number)
         try:
             self.material.setText(self.df[self.df.order_number == order_number].material_code.iloc[0])
             self.model.setText(self.df[self.df.order_number == order_number].model_name.iloc[0])

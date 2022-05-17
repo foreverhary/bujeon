@@ -10,8 +10,8 @@ from PyQt5.QtWidgets import QApplication
 from airleak.nfc_ksd.AirLeakAutomationUi import AirLeakAutomationUi, AIR_LEAK_NFC_COUNT
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
-    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, LEAK, AIR_LEAK_PREPROCESS, FREQ, DUR
-from process_package.mssql_connect import insert_pprd
+    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, LEAK, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time
+from process_package.mssql_connect import insert_pprd, MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
 
@@ -21,6 +21,8 @@ class AirLeakAutomation(AirLeakAutomationUi):
     def __init__(self, app):
         super(AirLeakAutomation, self).__init__()
         self.app = app
+
+        self.mssql = MSSQL()
 
         # variable
         self.nfc = {}
@@ -115,14 +117,17 @@ class AirLeakAutomation(AirLeakAutomationUi):
     @pyqtSlot(str, str)
     def status_update(self, msg, color):
         self.status_label.setText(msg)
-        self.status_label.set_text_property(color=color)
+        self.status_label.set_color(color)
 
     def mousePressEvent(self, event):
         if event.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
 
     def update_sql(self, slot):
-        insert_pprd(self.slots[slot].dm, self.slots[slot].result, LEAK)
+        self.mssql(self.mssql.insert_pprd,
+                   get_time(),
+                   self.slots[slot].dm,
+                   self.slots[slot].result)
 
     def closeEvent(self, event):
         pass

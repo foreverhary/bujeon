@@ -19,24 +19,18 @@ def keyboard_event_check_char(char):
 
 # NFC UID 확인
 def check_nfc_uid(string):
-    if return_value := re.search('UID: ' + '0x[0-9A-F]{2} ?' * 7, string):
-        return return_value.group(0)
-    elif return_value := re.search('UID: ' + '0x[0-9A-F]{2} ?' * 4, string):
-        return return_value.group(0)
+    if re.match('UID: ' + '0x[0-9A-F]{2} ?' * 7, string) \
+            or re.match('UID: ' + '0x[0-9A-F]{2} ?' * 4, string):
+        return string
     return ''
 
 
 # DM 값 체크
 def check_dm(string):
-    # 14 자리 DM
-    if return_value := re.search('[A-Z]{2}[0-9][A-Z][0-9]{10}', string):
-        return return_value.group(0)
-    # 8 자리 DM
-    elif return_value := re.search('[VG][A-Z][1-9][0-9A-Z]{5}', string):
-        return return_value.group(0)
-    # 9 자리 DM
-    elif return_value := re.search('[VGAB][A-Z][1-9][1-9][0-9A-Z]{5}', string):
-        return return_value.group(0)
+    if re.match('[A-Z]{2}[0-9][A-Z][0-9]{10}$', string) \
+            or re.match('[VG][A-Z][1-9][0-9A-Z]{5}$', string) \
+            or re.match('[VGAB][A-Z][1-9][1-9][0-9A-Z]{5}$', string):
+        return string
     return ''
 
 

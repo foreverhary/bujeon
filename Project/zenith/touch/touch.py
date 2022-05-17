@@ -1,13 +1,19 @@
+import os
 import sys
 from threading import Thread
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QTimer
 from PyQt5.QtWidgets import QApplication
 
-from process_package.Config import get_order_number
+from process_package.Config import get_order_number, get_config_value, set_config_value
 from process_package.LineReadKeyboard import LineReadKeyboard
+from process_package.SerialMachine import SerialMachine
 from process_package.check_string import check_dm
-from process_package.defined_variable_function import style_sheet_setting, window_center, logger, WHITE
+from process_package.db_update_from_file import UpdateDB
+from process_package.defined_variable_function import style_sheet_setting, window_center, logger, WHITE, \
+    CONFIG_FILE_NAME, COMPORT_SECTION, AIR_LEAK_ATECH, LIGHT_SKY_BLUE, RED, NG, MACHINE_COMPORT_1, TOUCH, \
+    SAVE_DB_FILE_NAME, get_time
+from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from process_package.order_number_dialog import OderNumberDialog
 from touchUI import TouchUI
@@ -26,9 +32,20 @@ class Touch(TouchUI):
         self.order_config_window = OderNumberDialog()
         self.mssql_config_window = MSSQLDialog()
 
+        self.serial_machine = SerialMachine(baudrate=9600, serial_name=AIR_LEAK_ATECH)
         self.connect_event()
+        self.mssql = MSSQL(TOUCH)
+        Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
+        self.db_connect_timer = QTimer(self)
+        self.db_connect_timer.start(60000)
+        self.db_connect_timer.timeout.connect(self.check_connect_db)
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(60000)
+        self.db_update_timer.timeout.connect(self.update_db)
 
         self.show_main_window()
+        self.input_order_number()
 
     def start_keyboard_listener(self):
         self.keyboard_listener = Thread(target=self.listen_keyboard, args=(LineReadKeyboard,), daemon=True)
@@ -42,37 +59,107 @@ class Touch(TouchUI):
     def connect_event(self):
         self.key_enter_input_signal.connect(self.key_enter_process)
         self.order_config_window.orderNumberSendSignal.connect(self.input_order_number)
+        self.connect_button.clicked.connect(self.connect_machine_button)
+        self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
+        self.connect_machine_button(1)
 
     def key_enter_process(self, line_data):
         if dm := check_dm(line_data):
             self.dm_label.setText(dm)
-            # insert_pprh(get_order_number(), dm)
-            # self.start_nfc_read()
+            Thread(target=self.threading_mssql, args=(self.mssql.insert_pprh,
+                                                      get_time(),
+                                                      get_order_number(),
+                                                      dm)).start()
+            self.machine_label.clear()
+            self.update_status_msg("Wait for Machine Result", WHITE)
 
-    def input_order_number(self):
-        try:
-            self.order_label.setText(get_order_number())
-        except KeyError:
-            logger.error('Need Config')
+    def threading_mssql(self, *args):
+        self.mssql(*args)
+
+    def check_connect_db(self):
+        if self.mssql.con:
+            Thread(target=self.threading_mssql, args=(self.mssql.get_time,)).start()
+        else:
+            Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
+
+    def update_db(self):
+        logger.debug('update_db')
+        self.update_instance = UpdateDB(self.mssql)
+
+    @pyqtSlot(list)
+    def receive_machine_result(self, result):
+        logger.info(result)
+        self.result = result[0]
+        self.machine_label.setText(self.result)
+        self.machine_label.set_color((LIGHT_SKY_BLUE, RED)[self.result == NG])
+        if self.order_label.text() and self.dm_label.text():
+            Thread(target=self.threading_mssql,
+                   args=(self.mssql.insert_pprd,
+                         get_time(),
+                         self.dm_label.text(),
+                         self.result)).start()
+            self.update_status_msg("WRITE DONE SCAN NEXT QR", LIGHT_SKY_BLUE)
+
+    def connect_machine_button(self, not_key=None):
+        if not_key:
+            button = self.connect_button
+            self.comport_combobox.setCurrentText(
+                get_config_value(
+                    CONFIG_FILE_NAME,
+                    COMPORT_SECTION,
+                    MACHINE_COMPORT_1
+                )
+            )
+        else:
+            button = self.sender()
+
+        if self.serial_machine.connect_with_button_color(self.comport_combobox.currentText(), button):
+            set_config_value(
+                CONFIG_FILE_NAME,
+                COMPORT_SECTION,
+                MACHINE_COMPORT_1,
+                self.serial_machine.port
+            )
+            self.serial_machine.start_machine_read()
 
     def mousePressEvent(self, e):
         if e.buttons() & Qt.RightButton:
+            if order := self.order_label.text():
+                self.order_config_window.orderNumberEdit.setText(order)
             self.order_config_window.show_modal()
         if e.buttons() & Qt.MidButton:
             self.mssql_config_window.show_modal()
 
     def show_main_window(self):
         style_sheet_setting(self.app)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        # self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.show()
         window_center(self)
+
+    def input_order_number(self):
+        try:
+            self.order_label.setText(order := get_order_number())
+            if order:
+                if order != self.mssql.aufnr:
+                    self.mssql.aufnr = order
+                    Thread(target=self.threading_mssql, args=(self.mssql.set_aplzl,)).start()
+                self.update_status_msg("READY", LIGHT_SKY_BLUE)
+            else:
+                self.update_status_msg("Check Order Number", RED)
+        except KeyError:
+            logger.error('Need Config')
 
     def update_status_msg(self, msg, color=WHITE):
         if self.order_label.text():
             self.status_label.setText(msg)
-            self.status_label.set_text_property(color=color)
+            self.status_label.set_color(color)
+        else:
+            self.status_label.setText("Check Order Number")
+            self.status_label.set_color(RED)
+
 
 if __name__ == '__main__':
+    logger.info("start touch process")
     app = QApplication(sys.argv)
     ex = Touch(app)
     sys.exit(app.exec_())

@@ -27,10 +27,10 @@ class ReleaseProcess(ReleaseProcessUI):
         self.load_window.close()
         self.init_event()
         if self.init_nfc_serial(nfcs):
-            self.status_label.set_text_property(color=LIGHT_SKY_BLUE)
+            self.status_label.set_color(LIGHT_SKY_BLUE)
             self.status_label.setText('NFC READY')
         else:
-            self.status_label.set_text_property(color=RED)
+            self.status_label.set_color(RED)
             self.status_label.setText('CHECK NFC AND RESTART PROGRAM')
         style_sheet_setting(self.app)
 
@@ -63,14 +63,14 @@ class ReleaseProcess(ReleaseProcessUI):
         msg = ''
         if nfc.check_pre_process():
             msg += nfc.nfc_previous_process[FUNCTION_PROCESS]
-            self.result_input_label.set_text_property(color=LIGHT_SKY_BLUE)
+            self.result_input_label.set_color(LIGHT_SKY_BLUE)
         else:
             for process, result in nfc.nfc_previous_process.items():
                 if result not in PROCESS_OK_RESULTS:
                     if msg:
                         msg += '\n'
                     msg += f"{process} : {result}"
-            self.result_input_label.set_text_property(color=RED)
+            self.result_input_label.set_color(RED)
         self.dm_input_label.setText(nfc.dm)
         self.result_input_label.setText(msg or NG)
 

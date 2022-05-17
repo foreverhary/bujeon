@@ -5,13 +5,13 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from serial import Serial, SerialException
 
 from process_package.check_string import check_nfc_uid, check_dm
-from process_package.defined_variable_function import SENSOR_PREPROCESS, logger, LIGHT_SKY_BLUE, RED, NFC, \
+from process_package.defined_variable_function import SENSOR_PREPROCESS, logger, NFC, \
     PROCESS_RESULTS, PROCESS_NAMES, PROCESS_OK_RESULTS
 
 
 class SerialNFCSignal(QObject):
     previous_process_signal = pyqtSignal(object)
-    qr_write_done_signal = pyqtSignal(str, str)
+    qr_write_done_signal = pyqtSignal()
     nfc_write_done_signal = pyqtSignal(object)
     serial_error_signal = pyqtSignal(str)
     dm_read_done_signal = pyqtSignal(object)
@@ -161,8 +161,8 @@ class SerialNFC(Serial):
     def read_nfc_valid(self):
         try:
             nfc_serial_input = self.readline().decode().replace('\r\n', '')
-            self.uid, *self.dm = nfc_serial_input.split(',')
             logger.debug(nfc_serial_input)
+            self.uid, *self.dm = nfc_serial_input.split(',')
         except Exception as e:
             logger.error(f"{type(e)} : {e}")
             self.uid, self.dm = '', ''
@@ -192,7 +192,7 @@ class SerialNFC(Serial):
                 self.read_nfc_valid()
                 # self.read_nfc_valid()
             self.write_dm = None
-            self.signal.qr_write_done_signal.emit("WRITE DONE, TRY NEXT QR SCAN", LIGHT_SKY_BLUE)
+            self.signal.qr_write_done_signal.emit()
         except Exception as e:
             logger.error(f"{type(e)} : {e}")
             self.signal.serial_error_signal.emit("ERROR NFC PLEASE RESTART PROGRAM")
@@ -265,14 +265,6 @@ class SerialNFC(Serial):
             logger.error(f"{type(e)} : {e}")
             return False
         return True
-
-    def is_valid_input_with_message(self, split_data):
-        if return_value := self.is_valid_input(split_data):
-            return return_value
-        self.signal.previous_process_signal.emit(
-            (self.serial_name, "NFC TAG is not Normal", RED)
-        )
-        return return_value
 
     def split_uid_dm(self, split_data):
         try:

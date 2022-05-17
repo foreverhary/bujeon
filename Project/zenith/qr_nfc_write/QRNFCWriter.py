@@ -2,16 +2,15 @@ import sys
 from threading import Thread
 from winsound import Beep
 
-from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QTimer
 from PyQt5.QtWidgets import QApplication
 
-from process_package.Config import get_order_number
 from process_package.LineReadKeyboard import LineReadKeyboard
 from process_package.SplashScreen import SplashScreen
 from process_package.check_string import check_dm
 from process_package.defined_variable_function import BLUE, RED, style_sheet_setting, window_center, logger, WHITE, NFC, \
-    FREQ, DUR, OK, LIGHT_SKY_BLUE
-from process_package.mssql_connect import insert_pprh, select_result_with_dm_keyword
+    FREQ, DUR, OK, LIGHT_SKY_BLUE, TOUCH
+from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from process_package.order_number_dialog import OderNumberDialog
 from qr_nfc_write.QRNFCWriterUI import QRNFCWriterUI
@@ -36,6 +35,12 @@ class QRNFCWriter(QRNFCWriterUI):
 
         # connect event
         self.connect_event()
+        self.mssql = MSSQL()
+        self.mssql.signal.pre_process_result_signal.connect(self.received_preproess_result)
+        Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
+        self.db_connect_timer = QTimer(self)
+        self.db_connect_timer.start(10000)
+        self.db_connect_timer.timeout.connect(self.check_connect_db)
 
         self.input_order_number()
 
@@ -84,33 +89,47 @@ class QRNFCWriter(QRNFCWriterUI):
     def receive_serial_error(self, msg):
         self.status_update_signal.emit(self.status_label, msg, RED)
 
-    def received_qr_write(self, msg, color):
+    def received_qr_write(self):
         Beep(FREQ, DUR)
-        self.status_update(msg, color)
+        self.status_update("WRITE DONE, TRY NEXT QR SCAN", LIGHT_SKY_BLUE)
 
     def status_update(self, msg, color):
         self.status_label.setText(msg)
-        self.status_label.set_text_property(color=color)
+        self.status_label.set_color(color)
 
     def mousePressEvent(self, e):
         if e.buttons() & Qt.RightButton:
-            self.order_config_window.show_modal()
-        if e.buttons() & Qt.MidButton:
             self.mssql_config_window.show_modal()
 
     def key_enter_process(self, line_data):
         if dm := check_dm(line_data):
             self.dm_label.setText(dm)
-            if touch_result := select_result_with_dm_keyword(dm, 'touch'):
-                if touch_result[0] == OK:
-                    self.preprocess_label.set_text_property(color=LIGHT_SKY_BLUE)
-                    self.preprocess_label.setText("PREPROCESS OK")
-                else:
-                    self.preprocess_label.set_text_property(color=RED)
-                    self.preprocess_label.setText("PREPROCESS NG")
-            else:
-                self.preprocess_label.set_text_property(color=RED)
-                self.preprocess_label.setText("DM IS NOT REGISTERED\nOR\nNETWORK FAIL!!")
+            self.preprocess_label.clear()
+            if self.mssql.con:
+                Thread(target=self.threading_mssql, args=(self.mssql.select_result_with_dm_keyword, dm, TOUCH)).start()
+            else:  # Fake
+                self.preprocess_label.set_color(LIGHT_SKY_BLUE)
+                self.preprocess_label.setText("PREPROCESS OK")
+                self.start_nfc_read()
+
+    def check_connect_db(self):
+        if self.mssql.con:
+            Thread(target=self.threading_mssql, args=(self.mssql.get_time,)).start()
+        else:
+            Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
+
+    def threading_mssql(self, *args):
+        self.mssql(*args)
+
+    def received_preproess_result(self, preprocess_result):
+        if not preprocess_result or preprocess_result == OK:
+            self.preprocess_label.set_color(LIGHT_SKY_BLUE)
+            self.preprocess_label.setText("PREPROCESS OK")
+            self.start_nfc_read()
+        else:
+            self.preprocess_label.set_color(RED)
+            self.preprocess_label.setText("PREPROCESS NG")
+            self.status_update("TRY NEXT QR SCAN", BLUE)
 
     def start_nfc_read(self):
         if self.nfc:

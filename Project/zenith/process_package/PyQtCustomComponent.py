@@ -1,7 +1,8 @@
+from PyQt5.QtCore import Qt, QDate, QTimer
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit
-from PyQt5.QtCore import Qt, QDate
 
-from process_package.defined_variable_function import DEFAULT_FONT_SIZE
+from process_package.defined_variable_function import DEFAULT_FONT_SIZE, WHITE, RED
+from test_programs.defined_string import YELLOW
 
 
 class Button(QPushButton):
@@ -54,18 +55,32 @@ class Label(QLabel):
     def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE):
         super(Label, self).__init__(txt)
         self.fontSize = font_size
+        self.color = WHITE
+        self.timer_color = QTimer(self)
+        self.timer_color.start(100)
+        self.timer_color.timeout.connect(self.change_color_in_msec)
         self.setAlignment(Qt.AlignCenter)
         self.setStyleSheet('font-weight: bold;'
                            f'font-size: {self.fontSize}px;')
+        self.change_color_in_msec()
 
     def keyPressEvent(self, event):
         pass
 
-    def set_text_property(self, size=None, color='white'):
+    def set_text_property(self, size=None, color=WHITE):
         self.fontSize = size or self.fontSize
         self.setStyleSheet('font-weight: bold;'
                            f'font-size: {self.fontSize}px;'
                            f'color: {color}')
+
+    def change_color_in_msec(self):
+        if self.color in (RED, YELLOW):
+            self.color = RED if self.color == YELLOW else YELLOW
+            self.set_text_property(color=self.color)
+
+    def set_color(self, color):
+        self.color = color
+        self.set_text_property(color=self.color)
 
 
 class LeftAlignLabel(Label):

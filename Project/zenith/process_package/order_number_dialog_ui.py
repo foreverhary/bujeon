@@ -60,12 +60,14 @@ class OrderNumberDialogUI(QDialog):
         order_label = LeftAlignLabel('Order Number')
         material_label = LeftAlignLabel('Material Code')
         model_label = LeftAlignLabel('Model Name')
+        order_edit_label = LeftAlignLabel('Order Edit')
 
         # Result Widget
         self.orderNumberComboBox = ComboBox()
         self.orderNumberComboBox.setMinimumWidth(search_args_size)
         self.material = LeftAlignLabel('')
         self.model = LeftAlignLabel('')
+        self.orderNumberEdit = LineEdit()
 
         button_layout = QHBoxLayout()
         self.saveButton = Button('SAVE')
@@ -80,10 +82,12 @@ class OrderNumberDialogUI(QDialog):
         setting_layout.addWidget(order_label, 0, 0)
         setting_layout.addWidget(material_label, 1, 0)
         setting_layout.addWidget(model_label, 2, 0)
+        setting_layout.addWidget(order_edit_label, 3, 0)
         setting_layout.addWidget(self.orderNumberComboBox, 0, 1)
         setting_layout.addWidget(self.material, 1, 1)
         setting_layout.addWidget(self.model, 2, 1)
-        setting_layout.addLayout(button_layout, 3, 0, -1, 2)
+        setting_layout.addWidget(self.orderNumberEdit, 3, 1)
+        setting_layout.addLayout(button_layout, 4, 0, -1, 2)
 
         result_box.setLayout(setting_layout)
 

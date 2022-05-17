@@ -1,3 +1,4 @@
+import time
 from functools import wraps
 from threading import Lock
 
@@ -5,8 +6,8 @@ import qdarkstyle
 from PyQt5.QtGui import QFontDatabase, QFont
 from PyQt5.QtWidgets import QDesktopWidget
 
-from process_package.style.style import STYLE
 from process_package.logger import get_logger
+from process_package.style.style import STYLE
 
 # thread lock
 lock = Lock()
@@ -100,7 +101,11 @@ NFC = 'NFC'
 
 # file name
 CONFIG_FILE_NAME = 'config.ini'
-AIR_LEAK_CONFIG_FILENAME = 'airleak.ini'
+SAVE_DB_FILE_NAME = './log/save_db.log'
+SAVE_DB_RETRY_FILE_NAME = './log/save_db_retry.log'
+
+# touch
+TOUCH = 'TOUCH'
 
 # AIR LEAK
 AIR_LEAK_UNIT_COUNT = 5
@@ -138,6 +143,7 @@ Hall_IC = 'Hall IC'
 FREQ = 2500
 DUR = 200
 
+
 def window_center(window):
     qr = window.frameGeometry()
     cp = QDesktopWidget().availableGeometry().center()
@@ -159,12 +165,23 @@ def window_right(window):
     window.move(qr.topLeft())
 
 
+def window_top_left(window):
+    qr = window.frameGeometry()
+    cp = QDesktopWidget().availableGeometry().topLeft()
+    qr.moveTopLeft(cp)
+    window.move(qr.topLeft())
+
+
 def style_sheet_setting(app):
     app.setStyleSheet(STYLE)
     a = qdarkstyle.load_stylesheet_pyqt5()
     fontDB = QFontDatabase()
     fontDB.addApplicationFont("./font/D2Coding-Ver1.3.2-20180524-all.ttc")
     app.setFont(QFont('D2Coding-Ver1.3.2-20180524-all'))
+
+
+def get_time():
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 
 
 def trace(func):

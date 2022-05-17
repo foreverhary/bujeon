@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox
 from audio_bus.AudioBusConfig import AudioBusConfig
 from process_package.Config import Config
 from process_package.PyQtCustomComponent import Label
+from process_package.defined_variable_function import RED
 from process_package.mssql_dialog import MSSQLDialog
 
 
@@ -41,7 +42,7 @@ class AudioBusUI(QWidget):
 
         self.status_label = Label('')
         self.status_label.setMinimumWidth(600)
-        self.status_label.set_text_property(color='red')
+        self.status_label.set_color(RED)
 
         process_layout = QVBoxLayout()
         process_layout.addWidget(self.status_label)

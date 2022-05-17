@@ -25,7 +25,7 @@ class SendOK(QWidget):
         button.setStyleSheet('font-size: 200px')
 
         self.ser = Serial()
-        self.ser.port = 'com5'
+        self.ser.port = 'com9'
         self.ser.baudrate = 9600
         self.setLayout(layout)
         self.show()

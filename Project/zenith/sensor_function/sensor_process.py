@@ -1,16 +1,18 @@
 import sys
+from threading import Thread
 from winsound import Beep
 
 import pandas
 import pymssql
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QTimer
 from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
+from process_package.db_update_from_file import UpdateDB
 from process_package.defined_variable_function import style_sheet_setting, NFC_IN, SENSOR_PREPROCESS, \
     NFC, BLUE, RED, logger, LIGHT_SKY_BLUE, FREQ, DUR, window_right, CON_OS, POGO_OS, VBAT_ID, C_TEST, LED, PCM, \
-    PROX_TEST, BATTERY, MIC, Hall_IC, SENSOR, OK, AUD, SENSOR_PROCESS, WHITE
-from process_package.mssql_connect import get_process_error_code_dict, insert_pprd
+    PROX_TEST, BATTERY, MIC, Hall_IC, SENSOR, OK, SENSOR_PROCESS, WHITE, get_time
+from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from sensor_ui import SensorUI, NFC_IN_COUNT, NFC_OUT_COUNT
 
@@ -35,13 +37,17 @@ class SensorProcess(SensorUI):
         super(SensorProcess, self).__init__()
         self.app = app
 
+        self.mssql = MSSQL(SENSOR)
+        Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
+        self.db_connect_timer = QTimer(self)
+        self.db_connect_timer.start(60000)
+        self.db_connect_timer.timeout.connect(self.check_connect_db)
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(60000)
+        self.db_update_timer.timeout.connect(self.update_db)
         # variable
         self.nfc = {}
-
-        try:
-            self.error_code = get_process_error_code_dict(SENSOR)
-        except (pymssql.OperationalError, pandas.io.sql.DatabaseError):
-            pass
 
         self.result = {name: True for name in self.error_code}
 
@@ -98,6 +104,19 @@ class SensorProcess(SensorUI):
     def connect_event(self):
         self.status_update_signal.connect(self.update_label)
 
+    def threading_mssql(self, *args):
+        self.mssql(*args)
+
+    def check_connect_db(self):
+        if self.mssql.con:
+            Thread(target=self.threading_mssql, args=(self.mssql.get_time,)).start()
+        else:
+            Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
+
+    def update_db(self):
+        logger.debug('update_db')
+        self.update_instance = UpdateDB(self.mssql)
+
     @pyqtSlot(object)
     def received_previous_process(self, nfc):
         Beep(FREQ, DUR)
@@ -120,34 +139,38 @@ class SensorProcess(SensorUI):
         if result[-1] != OK:
             for item, key in zip(result[1:-1], self.result):
                 self.result[key] = item == OK
-        self.nfc[f"{NFC}1"].start_nfc_write(
-            unit_count=1,
-            process_result=f"{SENSOR_PROCESS}:{result[-1]}"
-        )
-        self.status_update_signal.emit(
-            self.ch_frame[0].resultInput,
-            result[-1],
-            LIGHT_SKY_BLUE if result[-1] == OK else RED
-        )
-        self.status_update_signal.emit(
-            self.status_label,
-            "MACHINE RESULT RECEIVED ➡️ TAG NFC",
-            LIGHT_SKY_BLUE)
+        if self.nfc.get(f"{NFC}1"):
+            self.nfc[f"{NFC}1"].start_nfc_write(
+                unit_count=1,
+                process_result=f"{SENSOR_PROCESS}:{result[-1]}"
+            )
+            self.status_update_signal.emit(
+                self.ch_frame[0].resultInput,
+                result[-1],
+                LIGHT_SKY_BLUE if result[-1] == OK else RED
+            )
+            self.status_update_signal.emit(
+                self.status_label,
+                "MACHINE RESULT RECEIVED ➡️ TAG NFC",
+                LIGHT_SKY_BLUE)
 
     @pyqtSlot(object)
     def update_sql(self, nfc):
-        try:
-            result = nfc.current_process_result.split(':')[1]
-            insert_pprd(dm=nfc.dm, result=result, pcode=SENSOR, ecode=self.get_ecode(), keyword=SENSOR)
-        except Exception as e:
-            logger.error(e)
+        result = nfc.current_process_result.split(':')[1]
+        Thread(target=self.threading_mssql,
+               args=(self.mssql.insert_pprd,
+                     get_time(),
+                     nfc.dm,
+                     result,
+                     SENSOR,
+                     self.get_ecode())).start()
         self.status_update_signal.emit(self.ch_frame[0].dmInput, nfc.dm, WHITE)
         self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", LIGHT_SKY_BLUE)
 
     @pyqtSlot(object, str, str)
     def update_label(self, label, text, color):
         label.setText(text)
-        label.set_text_property(color=color)
+        label.set_color(color)
 
     def get_ecode(self):
         return ','.join([

@@ -1,7 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QGroupBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox
 
-from process_package.PyQtCustomComponent import Label, RightAlignLabel, ComboBox
-from process_package.defined_serial_port import ports
+from process_package.PyQtCustomComponent import Label
 
 
 class QRNFCWriterUI(QWidget):

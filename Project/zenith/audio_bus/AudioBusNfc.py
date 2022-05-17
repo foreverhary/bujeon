@@ -1,22 +1,22 @@
 import os.path
 import sys
+from threading import Thread
 from winsound import Beep
 
-import pandas
 import pandas as pd
-import pymssql
-from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QApplication
 
 from AudioBusUI import AudioBusUI
 from FileObserver import Target
 from process_package.Config import get_config_audio_bus
 from process_package.SplashScreen import SplashScreen
+from process_package.db_update_from_file import UpdateDB
 from process_package.defined_variable_function import style_sheet_setting, window_right, logger, NFC_IN, \
     FUNCTION_PREPROCESS, NFC, LIGHT_SKY_BLUE, RED, GRADE_FILE_PATH, WHITE, SUMMARY_FILE_PATH, A, B, C, C_GRADE_MIN, \
     C_GRADE_MAX, B_GRADE_MAX, A_GRADE_MAX, NG, \
-    FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR
-from process_package.mssql_connect import get_process_error_code_dict, insert_pprd
+    FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR, get_time
+from process_package.mssql_connect import MSSQL
 
 NFC_IN_COUNT = 1
 NFC_OUT_COUNT = 2
@@ -40,15 +40,25 @@ class AudioBus(AudioBusUI):
         super(AudioBus, self).__init__()
         self.app = app
 
+        self.mssql = MSSQL(AUD)
+        Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
+        self.db_connect_timer = QTimer(self)
+        self.db_connect_timer.start(60000)
+        self.db_connect_timer.timeout.connect(self.check_connect_db)
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(6000)
+        self.db_update_timer.timeout.connect(self.update_db)
+
         # variable
         self.nfc = {}
         self.grade = ''
         self.grade_file_observer = Target(signal=self.grade_signal)
         self.summary_file_observer = Target(signal=self.summary_signal)
-        try:
-            self.error_code = get_process_error_code_dict(FUNCTION)
-        except (pymssql.OperationalError, pandas.io.sql.DatabaseError):
-            pass
+        # try:
+        #     self.error_code = self.mssql(self.mssql.get_process_error_code_dict, FUNCTION)
+        # except (pymssql.OperationalError, pandas.io.sql.DatabaseError):
+        #     pass
         self.result = {name: True for name in self.error_code}
         logger.debug(self.result)
 
@@ -95,10 +105,13 @@ class AudioBus(AudioBusUI):
 
     @pyqtSlot(object)
     def update_sql(self, nfc):
-        try:
-            insert_pprd(dm=nfc.dm, result=self.grade, pcode=FUNCTION, ecode=self.get_ecode(), keyword=AUD)
-        except Exception as e:
-            logger.error(e)
+        Thread(target=self.threading_mssql,
+               args=(self.mssql.insert_pprd,
+                     get_time(),
+                     nfc.dm,
+                     self.grade,
+                     FUNCTION,
+                     self.get_ecode())).start()
         self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", LIGHT_SKY_BLUE)
         self.init_result_true()
         for index in range(1, 3):
@@ -160,7 +173,7 @@ class AudioBus(AudioBusUI):
     @pyqtSlot(object, str, str)
     def update_label(self, label, text, color):
         label.setText(text)
-        label.set_text_property(color=color)
+        label.set_color(color)
 
     @pyqtSlot(str)
     def grade_process(self, file_path):
@@ -230,6 +243,19 @@ class AudioBus(AudioBusUI):
             self.summary_file_observer.start()
             return True
         return False
+
+    def threading_mssql(self, *args):
+        self.mssql(*args)
+
+    def check_connect_db(self):
+        if self.mssql.con:
+            Thread(target=self.threading_mssql, args=(self.mssql.get_time,)).start()
+        else:
+            Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
+
+    def update_db(self):
+        logger.debug('update_db')
+        self.update_instance = UpdateDB(self.mssql)
 
     def closeEvent(self, e):
         for nfc in self.nfc.values():
