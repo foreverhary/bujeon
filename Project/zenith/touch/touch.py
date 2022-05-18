@@ -2,6 +2,7 @@ import sys
 from threading import Thread
 
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication
 
 from process_package.Config import get_order_number, get_config_value, set_config_value
@@ -51,6 +52,7 @@ class Touch(TouchUI):
     def connect_event(self):
         self.key_enter_input_signal.connect(self.key_enter_process)
         self.order_config_window.orderNumberSendSignal.connect(self.input_order_number)
+        self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.connect_button.clicked.connect(self.connect_machine_button)
         self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
         self.connect_machine_button(1)
@@ -107,10 +109,24 @@ class Touch(TouchUI):
             self.order_config_window.show_modal()
         if e.buttons() & Qt.MidButton:
             self.mssql_config_window.show_modal()
+        if e.buttons() & Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
+            e.accept()
+            self.setCursor((QCursor(Qt.OpenHandCursor)))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.m_flag:
+            self.move(QMouseEvent.globalPos() - self.m_Position)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.m_flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
 
     def show_main_window(self):
         style_sheet_setting(self.app)
-        # self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.show()
         window_center(self)
 
@@ -126,6 +142,9 @@ class Touch(TouchUI):
                 self.update_status_msg("Check Order Number", RED)
         except KeyError:
             logger.error('Need Config')
+
+    def mssql_reconnect(self):
+        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
 
     def update_status_msg(self, msg, color=WHITE):
         if self.order_label.text():

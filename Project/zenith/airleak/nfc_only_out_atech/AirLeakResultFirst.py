@@ -1,17 +1,15 @@
 import re
 import sys
-from threading import Thread
 from winsound import Beep
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QTimer
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
-    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time, CHECK_DB_TIME, \
-    CHECK_DB_UPDATE_TIME
+    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 

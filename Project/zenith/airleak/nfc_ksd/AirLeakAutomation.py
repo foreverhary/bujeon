@@ -1,14 +1,14 @@
 import re
 import sys
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QTimer
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtWidgets import QApplication
 
 from airleak.nfc_ksd.AirLeakAutomationUi import AirLeakAutomationUi, AIR_LEAK_NFC_COUNT
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, RED, logger, \
-    AIR_LEAK_PREPROCESS, get_time, CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
+    AIR_LEAK_PREPROCESS, get_time
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -72,6 +72,7 @@ class AirLeakAutomation(AirLeakAutomationUi):
 
     def connect_event(self):
         self.status_signal.connect(self.status_update)
+        self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.serial_machine.signal.machine_result_ksd_signal.connect(self.receive_machine_result)
 
     def is_odd_nfc_alive(self):
@@ -121,12 +122,29 @@ class AirLeakAutomation(AirLeakAutomationUi):
     def mousePressEvent(self, event):
         if event.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
+        if e.buttons() & Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
+            e.accept()
+            self.setCursor((QCursor(Qt.OpenHandCursor)))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.m_flag:
+            self.move(QMouseEvent.globalPos() - self.m_Position)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.m_flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
 
     def update_sql(self, slot):
         self.mssql.start_query_thread(self.mssql.insert_pprd,
                                       get_time(),
                                       self.slots[slot].dm,
                                       self.slots[slot].result)
+
+    def mssql_reconnect(self):
+        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
 
     def closeEvent(self, event):
         pass

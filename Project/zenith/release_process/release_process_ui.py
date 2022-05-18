@@ -40,4 +40,3 @@ class ReleaseProcessUI(QWidget):
         self.dm_input_label = dm_input_label
         self.result_input_label = result_input_label
         self.status_label = status_label
-

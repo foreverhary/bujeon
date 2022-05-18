@@ -2,6 +2,7 @@ import sys
 from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
@@ -73,6 +74,22 @@ class ReleaseProcess(ReleaseProcessUI):
             self.result_input_label.set_color(RED)
         self.dm_input_label.setText(nfc.dm)
         self.result_input_label.setText(msg or NG)
+
+    def mousePressEvent(self, e):
+        if e.buttons() & Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
+            e.accept()
+            self.setCursor((QCursor(Qt.OpenHandCursor)))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.m_flag:
+            self.move(QMouseEvent.globalPos() - self.m_Position)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.m_flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
 
 
 if __name__ == '__main__':

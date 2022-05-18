@@ -2,6 +2,7 @@ import sys
 from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
@@ -41,9 +42,9 @@ class SensorProcess(SensorUI):
         self.nfc = {}
 
         self.result = {name: True for name in self.error_code}
+        self.mssql_config_window = MSSQLDialog()
 
         self.connect_event()
-        self.mssql_config_window = MSSQLDialog()
 
         self.load_window = SplashScreen("IR SENSOR")
         self.load_window.start_signal.connect(self.show_main_window)
@@ -52,7 +53,7 @@ class SensorProcess(SensorUI):
         self.load_window.close()
         self.init_serial(nfc_list)
         style_sheet_setting(self.app)
-
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.show()
         window_right(self)
 
@@ -93,6 +94,7 @@ class SensorProcess(SensorUI):
             )
 
     def connect_event(self):
+        self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.status_update_signal.connect(self.update_label)
 
     @pyqtSlot(object)
@@ -164,9 +166,26 @@ class SensorProcess(SensorUI):
     def closeEvent(self, event):
         pass
 
+    def mssql_reconnect(self):
+        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
+
     def mousePressEvent(self, e):
         if e.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
+        if e.buttons() & Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
+            e.accept()
+            self.setCursor((QCursor(Qt.OpenHandCursor)))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.m_flag:
+            self.move(QMouseEvent.globalPos() - self.m_Position)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.m_flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
 
 
 if __name__ == '__main__':

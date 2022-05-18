@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 
 from process_package.Config import set_config_mssql, get_config_mssql
@@ -10,6 +10,8 @@ from process_package.mssql_dialog_ui import MSSQLDialogUI
 
 
 class MSSQLDialog(MSSQLDialogUI):
+    mssql_change_signal = pyqtSignal()
+
     def __init__(self):
         super(MSSQLDialog, self).__init__()
 
@@ -28,6 +30,7 @@ class MSSQLDialog(MSSQLDialogUI):
         set_config_mssql(MSSQL_ID, self.id_line_edit.text())
         set_config_mssql(MSSQL_PASSWORD, self.password_line_edit.text())
         set_config_mssql(MSSQL_DATABASE, self.database_line_edit.text())
+        self.mssql_change_signal.emit()
         self.close()
 
     def input_config_value(self):

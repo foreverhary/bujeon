@@ -52,30 +52,3 @@ class AudioBusUI(QWidget):
         layout.addWidget(process_groupbox)
         self.setLayout(layout)
         self.setWindowTitle('Audio Bus')
-
-        # config
-        self.config = Config('config.ini')
-
-        # sub windows
-        self.audio_bus_config_window = AudioBusConfig()
-        self.mssql_config_window = MSSQLDialog()
-
-    def mousePressEvent(self, e):
-        if e.buttons() & Qt.RightButton:
-            self.audio_bus_config_window.showModal()
-        if e.buttons() & Qt.MidButton:
-            self.mssql_config_window.show_modal()
-        if e.buttons() & Qt.LeftButton:
-            self.m_flag = True
-            self.m_Position = e.globalPos() - self.pos()
-            e.accept()
-            self.setCursor((QCursor(Qt.OpenHandCursor)))
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if Qt.LeftButton and self.m_flag:
-            self.move(QMouseEvent.globalPos() - self.m_Position)
-            QMouseEvent.accept()
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.m_flag = False
-        self.setCursor(QCursor(Qt.ArrowCursor))

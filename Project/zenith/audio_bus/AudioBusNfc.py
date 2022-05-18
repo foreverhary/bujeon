@@ -4,10 +4,12 @@ from winsound import Beep
 
 import pandas as pd
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
+from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication
 
 from AudioBusUI import AudioBusUI
 from FileObserver import Target
+from audio_bus.AudioBusConfig import AudioBusConfig
 from process_package.Config import get_config_audio_bus
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_right, logger, NFC_IN, \
@@ -15,6 +17,7 @@ from process_package.defined_variable_function import style_sheet_setting, windo
     C_GRADE_MAX, B_GRADE_MAX, A_GRADE_MAX, NG, \
     FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR, get_time
 from process_package.mssql_connect import MSSQL
+from process_package.mssql_dialog import MSSQLDialog
 
 NFC_IN_COUNT = 1
 NFC_OUT_COUNT = 2
@@ -41,6 +44,10 @@ class AudioBus(AudioBusUI):
         self.mssql = MSSQL(AUD)
         self.mssql.start_query_thread(self.mssql.get_mssql_conn)
         self.mssql.timer_for_db_connect(self)
+
+        # sub windows
+        self.audio_bus_config_window = AudioBusConfig()
+        self.mssql_config_window = MSSQLDialog()
 
         # variable
         self.nfc = {}
@@ -114,6 +121,7 @@ class AudioBus(AudioBusUI):
         self.result = {key: True for key in self.result}
 
     def init_event(self):
+        self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.audio_bus_config_window.close_signal.connect(self.start_file_observe)
         self.status_update_signal.connect(self.update_label)
         self.grade_signal.connect(self.grade_process)
@@ -231,6 +239,29 @@ class AudioBus(AudioBusUI):
             self.summary_file_observer.start()
             return True
         return False
+
+    def mssql_reconnect(self):
+        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
+
+    def mousePressEvent(self, e):
+        if e.buttons() & Qt.RightButton:
+            self.audio_bus_config_window.showModal()
+        if e.buttons() & Qt.MidButton:
+            self.mssql_config_window.show_modal()
+        if e.buttons() & Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
+            e.accept()
+            self.setCursor((QCursor(Qt.OpenHandCursor)))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.m_flag:
+            self.move(QMouseEvent.globalPos() - self.m_Position)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.m_flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
 
     def closeEvent(self, e):
         for nfc in self.nfc.values():
