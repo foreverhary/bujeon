@@ -12,7 +12,6 @@ class UpdateDB(Thread):
         self.start()
 
     def run(self):
-        logger.debug("run")
         self.read_file(SAVE_DB_RETRY_FILE_NAME)
         self.db_update()
         self.read_file(SAVE_DB_FILE_NAME)
@@ -31,7 +30,6 @@ class UpdateDB(Thread):
                 continue
             try:
                 func(*query_args[1:-1])
-                logger.info(query_args)
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")
                 logger.error(query_args)
@@ -41,16 +39,12 @@ class UpdateDB(Thread):
         self.query_lines = []
 
     def read_file(self, filename):
-        logger.debug(filename)
         if os.path.isfile(filename) and self.mssql.con:
             with open(filename, 'r') as f:
                 query_lines = f.readlines()
-                logger.debug(query_lines)
-                self.query_lines = list(map(lambda x: x.replace('\n', ''),query_lines))
+                self.query_lines = list(map(lambda x: x.replace('\n', ''), query_lines))
             self.remove_file(filename)
 
     def remove_file(self, filename):
-        logger.debug(filename)
         if os.path.isfile(filename):
             os.remove(filename)
-

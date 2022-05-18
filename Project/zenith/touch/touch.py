@@ -1,18 +1,16 @@
-import os
 import sys
 from threading import Thread
 
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QApplication
 
 from process_package.Config import get_order_number, get_config_value, set_config_value
 from process_package.LineReadKeyboard import LineReadKeyboard
 from process_package.SerialMachine import SerialMachine
 from process_package.check_string import check_dm
-from process_package.db_update_from_file import UpdateDB
 from process_package.defined_variable_function import style_sheet_setting, window_center, logger, WHITE, \
     CONFIG_FILE_NAME, COMPORT_SECTION, AIR_LEAK_ATECH, LIGHT_SKY_BLUE, RED, NG, MACHINE_COMPORT_1, TOUCH, \
-    SAVE_DB_FILE_NAME, get_time
+    get_time
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from process_package.order_number_dialog import OderNumberDialog
@@ -35,14 +33,8 @@ class Touch(TouchUI):
         self.serial_machine = SerialMachine(baudrate=9600, serial_name=AIR_LEAK_ATECH)
         self.connect_event()
         self.mssql = MSSQL(TOUCH)
-        Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
-        self.db_connect_timer = QTimer(self)
-        self.db_connect_timer.start(60000)
-        self.db_connect_timer.timeout.connect(self.check_connect_db)
-
-        self.db_update_timer = QTimer(self)
-        self.db_update_timer.start(60000)
-        self.db_update_timer.timeout.connect(self.update_db)
+        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
+        self.mssql.timer_for_db_connect(self)
 
         self.show_main_window()
         self.input_order_number()
@@ -66,25 +58,12 @@ class Touch(TouchUI):
     def key_enter_process(self, line_data):
         if dm := check_dm(line_data):
             self.dm_label.setText(dm)
-            Thread(target=self.threading_mssql, args=(self.mssql.insert_pprh,
-                                                      get_time(),
-                                                      get_order_number(),
-                                                      dm)).start()
+            self.mssql.start_query_thread(self.mssql.insert_pprh,
+                                          get_time(),
+                                          get_order_number(),
+                                          dm)
             self.machine_label.clear()
             self.update_status_msg("Wait for Machine Result", WHITE)
-
-    def threading_mssql(self, *args):
-        self.mssql(*args)
-
-    def check_connect_db(self):
-        if self.mssql.con:
-            Thread(target=self.threading_mssql, args=(self.mssql.get_time,)).start()
-        else:
-            Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
-
-    def update_db(self):
-        logger.debug('update_db')
-        self.update_instance = UpdateDB(self.mssql)
 
     @pyqtSlot(list)
     def receive_machine_result(self, result):
@@ -93,11 +72,10 @@ class Touch(TouchUI):
         self.machine_label.setText(self.result)
         self.machine_label.set_color((LIGHT_SKY_BLUE, RED)[self.result == NG])
         if self.order_label.text() and self.dm_label.text():
-            Thread(target=self.threading_mssql,
-                   args=(self.mssql.insert_pprd,
-                         get_time(),
-                         self.dm_label.text(),
-                         self.result)).start()
+            self.mssql.start_query_thread(self.mssql.insert_pprd,
+                                          get_time(),
+                                          self.dm_label.text(),
+                                          self.result)
             self.update_status_msg("WRITE DONE SCAN NEXT QR", LIGHT_SKY_BLUE)
 
     def connect_machine_button(self, not_key=None):
@@ -142,7 +120,7 @@ class Touch(TouchUI):
             if order:
                 if order != self.mssql.aufnr:
                     self.mssql.aufnr = order
-                    Thread(target=self.threading_mssql, args=(self.mssql.set_aplzl,)).start()
+                    self.mssql.start_query_thread(self.mssql.set_aplzl)
                 self.update_status_msg("READY", LIGHT_SKY_BLUE)
             else:
                 self.update_status_msg("Check Order Number", RED)

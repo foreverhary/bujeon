@@ -5,11 +5,11 @@ from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QGridLayout, QGr
 
 from NFC import VirtualNFC
 from process_package.PyQtCustomComponent import LineEdit, Button
-from process_package.defined_variable_function import style_sheet_setting, window_right, window_top_left, \
-    window_bottom_left
+from process_package.defined_variable_function import style_sheet_setting, window_bottom_left
 
 SLOT = 3
 COMPORT = ('com6', 'com8', 'com11')
+COLUMN_COUNT = 2
 
 
 class NFCDemo(QWidget):
@@ -19,7 +19,7 @@ class NFCDemo(QWidget):
         self.setLayout(layout := QGridLayout())
         self.nfcs = []
         for index, com in enumerate(COMPORT):
-            layout.addWidget(groupbox := NFCSlot(index, com), index // 4, index % 4)
+            layout.addWidget(groupbox := NFCSlot(index, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
             self.nfcs.append(groupbox)
         self.show_main_window()
 
@@ -47,7 +47,7 @@ class NFCSlot(QGroupBox):
         layout.addWidget(write_button := Button('WRITE'))
 
         self.edit_line = edit_line
-        self.edit_line.setMinimumWidth(600)
+        self.edit_line.setMinimumWidth(800)
         self.write_button = write_button
         self.write_button.clicked.connect(self.clicked_write_button)
 

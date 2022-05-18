@@ -4,7 +4,7 @@ from threading import Thread
 from PyQt5.QtCore import QTimer, QCoreApplication
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QApplication
 
-from process_package.PyQtCustomComponent import Label, Button
+from process_package.PyQtCustomComponent import Button
 from process_package.defined_variable_function import logger
 
 

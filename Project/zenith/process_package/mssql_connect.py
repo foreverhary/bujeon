@@ -1,8 +1,9 @@
 import os
+from threading import Thread
 
 import pandas as pd
 import pymssql
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 from pymssql import _mssql, _pymssql
 from pymssql._pymssql import OperationalError, ProgrammingError, InterfaceError, IntegrityError
 import uuid
@@ -10,8 +11,9 @@ import decimal
 
 # mssql server
 from process_package.Config import get_config_mssql
+from process_package.db_update_from_file import UpdateDB
 from process_package.defined_variable_function import MSSQL_IP, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE, MSSQL_PORT, \
-    logger, NULL, get_time
+    logger, NULL, get_time, CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
 
 
 class Signal(QObject):
@@ -141,6 +143,30 @@ class MSSQL:
         sql = "SELECT GETDATE()"
         self.cur.execute(sql)
 
+    def start_query_thread(self, *args):
+        Thread(target=self.start_sql_func, args=(*args,)).start()
+
+    def start_sql_func(self, *args):
+        self(*args)
+
+    def check_connect_db(self):
+        if self.con:
+            self.start_query_thread(self.get_time)
+        else:
+            self.start_query_thread(self.get_mssql_conn)
+
+    def update_db(self):
+        self.update_instance = UpdateDB(self)
+
+    def timer_for_db_connect(self, obj):
+        self.db_connect_timer = QTimer(obj)
+        self.db_connect_timer.start(CHECK_DB_TIME)
+        self.db_connect_timer.timeout.connect(self.check_connect_db)
+
+        self.db_update_timer = QTimer(obj)
+        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
+        self.db_update_timer.timeout.connect(self.update_db)
+
     def __call__(self, func, *args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -170,6 +196,7 @@ class MSSQL:
         with open("./log/save_db.log", 'a') as f:
             merge_args = [table] + list(args) + ['0\n']
             f.write("\t".join(merge_args))
+
 
 def get_mssql_conn():
     return pymssql.connect(

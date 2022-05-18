@@ -1,4 +1,3 @@
-from datetime import time
 from random import randint
 from threading import Thread, Timer
 

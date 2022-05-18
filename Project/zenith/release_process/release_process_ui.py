@@ -1,5 +1,4 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QGroupBox, QTextBrowser
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox
 
 from process_package.PyQtCustomComponent import Label
 

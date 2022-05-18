@@ -1,7 +1,4 @@
 import sys
-import time
-from random import choice
-from threading import Thread
 
 import serial
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QPushButton

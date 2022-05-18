@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QHBoxLayout, QApplication
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QHBoxLayout
 
 from process_package.PyQtCustomComponent import LeftAlignLabel, LineEdit, Button
 
@@ -48,4 +48,3 @@ class MSSQLDialogUI(QDialog):
         layout.addLayout(button_layout)
 
         self.setLayout(layout)
-

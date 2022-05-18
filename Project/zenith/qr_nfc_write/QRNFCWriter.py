@@ -2,7 +2,7 @@ import sys
 from threading import Thread
 from winsound import Beep
 
-from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QTimer
+from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot
 from PyQt5.QtWidgets import QApplication
 
 from process_package.LineReadKeyboard import LineReadKeyboard
@@ -37,10 +37,8 @@ class QRNFCWriter(QRNFCWriterUI):
         self.connect_event()
         self.mssql = MSSQL()
         self.mssql.signal.pre_process_result_signal.connect(self.received_preproess_result)
-        Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
-        self.db_connect_timer = QTimer(self)
-        self.db_connect_timer.start(10000)
-        self.db_connect_timer.timeout.connect(self.check_connect_db)
+        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
+        self.mssql.timer_for_db_connect(self)
 
         self.input_order_number()
 
@@ -106,20 +104,11 @@ class QRNFCWriter(QRNFCWriterUI):
             self.dm_label.setText(dm)
             self.preprocess_label.clear()
             if self.mssql.con:
-                Thread(target=self.threading_mssql, args=(self.mssql.select_result_with_dm_keyword, dm, TOUCH)).start()
+                self.mssql.start_query_thread(self.mssql.select_result_with_dm_keyword, dm, TOUCH)
             else:  # Fake
                 self.preprocess_label.set_color(LIGHT_SKY_BLUE)
                 self.preprocess_label.setText("PREPROCESS OK")
                 self.start_nfc_read()
-
-    def check_connect_db(self):
-        if self.mssql.con:
-            Thread(target=self.threading_mssql, args=(self.mssql.get_time,)).start()
-        else:
-            Thread(target=self.threading_mssql, args=(self.mssql.get_mssql_conn,)).start()
-
-    def threading_mssql(self, *args):
-        self.mssql(*args)
 
     def received_preproess_result(self, preprocess_result):
         if not preprocess_result or preprocess_result == OK:

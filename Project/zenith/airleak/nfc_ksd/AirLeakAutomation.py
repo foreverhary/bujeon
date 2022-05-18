@@ -1,17 +1,15 @@
 import re
 import sys
-from threading import Timer
-from winsound import Beep
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 
 from airleak.nfc_ksd.AirLeakAutomationUi import AirLeakAutomationUi, AIR_LEAK_NFC_COUNT
 from process_package.SplashScreen import SplashScreen
-from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
-    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, LEAK, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time
-from process_package.mssql_connect import insert_pprd, MSSQL
+from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, RED, logger, \
+    AIR_LEAK_PREPROCESS, get_time, CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
+from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
 
@@ -23,6 +21,7 @@ class AirLeakAutomation(AirLeakAutomationUi):
         self.app = app
 
         self.mssql = MSSQL()
+        self.mssql.timer_for_db_connect(self)
 
         # variable
         self.nfc = {}
@@ -124,10 +123,10 @@ class AirLeakAutomation(AirLeakAutomationUi):
             self.mssql_config_window.show_modal()
 
     def update_sql(self, slot):
-        self.mssql(self.mssql.insert_pprd,
-                   get_time(),
-                   self.slots[slot].dm,
-                   self.slots[slot].result)
+        self.mssql.start_query_thread(self.mssql.insert_pprd,
+                                      get_time(),
+                                      self.slots[slot].dm,
+                                      self.slots[slot].result)
 
     def closeEvent(self, event):
         pass

@@ -55,7 +55,6 @@ class AudioBusConfig(AudioBusConfigUI):
             self._summary_path = path
             self.summary_path.setText(self.path_max_display(path))
 
-
     def grade_path_clicked(self):
         if path := str(QFileDialog.getExistingDirectory(directory=self.grade)):
             self.grade = path

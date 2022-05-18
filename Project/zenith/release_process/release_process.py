@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import window_center, style_sheet_setting, NFC_IN, FUNCTION_PROCESS, \
-    PROCESS_OK_RESULTS, PROCESS_NAMES, FREQ, DUR, NG, RED, LIGHT_SKY_BLUE
+    PROCESS_OK_RESULTS, PROCESS_NAMES, FREQ, DUR, NG, RED, LIGHT_SKY_BLUE, PROCESS_FULL_NAMES
 from release_process_ui import ReleaseProcessUI
 
 NFC_IN_COUNT = 1
@@ -69,7 +69,7 @@ class ReleaseProcess(ReleaseProcessUI):
                 if result not in PROCESS_OK_RESULTS:
                     if msg:
                         msg += '\n'
-                    msg += f"{process} : {result}"
+                    msg += f"{PROCESS_FULL_NAMES[process]} : {result}"
             self.result_input_label.set_color(RED)
         self.dm_input_label.setText(nfc.dm)
         self.result_input_label.setText(msg or NG)

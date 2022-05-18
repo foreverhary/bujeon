@@ -39,7 +39,6 @@ class AudioBusUI(QWidget):
         process_groupbox = QGroupBox()
         process_groupbox.setTitle('PROCESS RESULT')
 
-
         self.status_label = Label('')
         self.status_label.setMinimumWidth(600)
         self.status_label.set_color(RED)
@@ -67,16 +66,16 @@ class AudioBusUI(QWidget):
         if e.buttons() & Qt.MidButton:
             self.mssql_config_window.show_modal()
         if e.buttons() & Qt.LeftButton:
-            self.m_flag=True
-            self.m_Position=e.globalPos()-self.pos()
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
             e.accept()
             self.setCursor((QCursor(Qt.OpenHandCursor)))
 
     def mouseMoveEvent(self, QMouseEvent):
         if Qt.LeftButton and self.m_flag:
-            self.move(QMouseEvent.globalPos()-self.m_Position)
+            self.move(QMouseEvent.globalPos() - self.m_Position)
             QMouseEvent.accept()
 
     def mouseReleaseEvent(self, QMouseEvent):
-        self.m_flag=False
+        self.m_flag = False
         self.setCursor(QCursor(Qt.ArrowCursor))
