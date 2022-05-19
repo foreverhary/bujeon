@@ -176,8 +176,8 @@ class MSSQL:
                 TypeError,
                 AttributeError) as e:
             logger.error(f"{type(e)} : {e}")
-            logger.error(f"{func.__name__} Need to Save!!")
             if "insert" in func.__name__:
+                logger.error(f"{func.__name__} Need to Save!!")
                 self.save_query_db_fail(func, *args)
             self.con = None
             return False

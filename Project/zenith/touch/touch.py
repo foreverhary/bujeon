@@ -25,6 +25,8 @@ class Touch(TouchUI):
         super(Touch, self).__init__()
         self.app = app
 
+        self.show_main_window()
+
         # QR scan listener
         self.start_keyboard_listener()
 
@@ -37,7 +39,6 @@ class Touch(TouchUI):
         self.mssql.start_query_thread(self.mssql.get_mssql_conn)
         self.mssql.timer_for_db_connect(self)
 
-        self.show_main_window()
         self.input_order_number()
 
     def start_keyboard_listener(self):
@@ -137,7 +138,6 @@ class Touch(TouchUI):
             if order:
                 if order != self.mssql.aufnr:
                     self.mssql.aufnr = order
-                    self.mssql.start_query_thread(self.mssql.set_aplzl)
                 self.update_status_msg("READY", LIGHT_SKY_BLUE)
             else:
                 self.update_status_msg("Check Order Number", RED)
