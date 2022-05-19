@@ -33,12 +33,6 @@ READY = 'READY'
 # simplusgui option
 BACKGROUND_COLOR = 'background-color'
 
-# color
-RED = 'red'
-YELLOW = 'yellow'
-BLUE = 'blue'
-BLACK = "black"
-
 # Style
 BOARDER_STYLE = 'border-style: solid;'\
                 'border-width: 2px;'\

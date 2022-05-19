@@ -7,8 +7,9 @@ from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import window_center, style_sheet_setting, NFC_IN, FUNCTION_PROCESS, \
-    PROCESS_OK_RESULTS, PROCESS_NAMES, FREQ, DUR, NG, RED, LIGHT_SKY_BLUE, PROCESS_FULL_NAMES
-from release_process_ui import ReleaseProcessUI
+    PROCESS_OK_RESULTS, PROCESS_NAMES, FREQ, DUR, NG, RED, LIGHT_SKY_BLUE, PROCESS_FULL_NAMES, WHITE, A, B, YELLOW, C, \
+    GREEN, RELEASE_GRADE_TEXT_SIZE
+from release_process_ui import ReleaseProcessUI, RELEASE_FIXED_RESULT_FONT_SIZE
 
 NFC_IN_COUNT = 1
 
@@ -64,13 +65,21 @@ class ReleaseProcess(ReleaseProcessUI):
         msg = ''
         if nfc.check_pre_process():
             msg += nfc.nfc_previous_process[FUNCTION_PROCESS]
-            self.result_input_label.set_color(LIGHT_SKY_BLUE)
+            if msg == A:
+                color = WHITE
+            elif msg == B:
+                color = YELLOW
+            elif msg == C:
+                color = GREEN
+            self.result_input_label.set_text_property(size=RELEASE_GRADE_TEXT_SIZE)
+            self.result_input_label.set_color(color)
         else:
             for process, result in nfc.nfc_previous_process.items():
                 if result not in PROCESS_OK_RESULTS:
                     if msg:
                         msg += '\n'
                     msg += f"{PROCESS_FULL_NAMES[process]} : {result}"
+            self.result_input_label.set_text_property(size=RELEASE_FIXED_RESULT_FONT_SIZE)
             self.result_input_label.set_color(RED)
         self.dm_input_label.setText(nfc.dm)
         self.result_input_label.setText(msg or NG)

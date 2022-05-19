@@ -3,7 +3,7 @@ import sys
 from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtWidgets import QApplication
 
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
@@ -60,7 +60,7 @@ class AirLeak(AirLeakUi):
                 nfc.close()
 
         if self.nfc.__len__() == 1:
-            self.status_signal.emit("READY", BLUE)
+            self.status_signal.emit("READY", LIGHT_SKY_BLUE)
         else:
             self.status_signal.emit("CHECK NFC & RESTART PROGRAM", RED)
 
@@ -70,6 +70,7 @@ class AirLeak(AirLeakUi):
 
     def connect_event(self):
         self.status_signal.connect(self.status_update)
+        self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
 
     @pyqtSlot(list)
@@ -109,6 +110,23 @@ class AirLeak(AirLeakUi):
     def mousePressEvent(self, event):
         if event.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
+        if e.buttons() & Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
+            e.accept()
+            self.setCursor((QCursor(Qt.OpenHandCursor)))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.m_flag:
+            self.move(QMouseEvent.globalPos() - self.m_Position)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.m_flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
+
+    def mssql_reconnect(self):
+        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
 
     def closeEvent(self, event):
         pass

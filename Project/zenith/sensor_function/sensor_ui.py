@@ -6,11 +6,12 @@ from process_package.PyQtCustomComponent import Button, ComboBox, Label
 from process_package.SerialMachine import SerialMachine
 from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import SENSOR_ATECH, COMPORT_SECTION, \
-    CONFIG_FILE_NAME
+    CONFIG_FILE_NAME, CON_OS, POGO_OS, LED, VBAT_ID, C_TEST, BATTERY, MIC, PROX_TEST, PCM, Hall_IC, \
+    SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE
 
 NFC_IN_COUNT = 1
-NFC_OUT_COUNT = 1
-MACHINE_SERIAL_COUNT = 1
+NFC_OUT_COUNT = 2
+MACHINE_SERIAL_COUNT = 2
 
 
 class SensorUI(QWidget):
@@ -52,6 +53,19 @@ class CustomLabel(Label):
 
 
 class SensorChannelLayout(QGroupBox):
+    error_number = {
+        CON_OS: 1,
+        POGO_OS: 2,
+        LED: 3,
+        VBAT_ID: 4,
+        C_TEST: 5,
+        BATTERY: 6,
+        MIC: 7,
+        PROX_TEST: 8,
+        PCM: 9,
+        Hall_IC: 10
+    }
+
     def __init__(self, channel):
         super(SensorChannelLayout, self).__init__()
         self.channel = channel
@@ -74,13 +88,15 @@ class SensorChannelLayout(QGroupBox):
 
         result_label = CustomLabel("RESULT")
         self.resultInput = CustomLabel('')
-        self.resultInput.setFixedHeight(350)
-        self.resultInput.set_text_property(size=80)
+        self.resultInput.setFixedHeight(SENSOR_RESULT_HEIGHT_SIZE)
+        self.resultInput.set_text_property(size=SENSOR_RESULT_TEXT_SIZE)
 
         layout.addWidget(result_label)
         layout.addWidget(self.resultInput)
 
         self.setLayout(layout)
+
+        self.error_code = {name: True for name in self.error_number}
 
         self.serial_machine = SerialMachine(baudrate=9600, serial_name=f'{SENSOR_ATECH}{self.channel}')
 
@@ -112,3 +128,11 @@ class SensorChannelLayout(QGroupBox):
                 self.serial_machine.port
             )
             self.serial_machine.start_machine_read()
+
+    def init_result_true(self):
+        self.error_code = {key: True for key in self.error_number}
+
+    def get_ecode(self):
+        return ','.join([
+            str(self.error_number[key]) for key, value in self.error_code.items() if not value
+        ])

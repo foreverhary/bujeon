@@ -1,8 +1,7 @@
 from PyQt5.QtCore import Qt, QDate, QTimer
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit
 
-from process_package.defined_variable_function import DEFAULT_FONT_SIZE, WHITE, RED
-from test_programs.defined_string import YELLOW
+from process_package.defined_variable_function import DEFAULT_FONT_SIZE, WHITE, RED, YELLOW, LIGHT_YELLOW
 
 
 class Button(QPushButton):
@@ -74,8 +73,8 @@ class Label(QLabel):
                            f'color: {color}')
 
     def change_color_in_msec(self):
-        if self.color in (RED, YELLOW):
-            self.color = RED if self.color == YELLOW else YELLOW
+        if self.color in (RED, LIGHT_YELLOW):
+            self.color = RED if self.color == LIGHT_YELLOW else LIGHT_YELLOW
             self.set_text_property(color=self.color)
 
     def set_color(self, color):

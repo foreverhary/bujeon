@@ -79,6 +79,7 @@ class Touch(TouchUI):
                                           self.dm_label.text(),
                                           self.result)
             self.update_status_msg("WRITE DONE SCAN NEXT QR", LIGHT_SKY_BLUE)
+        self.dm_label.clear()
 
     def connect_machine_button(self, not_key=None):
         if not_key:

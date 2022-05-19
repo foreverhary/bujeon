@@ -10,7 +10,8 @@ from process_package.LineReadKeyboard import LineReadKeyboard
 from process_package.SplashScreen import SplashScreen
 from process_package.check_string import check_dm
 from process_package.defined_variable_function import BLUE, RED, style_sheet_setting, window_center, logger, WHITE, NFC, \
-    FREQ, DUR, OK, LIGHT_SKY_BLUE, TOUCH
+    FREQ, DUR, OK, LIGHT_SKY_BLUE, TOUCH, PREVIOUS_PROCESS_OK, PREVIOUS_PROCESS_NG, TRY_NEXT_QR_SCAN, TAG_NFC_ZIG, \
+    WRITE_DONE, READY_TO_QR_SCAN, CHECK_NFC_RESTART_PROGRAM
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from process_package.order_number_dialog import OderNumberDialog
@@ -66,9 +67,9 @@ class QRNFCWriter(QRNFCWriterUI):
             else:
                 nfc.close()
         if ready_nfc:
-            self.status_signal.emit("READY TO QR SCAN!!", BLUE)
+            self.status_signal.emit(READY_TO_QR_SCAN, LIGHT_SKY_BLUE)
         else:
-            self.status_signal.emit("CHECK NFC RESTART PROGRAM!!", RED)
+            self.status_signal.emit(CHECK_NFC_RESTART_PROGRAM, RED)
 
     def start_keyboard_listener(self):
         self.keyboard_listener = Thread(target=self.listen_keyboard, args=(LineReadKeyboard,), daemon=True)
@@ -91,7 +92,8 @@ class QRNFCWriter(QRNFCWriterUI):
 
     def received_qr_write(self):
         Beep(FREQ, DUR)
-        self.status_update("WRITE DONE, TRY NEXT QR SCAN", LIGHT_SKY_BLUE)
+        self.dm_label.clear()
+        self.status_update(f"{WRITE_DONE}, {TRY_NEXT_QR_SCAN}", LIGHT_SKY_BLUE)
 
     def status_update(self, msg, color):
         self.status_label.setText(msg)
@@ -123,22 +125,22 @@ class QRNFCWriter(QRNFCWriterUI):
                 self.mssql.start_query_thread(self.mssql.select_result_with_dm_keyword, dm, TOUCH)
             else:  # Fake
                 self.preprocess_label.set_color(LIGHT_SKY_BLUE)
-                self.preprocess_label.setText("PREPROCESS OK")
+                self.preprocess_label.setText(PREVIOUS_PROCESS_OK)
                 self.start_nfc_read()
 
     def received_preproess_result(self, preprocess_result):
         if not preprocess_result or preprocess_result == OK:
             self.preprocess_label.set_color(LIGHT_SKY_BLUE)
-            self.preprocess_label.setText("PREPROCESS OK")
+            self.preprocess_label.setText(PREVIOUS_PROCESS_OK)
             self.start_nfc_read()
         else:
             self.preprocess_label.set_color(RED)
-            self.preprocess_label.setText("PREPROCESS NG")
-            self.status_update("TRY NEXT QR SCAN", BLUE)
+            self.preprocess_label.setText(PREVIOUS_PROCESS_NG)
+            self.status_update(TRY_NEXT_QR_SCAN, LIGHT_SKY_BLUE)
 
     def start_nfc_read(self):
         if self.nfc:
-            self.status_signal.emit("TAG NFC ZIG", WHITE)
+            self.status_signal.emit(TAG_NFC_ZIG, WHITE)
             self.nfc.start_nfc_write(self.dm_label.text())
 
     def input_order_number(self):

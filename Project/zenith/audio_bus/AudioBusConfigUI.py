@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QGro
 
 from process_package.PyQtCustomComponent import Button, ComboBox, LeftAlignLabel, Label, LineEdit
 from process_package.defined_serial_port import ports
+from process_package.defined_variable_function import AUDIO_BUS_GRADE_EDIT_MIN_WIDTH
 
 search_args_size = 380
 
@@ -72,6 +73,9 @@ class AudioBusConfigUI(QDialog):
         self.grade_b_max = LineEdit()
         self.grade_c_min = LineEdit()
         self.grade_c_max = LineEdit()
+
+        self.grade_a_min.setMinimumWidth(AUDIO_BUS_GRADE_EDIT_MIN_WIDTH)
+        self.grade_a_max.setMinimumWidth(AUDIO_BUS_GRADE_EDIT_MIN_WIDTH)
 
         buttonLayout = QHBoxLayout()
         self.saveButton = Button('SAVE')

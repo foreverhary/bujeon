@@ -1,12 +1,7 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox
 
-from audio_bus.AudioBusConfig import AudioBusConfig
-from process_package.Config import Config
 from process_package.PyQtCustomComponent import Label
-from process_package.defined_variable_function import RED
-from process_package.mssql_dialog import MSSQLDialog
+from process_package.defined_variable_function import RED, PREVIOUS_PROCESS, GRADE, STATUS
 
 
 class AudioBusUI(QWidget):
@@ -17,7 +12,7 @@ class AudioBusUI(QWidget):
 
         # previous process
         previous_process_groupbox = QGroupBox()
-        previous_process_groupbox.setTitle('PREVIOUS PROCESS')
+        previous_process_groupbox.setTitle(PREVIOUS_PROCESS)
 
         self.previous_process_label = Label('')
 
@@ -28,7 +23,7 @@ class AudioBusUI(QWidget):
 
         # grade
         grade_groupbox = QGroupBox()
-        grade_groupbox.setTitle('GRADE')
+        grade_groupbox.setTitle(GRADE)
         grade_layout = QVBoxLayout()
         self.grade_label = Label('')
         self.grade_label.setMinimumWidth(600)
@@ -37,7 +32,7 @@ class AudioBusUI(QWidget):
 
         # process result
         process_groupbox = QGroupBox()
-        process_groupbox.setTitle('PROCESS RESULT')
+        process_groupbox.setTitle(STATUS)
 
         self.status_label = Label('')
         self.status_label.setMinimumWidth(600)

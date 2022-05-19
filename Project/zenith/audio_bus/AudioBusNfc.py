@@ -15,7 +15,7 @@ from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_right, logger, NFC_IN, \
     FUNCTION_PREPROCESS, NFC, LIGHT_SKY_BLUE, RED, GRADE_FILE_PATH, WHITE, SUMMARY_FILE_PATH, A, B, C, C_GRADE_MIN, \
     C_GRADE_MAX, B_GRADE_MAX, A_GRADE_MAX, NG, \
-    FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR, get_time
+    FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR, get_time, YELLOW, GREEN
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -82,19 +82,24 @@ class AudioBus(AudioBusUI):
     @grade.setter
     def grade(self, value):
         if isinstance(value, float):
+            color = RED
             if float(get_config_audio_bus(B_GRADE_MAX)) < value:
                 self._grade = NG
             elif float(get_config_audio_bus(A_GRADE_MAX)) < value:
                 self._grade = B
+                COLOR = GREEN
             elif float(get_config_audio_bus(C_GRADE_MAX)) < value:
                 self._grade = A
+                color = WHITE
             elif float(get_config_audio_bus(C_GRADE_MIN)) <= value:
                 self._grade = C
+                color = YELLOW
             else:
                 self._grade = NG
-            self.status_update_signal.emit(self.grade_label, f"{self._grade} : {value:.2f}", WHITE)
+            self.status_update_signal.emit(self.grade_label, f"{self._grade} : {value:.2f}", color)
         elif isinstance(value, str):
             self._grade = value
+            self.status_update_signal.emit(self.grade_label, NG, RED)
         else:
             self._grade = NG
         logger.debug(self._grade)
