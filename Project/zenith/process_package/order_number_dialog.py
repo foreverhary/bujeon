@@ -50,16 +50,17 @@ class OderNumberDialog(OrderNumberDialogUI):
 
             self.orderNumberComboBox.clear()
 
-            self.orderNumberComboBox.addItems(self.df.order_number.unique())
+            self.orderNumberComboBox.addItems([row[0] for row in self.df])
         except Exception as e:
             print(e)
 
     def order_number_changed(self):
+        index = self.orderNumberComboBox.currentIndex()
         order_number = self.orderNumberComboBox.currentText()
-        self.orderNumberEdit.setText(order_number)
+        self.orderNumberEdit.setText(self.df[index][0])
         try:
-            self.material.setText(self.df[self.df.order_number == order_number].material_code.iloc[0])
-            self.model.setText(self.df[self.df.order_number == order_number].model_name.iloc[0])
+            self.material.setText(self.df[index][1])
+            self.model.setText(self.df[index][2])
         except IndexError:
             pass
 

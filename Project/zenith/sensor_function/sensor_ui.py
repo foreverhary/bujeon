@@ -7,7 +7,7 @@ from process_package.SerialMachine import SerialMachine
 from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import SENSOR_ATECH, COMPORT_SECTION, \
     CONFIG_FILE_NAME, CON_OS, POGO_OS, LED, VBAT_ID, C_TEST, BATTERY, MIC, PROX_TEST, PCM, Hall_IC, \
-    SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE
+    SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE, PREVIOUS_PROCESS, PREVIOUS_PROCESS_TEXT_SIZE
 
 NFC_IN_COUNT = 1
 NFC_OUT_COUNT = 2
@@ -24,10 +24,11 @@ class SensorUI(QWidget):
         self.previous_process_label = []
         for _ in range(NFC_IN_COUNT):
             previous_process_layout.addWidget(previous_process_group := QGroupBox())
-            previous_process_group.setTitle("PREVIOUS PROCESS")
+            previous_process_group.setTitle(PREVIOUS_PROCESS)
             previous_process_group.setLayout(group_layout := QVBoxLayout())
             self.previous_process_label.append(label := Label(''))
             group_layout.addWidget(label)
+            label.set_text_property(size=PREVIOUS_PROCESS_TEXT_SIZE)
 
         # Frame
         layout.addLayout(frame_layout := QHBoxLayout())
@@ -57,13 +58,13 @@ class SensorChannelLayout(QGroupBox):
         CON_OS: 1,
         POGO_OS: 2,
         LED: 3,
+        Hall_IC: 10,
         VBAT_ID: 4,
         C_TEST: 5,
         BATTERY: 6,
-        MIC: 7,
         PROX_TEST: 8,
+        MIC: 7,
         PCM: 9,
-        Hall_IC: 10
     }
 
     def __init__(self, channel):

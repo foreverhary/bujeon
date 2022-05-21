@@ -2,7 +2,8 @@ import os.path
 import sys
 from winsound import Beep
 
-import pandas as pd
+import csv
+from xlrd import open_workbook
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication
@@ -163,13 +164,8 @@ class AudioBus(AudioBusUI):
     @pyqtSlot(object)
     def receive_previous_process(self, nfc):
         Beep(FREQ, DUR)
-        if nfc.check_pre_process():
-            msg = f"{nfc.dm} is PASS"
-            color = LIGHT_SKY_BLUE
-        else:
-            msg = f"{nfc.dm} is FAIL"
-            color = RED
-        self.status_update_signal.emit(self.previous_process_label, msg, color)
+        color = LIGHT_SKY_BLUE if nfc.check_pre_process() else RED
+        self.status_update_signal.emit(self.previous_process_label, nfc.dm, color)
 
     @pyqtSlot(object, str, str)
     def update_label(self, label, text, color):
@@ -180,8 +176,13 @@ class AudioBus(AudioBusUI):
     def grade_process(self, file_path):
         try:
             logger.debug(file_path)
-            df = pd.read_csv(file_path)
-            self.grade = float(df.iloc[2][1])
+            with open(file_path, 'r', encoding='utf-8') as f:
+                rdr = csv.reader(f)
+                for line in rdr:
+                    logger.debug(line)
+                    if line[0].upper() == "CH1":
+                        self.grade = float(line[1])
+                        break
             self.status_update_signal.emit(self.status_label, 'Reading Grade File...', WHITE)
         except Exception as e:
             logger.error(e)
@@ -191,8 +192,8 @@ class AudioBus(AudioBusUI):
         try:
             logger.debug(file_path)
             self.status_update_signal.emit(self.status_label, 'Read Result...', WHITE)
-            df = pd.read_excel(file_path, sheet_name="Summary", engine='xlrd', header=None)
-            self.parse_and_check_result(df)
+            sheet = open_workbook(file_path).sheet_by_name('Summary')
+            self.parse_and_check_result(sheet)
             self.status_update_signal.emit(self.status_label, 'TAG NFC', WHITE)
             for index in range(1, 3):
                 self.nfc[f"{NFC}{index}"].start_nfc_write(
@@ -203,15 +204,19 @@ class AudioBus(AudioBusUI):
         except Exception as e:
             logger.debug(e)
 
-    def parse_and_check_result(self, df):
-        row_iter = df.iterrows()
+    def parse_and_check_result(self, sheet):
+        summary = []
+        for i in range(sheet.nrows):
+            row = [sheet.cell_value(i, l) for l in range(sheet.ncols)]
+            summary.append(row)
+        row_iter = summary.__iter__()
         result = {}
         for item in row_iter:
-            if 'Summary' in item[1][0]:
+            if 'Summary' in item[0]:
                 next(row_iter)
                 data = next(row_iter)
-                name = item[1][0].split('Summary:')[1].strip().upper()
-                result[name] = (data[1][1], data[1][2])
+                name = item[0].split('Summary:')[1].strip().upper()
+                result[name] = (data[1], data[2])
 
         for name, result_value in result.items():
             for key in self.result:

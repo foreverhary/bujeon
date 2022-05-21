@@ -4,7 +4,7 @@ from threading import Thread
 from PyQt5.QtCore import pyqtSignal, QObject
 from serial import Serial, SerialException
 
-from process_package.defined_variable_function import logger, AIR_LEAK_ATECH, SENSOR_ATECH, AIR_LEAK_KSD
+from process_package.defined_variable_function import logger, AIR_LEAK_ATECH, SENSOR_ATECH, AIR_LEAK_KSD, TOUCH, NG, OK
 
 
 class SerialMachineSignal(QObject):
@@ -49,16 +49,28 @@ class SerialMachine(Serial):
                 self.th = Thread(target=self.air_leak_read_thread, daemon=True)
             elif self.serial_name == AIR_LEAK_KSD:
                 self.th = Thread(target=self.kds_air_leak_read_thread, daemon=True)
+            elif self.serial_name == TOUCH:
+                self.th = Thread(target=self.touch_read_thread, daemon=True)
             elif SENSOR_ATECH in self.serial_name:
                 self.th = Thread(target=self.ir_sensor_read_thread, daemon=True)
             self.th.start()
+
+    def touch_read_thread(self):
+        self.flushInput()
+        while True:
+            if result := self.readline().decode():
+                if "TEST RESULT" in result:
+                    if OK in result:
+                        self.signal.machine_result_signal.emit([OK])
+                    else:
+                        self.signal.machine_result_signal.emit([NG])
 
     def ir_sensor_read_thread(self):
         self.flushInput()
         while True:
             try:
                 if result := self.readline().decode().replace('\r', '').replace('\n', '').upper().split(','):
-                    self.signal.machine_result_signal.emit(result)
+                    self.signal.machine_result_signal.emit([self.serial_name] + result)
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")
 

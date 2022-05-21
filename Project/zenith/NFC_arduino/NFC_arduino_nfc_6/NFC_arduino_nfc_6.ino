@@ -30,7 +30,7 @@ void setup(void) {
   while(! versiondata){
     versiondata = nfc.getFirmwareVersion();
   }
-  Serial.println("NFC 6");
+  Serial.println("NFC 7");
   nfc.SAMConfig();
   keep_going = true;
 }
@@ -53,7 +53,7 @@ void loop(void) {
   }
   if(cmd[0] == 0xff){
     nfc.shutDown();
-    keep_going = false;
+    Serial.println("OK");    keep_going = false;
     return;
   }
 
@@ -61,7 +61,7 @@ void loop(void) {
     return;
   }
   
-  if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 2000)){
+  if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 500)){
     if(cmd_index > 0){
       WriteNfc(cmd, cmd_index);
     }else{
@@ -77,7 +77,7 @@ void loop(void) {
           }
           else{
             for(uint8_t pdata=0;pdata<4;pdata++){
-              if(data[pdata] == 0xfe or data[pdata] == 0x00){
+              if(data[pdata] == 0xfe){
                 Serial.print("UID: ");
                 PrintCharHex(uid, uidLength);
                 

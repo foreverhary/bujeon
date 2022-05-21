@@ -1,7 +1,6 @@
 import os
 from threading import Thread
 
-import pandas as pd
 import pymssql
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 from pymssql import _mssql, _pymssql
@@ -118,13 +117,6 @@ class MSSQL:
         else:
             self.signal.pre_process_result_signal.emit('')
 
-    def get_process_error_code(self, process):
-        sql = f"SELECT NGNU, NGNM FROM PNGC WHERE PCODE = '{process}'"
-        return pd.read_sql(sql, self.con)
-
-    def get_process_error_code_dict(self, process):
-        return {row[1][1]: row[1][0] for row in self.get_process_error_code(process).iterrows()}
-
     def get_mssql_conn(self):
         logger.debug("get_mssql_conn start")
         self.con = pymssql.connect(
@@ -215,12 +207,11 @@ def select_order_number_with_date_material_model(date,
                                                  material_keyword='',
                                                  model_keyword=''):
     conn = get_mssql_conn()
+    cur = conn.cursor()
     sql = f"""
-        select A.AUFNR as order_number, A.GSTRP as date, 
-                B.APLZL as process_number, B.KTSCH as process_code, B.LTXA1 as process_name, 
+        select A.AUFNR as order_number,
                 C.MATNR as material_code, C.MAKTX as model_name 
         from AFKO as A 
-        left join AUFK as B on A.AUFNR = B.AUFNR 
         left join MATE as C on A.MATNR = C.MATNR
         where A.GSTRP = '{date}'
         and A.AUFNR like '%{order_keyword}%'
@@ -228,7 +219,8 @@ def select_order_number_with_date_material_model(date,
         and C.MAKTX like '%{model_keyword}%' 
         order by A.AUFNR
     """
-    return pd.read_sql(sql, conn)
+    cur.execute(sql)
+    return cur.fetchall()
 
 
 if __name__ == '__main__':

@@ -86,14 +86,9 @@ class SensorProcess(SensorUI):
     @pyqtSlot(object)
     def received_previous_process(self, nfc):
         Beep(FREQ, DUR)
-        if nfc.check_pre_process():
-            msg = f"{nfc.dm} is PASS"
-            color = LIGHT_SKY_BLUE
-        else:
-            msg = f"{nfc.dm} is FAIL"
-            color = RED
+        color = LIGHT_SKY_BLUE if nfc.check_pre_process() else RED
         label = self.previous_process_label[int(nfc.serial_name.replace(NFC_IN, '')) - 1]
-        self.status_update_signal.emit(label, msg, color)
+        self.status_update_signal.emit(label, nfc.dm, color)
 
     @pyqtSlot(str)
     def receive_serial_error(self, msg):
@@ -101,13 +96,20 @@ class SensorProcess(SensorUI):
 
     @pyqtSlot(list)
     def receive_machine_result(self, result):
-        if result[0] == 'L':
+        serial_name, *machine_signal = result
+        if "1" in serial_name:
             nfc = self.nfc.get(f"{NFC}1")
             frame = self.ch_frame[0]
         else:
             nfc = self.nfc.get(f"{NFC}2")
             frame = self.ch_frame[1]
+        if "RESET" in machine_signal[0]:
+            # frame.resultInput.clear()
+            # frame.dmInput.clear()
+            return
         frame.init_result_true()
+        if not result[-1]:
+            result.pop()
         if result[-1] != OK:
             for item, key in zip(result[1:-1], frame.error_code):
                 frame.error_code[key] = item == OK
@@ -139,6 +141,7 @@ class SensorProcess(SensorUI):
                                       self.ch_frame[index_nfc].get_ecode())
         self.status_update_signal.emit(self.ch_frame[index_nfc].dmInput, nfc.dm, WHITE)
         self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", LIGHT_SKY_BLUE)
+        self.ch_frame[index_nfc].resultInput.clear()
         Beep(FREQ, DUR)
 
     @pyqtSlot(object, str, str)

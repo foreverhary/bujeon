@@ -33,7 +33,7 @@ class Touch(TouchUI):
         self.order_config_window = OderNumberDialog()
         self.mssql_config_window = MSSQLDialog()
 
-        self.serial_machine = SerialMachine(baudrate=9600, serial_name=AIR_LEAK_ATECH)
+        self.serial_machine = SerialMachine(baudrate=115200, serial_name=TOUCH)
         self.connect_event()
         self.mssql = MSSQL(TOUCH)
         self.mssql.start_query_thread(self.mssql.get_mssql_conn)

@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
-    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time
+    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time, AIR_LEAK
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -21,7 +21,7 @@ class AirLeak(AirLeakUi):
         super(AirLeak, self).__init__()
         self.app = app
 
-        self.mssql = MSSQL()
+        self.mssql = MSSQL(AIR_LEAK)
         self.mssql.start_query_thread(self.mssql.get_mssql_conn)
         self.mssql.timer_for_db_connect(self)
 
@@ -53,7 +53,7 @@ class AirLeak(AirLeakUi):
 
         for nfc in nfc_list:
             nfc.previous_processes = AIR_LEAK_PREPROCESS
-            if re.search(f'{NFC}[1-9]', nfc.serial_name):
+            if re.search(f'{NFC}1', nfc.serial_name):
                 self.nfc[nfc.serial_name] = nfc
                 nfc.signal.nfc_write_done_signal.connect(self.update_sql)
             else:
@@ -100,6 +100,7 @@ class AirLeak(AirLeakUi):
                                               self.result)
                 break
         if not nfc.unit_count:
+            self.result_label.clear()
             self.status_signal.emit("UNIT WRITE DONE!!", LIGHT_SKY_BLUE)
 
     @pyqtSlot(str, str)
@@ -107,8 +108,8 @@ class AirLeak(AirLeakUi):
         self.status_label.setText(msg)
         self.status_label.set_color(color)
 
-    def mousePressEvent(self, event):
-        if event.buttons() & Qt.RightButton:
+    def mousePressEvent(self, e):
+        if e.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
         if e.buttons() & Qt.LeftButton:
             self.m_flag = True

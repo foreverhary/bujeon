@@ -1,12 +1,13 @@
 import re
 from threading import Thread
+from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, QObject
 from serial import Serial, SerialException
 
 from process_package.check_string import check_nfc_uid, check_dm
 from process_package.defined_variable_function import SENSOR_PREPROCESS, logger, NFC, \
-    PROCESS_RESULTS, PROCESS_NAMES, PROCESS_OK_RESULTS
+    PROCESS_RESULTS, PROCESS_NAMES, PROCESS_OK_RESULTS, FREQ, DUR, SENSOR_PROCESS, AIR_LEAK_PROCESS
 
 
 class SerialNFCSignal(QObject):
@@ -217,6 +218,8 @@ class SerialNFC(Serial):
                 self.nfc_previous_process = split_data[2:]
                 logger.debug(self.write_msg)
                 if self.is_need_to_write() and not self.write_msg:
+                    if SENSOR_PROCESS in self.current_process_result or AIR_LEAK_PROCESS in self.current_process_result:
+                        Beep(FREQ - 500, DUR)
                     self.write(f"{self.make_write_nfc()}".encode())
                     self.read_nfc_valid()
 

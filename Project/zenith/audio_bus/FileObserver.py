@@ -1,6 +1,5 @@
 from threading import Thread
 
-import pandas as pd
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -41,19 +40,20 @@ class Handler(FileSystemEventHandler):
 
 
 if __name__ == '__main__':
-    df = pd.read_excel('AD2000Report.xls', sheet_name="Summary", header=None)
-    a = df.iterrows()
-    dl = {}
-    for l in a:
-        # print(l[1][1])
-        if 'Summary' in l[1][0]:
-            next(a)
-            data = next(a)
-            name = l[1][0].split('Summary:')[1].strip().upper()
-            dl[name] = (lower := data[1][1], upper := data[1][2])
-            print(name, lower, upper, type(lower))
-
-    print(dl)
+    pass
+    # df = pd.read_excel('AD2000Report.xls', sheet_name="Summary", header=None)
+    # a = df.iterrows()
+    # dl = {}
+    # for l in a:
+    #     # print(l[1][1])
+    #     if 'Summary' in l[1][0]:
+    #         next(a)
+    #         data = next(a)
+    #         name = l[1][0].split('Summary:')[1].strip().upper()
+    #         dl[name] = (lower := data[1][1], upper := data[1][2])
+    #         print(name, lower, upper, type(lower))
+    #
+    # print(dl)
 
     #
     # a = list(map(lambda x: x.split('\n'), df.to_string().split('Summary:')[1:]))
