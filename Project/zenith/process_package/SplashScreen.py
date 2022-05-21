@@ -70,14 +70,11 @@ class SplashScreen(QMainWindow):
         self.move(qr.topLeft())
 
         # Start Serial Thread
-        thread = Thread(target=self.setting_serial_automation)
+        Thread(target=self.setting_serial_automation, daemon=True).start()
         # if app_name == "IR SENSOR" or app_name == "QR RESISTOR" or app_name == 'AIR LEAK':
         #     thread = Thread(target=self.setting_serial_automation)
         # else:
         #     thread = Thread(target=self.setting_serial_automation_old)
-
-        thread.daemon = True
-        thread.start()
 
     def start_progress(self):
         self.jumper += 1 / ports.__len__() * 100
@@ -173,6 +170,7 @@ class SplashScreen(QMainWindow):
         self.serial_check_signal.emit()
 
     def setting_serial_automation(self):
+        logger.debug("setting_serial_automation")
         th = []
         ser_list = []
         for port in ports:

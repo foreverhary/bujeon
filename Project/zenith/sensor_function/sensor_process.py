@@ -6,6 +6,7 @@ from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
+from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, NFC_IN, SENSOR_PREPROCESS, \
     NFC, RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, OK, SENSOR_PROCESS, WHITE, get_time, window_center
 from process_package.mssql_connect import MSSQL
@@ -34,6 +35,9 @@ class SensorProcess(SensorUI):
 
         self.load_window = SplashScreen("IR SENSOR")
         self.load_window.start_signal.connect(self.show_main_window)
+
+        if not ports:
+            self.show_main_window([])
 
     def show_main_window(self, nfc_list):
         self.load_window.close()

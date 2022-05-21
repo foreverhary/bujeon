@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QApplication
 
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
 from process_package.SplashScreen import SplashScreen
+from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
     RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time, AIR_LEAK
 from process_package.mssql_connect import MSSQL
@@ -39,6 +40,9 @@ class AirLeak(AirLeakUi):
 
         self.load_window = SplashScreen("AIR LEAK")
         self.load_window.start_signal.connect(self.show_main_window)
+
+        if not ports:
+            self.show_main_window([])
 
     def show_main_window(self, nfc_list):
         self.load_window.close()

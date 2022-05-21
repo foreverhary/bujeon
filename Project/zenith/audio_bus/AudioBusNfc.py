@@ -13,6 +13,7 @@ from FileObserver import Target
 from audio_bus.AudioBusConfig import AudioBusConfig
 from process_package.Config import get_config_audio_bus
 from process_package.SplashScreen import SplashScreen
+from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, window_right, logger, NFC_IN, \
     FUNCTION_PREPROCESS, NFC, LIGHT_SKY_BLUE, RED, GRADE_FILE_PATH, WHITE, SUMMARY_FILE_PATH, A, B, C, C_GRADE_MIN, \
     C_GRADE_MAX, B_GRADE_MAX, A_GRADE_MAX, NG, \
@@ -62,6 +63,8 @@ class AudioBus(AudioBusUI):
         # NFC Auto connect
         self.load_window = SplashScreen("Audio Bus")
         self.load_window.start_signal.connect(self.show_main_window)
+        if not ports:
+            self.show_main_window([])
 
     def show_main_window(self, nfc_list):
         self.load_window.close()
