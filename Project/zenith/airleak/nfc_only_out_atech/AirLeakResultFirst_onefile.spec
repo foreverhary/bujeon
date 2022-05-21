@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['AirLeakResultFirst.py'],
-             pathex=['../'],
+             pathex=['../../'],
              binaries=[],
              datas=[],
              hiddenimports=[],

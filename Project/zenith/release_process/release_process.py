@@ -74,11 +74,14 @@ class ReleaseProcess(ReleaseProcessUI):
             self.result_input_label.set_text_property(size=RELEASE_GRADE_TEXT_SIZE)
             self.result_input_label.set_color(color)
         else:
-            for process, result in nfc.nfc_previous_process.items():
+            for process in nfc.previous_processes:
+                if not (result := nfc.nfc_previous_process.get(process)):
+                    result = 'MISS'
                 if result not in PROCESS_OK_RESULTS:
                     if msg:
                         msg += '\n'
                     msg += f"{PROCESS_FULL_NAMES[process]} : {result}"
+
             self.result_input_label.set_text_property(size=RELEASE_FIXED_RESULT_FONT_SIZE)
             self.result_input_label.set_color(RED)
         self.dm_input_label.setText(nfc.dm)
