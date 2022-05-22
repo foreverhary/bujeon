@@ -11,7 +11,7 @@ from process_package.SerialMachine import SerialMachine
 from process_package.check_string import check_dm
 from process_package.defined_variable_function import style_sheet_setting, window_center, logger, WHITE, \
     CONFIG_FILE_NAME, COMPORT_SECTION, AIR_LEAK_ATECH, LIGHT_SKY_BLUE, RED, NG, MACHINE_COMPORT_1, TOUCH, \
-    get_time
+    get_time, BLUE, make_error_popup
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from process_package.order_number_dialog import OderNumberDialog
@@ -56,6 +56,7 @@ class Touch(TouchUI):
         self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.connect_button.clicked.connect(self.connect_machine_button)
         self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
+        self.serial_machine.signal.machine_serial_error.connect(self.receive_machine_serial_error)
         self.connect_machine_button(1)
 
     def key_enter_process(self, line_data):
@@ -67,6 +68,11 @@ class Touch(TouchUI):
                                           dm)
             self.machine_label.clear()
             self.update_status_msg("Wait for Machine Result", WHITE)
+
+    @pyqtSlot(object)
+    def receive_machine_serial_error(self, machine):
+        self.check_serial_connection()
+        make_error_popup(f"{self.serial_machine.port} Connect Fail!!")
 
     @pyqtSlot(list)
     def receive_machine_result(self, result):
@@ -95,7 +101,7 @@ class Touch(TouchUI):
         else:
             button = self.sender()
 
-        if self.serial_machine.connect_with_button_color(self.comport_combobox.currentText(), button):
+        if self.serial_machine.connect_serial(self.comport_combobox.currentText()):
             set_config_value(
                 CONFIG_FILE_NAME,
                 COMPORT_SECTION,
@@ -103,6 +109,15 @@ class Touch(TouchUI):
                 self.serial_machine.port
             )
             self.serial_machine.start_machine_read()
+        self.check_serial_connection()
+
+    def check_serial_connection(self):
+        if self.serial_machine.is_open:
+            self.connect_button.set_clicked(BLUE)
+            self.comport_combobox.setDisabled(True)
+        else:
+            self.connect_button.set_clicked(RED)
+            self.comport_combobox.setEnabled(True)
 
     def mousePressEvent(self, e):
         if e.buttons() & Qt.RightButton:
@@ -128,7 +143,7 @@ class Touch(TouchUI):
 
     def show_main_window(self):
         style_sheet_setting(self.app)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        # self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.show()
         window_center(self)
 

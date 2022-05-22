@@ -7,7 +7,7 @@ from process_package.SerialMachine import SerialMachine
 from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import AIR_LEAK_DM_UNIT_SIZE, AIR_LEAK_RESULT_SIZE, AIR_LEAK_UNIT_COUNT, \
     UNIT, RESULT, AIR_LEAK_RESULT_FONT_SIZE, AIR_LEAK_DM_UNIT_FONT_SIZE, COMPORT_SECTION, \
-    MACHINE_COMPORT_1, AIR_LEAK_ATECH, CONFIG_FILE_NAME
+    MACHINE_COMPORT_1, AIR_LEAK_ATECH, CONFIG_FILE_NAME, BLUE, RED
 
 
 class AirLeakUi(QWidget):
@@ -84,7 +84,7 @@ class AirLeakUi(QWidget):
         else:
             button = self.sender()
 
-        if self.serial_machine.connect_with_button_color(self.machine_comport.currentText(), button):
+        if self.serial_machine.connect_serial(self.machine_comport.currentText()):
             set_config_value(
                 CONFIG_FILE_NAME,
                 COMPORT_SECTION,
@@ -92,3 +92,12 @@ class AirLeakUi(QWidget):
                 self.serial_machine.port
             )
             self.serial_machine.start_machine_read()
+        self.check_serial_connection()
+
+    def check_serial_connection(self):
+        if self.serial_machine.is_open:
+            self.machine_port_connect_button.set_clicked(BLUE)
+            self.machine_comport.setDisabled(True)
+        else:
+            self.machine_port_connect_button.set_clicked(RED)
+            self.machine_comport.setEnabled(True)

@@ -7,7 +7,7 @@ from process_package.SerialMachine import SerialMachine
 from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import SENSOR_ATECH, COMPORT_SECTION, \
     CONFIG_FILE_NAME, CON_OS, POGO_OS, LED, VBAT_ID, C_TEST, BATTERY, MIC, PROX_TEST, PCM, Hall_IC, \
-    SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE, PREVIOUS_PROCESS, PREVIOUS_PROCESS_TEXT_SIZE
+    SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE, PREVIOUS_PROCESS, PREVIOUS_PROCESS_TEXT_SIZE, BLUE, RED
 
 NFC_IN_COUNT = 1
 NFC_OUT_COUNT = 2
@@ -121,7 +121,7 @@ class SensorChannelLayout(QGroupBox):
         else:
             button = self.sender()
 
-        if self.serial_machine.connect_with_button_color(self.serialComboBox.currentText(), button):
+        if self.serial_machine.connect_serial(self.serialComboBox.currentText()):
             set_config_value(
                 CONFIG_FILE_NAME,
                 COMPORT_SECTION,
@@ -129,6 +129,16 @@ class SensorChannelLayout(QGroupBox):
                 self.serial_machine.port
             )
             self.serial_machine.start_machine_read()
+        self.check_serial_connection()
+
+    def check_serial_connection(self):
+        if self.serial_machine.is_open:
+            self.connectButton.set_clicked(BLUE)
+            self.serialComboBox.setDisabled(True)
+        else:
+            self.connectButton.set_clicked(RED)
+            self.serialComboBox.setEnabled(True)
+
 
     def init_result_true(self):
         self.error_code = {key: True for key in self.error_number}

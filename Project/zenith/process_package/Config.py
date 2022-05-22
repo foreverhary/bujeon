@@ -81,8 +81,8 @@ class Config:
         config[MSSQL_SECTION][MSSQL_DATABASE] = 'POP_LIV'
 
         config.add_section(AUDIO_BUS_SECTION)
-        config[AUDIO_BUS_SECTION][GRADE_FILE_PATH] = 'D:/work/400.test'
-        config[AUDIO_BUS_SECTION][SUMMARY_FILE_PATH] = 'D:/work'
+        config[AUDIO_BUS_SECTION][GRADE_FILE_PATH] = 'C:/Users/Admin/Desktop/BEM788/GRADE'
+        config[AUDIO_BUS_SECTION][SUMMARY_FILE_PATH] = 'C:/Users/Admin/Desktop/BEM788'
         config[AUDIO_BUS_SECTION][A_GRADE_MIN] = '123'
         config[AUDIO_BUS_SECTION][A_GRADE_MAX] = '125'
         config[AUDIO_BUS_SECTION][B_GRADE_MIN] = '125.1'

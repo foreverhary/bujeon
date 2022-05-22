@@ -4,7 +4,7 @@ from threading import Lock
 
 import qdarkstyle
 from PyQt5.QtGui import QFontDatabase, QFont
-from PyQt5.QtWidgets import QDesktopWidget
+from PyQt5.QtWidgets import QDesktopWidget, QMessageBox
 
 from process_package.logger import get_logger
 from process_package.style.style import STYLE
@@ -220,6 +220,14 @@ def style_sheet_setting(app):
 
 def get_time():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+
+
+def make_error_popup(text):
+    msg = QMessageBox()
+    msg.setWindowTitle("ERROR")
+    msg.setText(text)
+    msg.setIcon(QMessageBox.Critical)
+    x = msg.exec_()
 
 
 def trace(func):

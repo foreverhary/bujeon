@@ -8,6 +8,7 @@ class Button(QPushButton):
     def __init__(self, txt, font_size=DEFAULT_FONT_SIZE):
         super(Button, self).__init__(txt)
         self.font_size = font_size
+        self.background_color = WHITE
         self.setStyleSheet('font-weight: bold;'
                            f'font-size: {self.font_size}px;')
 
@@ -15,9 +16,10 @@ class Button(QPushButton):
         pass
 
     def set_clicked(self, color):
+        self.background_color = color
         self.setStyleSheet('font-weight: bold;'
                            f'font-size: {self.font_size}px;'
-                           f'background-color: {color}')
+                           f'background-color: {self.background_color}')
 
 
 class LineEdit(QLineEdit):

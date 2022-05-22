@@ -10,6 +10,7 @@ from process_package.defined_variable_function import logger, AIR_LEAK_ATECH, SE
 class SerialMachineSignal(QObject):
     machine_result_signal = pyqtSignal(list)
     machine_result_ksd_signal = pyqtSignal(tuple)
+    machine_serial_error = pyqtSignal(object)
 
 
 class SerialMachine(Serial):
@@ -27,19 +28,17 @@ class SerialMachine(Serial):
 
         self.th = Thread(target=self.air_leak_read_thread, daemon=True)
 
-    def connect_with_button_color(self, port, button):
+    def connect_serial(self, port):
         try:
             if self.is_open:
                 self.close()
-                button.set_clicked('red')
             else:
                 self.port = port
                 self.open()
-                button.set_clicked('blue')
                 self.flushInput()
                 return True
         except SerialException:
-            button.set_clicked('red')
+            self.signal.machine_serial_error.emit(self)
             logger.error(f"{self.serial_name}, {self.port} : serial connect error!!!")
         return False
 
@@ -57,28 +56,46 @@ class SerialMachine(Serial):
 
     def touch_read_thread(self):
         self.flushInput()
-        while True:
-            if result := self.readline().decode():
-                if "TEST RESULT" in result:
-                    if OK in result:
-                        self.signal.machine_result_signal.emit([OK])
-                    else:
-                        self.signal.machine_result_signal.emit([NG])
+        while self.is_open:
+            try:
+                if result := self.readline().decode():
+                    if "TEST RESULT" in result:
+                        if OK in result:
+                            self.signal.machine_result_signal.emit([OK])
+                        else:
+                            self.signal.machine_result_signal.emit([NG])
+            except SerialException:
+                self.is_open_close()
+                self.signal.machine_serial_error.emit(self)
+                break
+            except Exception as e:
+                logger.error(f"{type(e)} : {e}")
 
     def ir_sensor_read_thread(self):
         self.flushInput()
-        while True:
+        while self.is_open:
             try:
                 if result := self.readline().decode().replace('\r', '').replace('\n', '').upper().split(','):
                     self.signal.machine_result_signal.emit([self.serial_name] + result)
+            except SerialException:
+                self.is_open_close()
+                self.signal.machine_serial_error.emit(self)
+                break
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")
 
     def kds_air_leak_read_thread(self):
         self.flushInput()
-        while True:
-            if serial_read_line := self.get_serial_readline_with_decode():
-                self.signal.machine_result_ksd_signal.emit(self.get_channel_and_result(serial_read_line))
+        while self.is_open:
+            try:
+                if serial_read_line := self.get_serial_readline_with_decode():
+                    self.signal.machine_result_ksd_signal.emit(self.get_channel_and_result(serial_read_line))
+            except SerialException:
+                self.is_open_close()
+                self.signal.machine_serial_error.emit(self)
+                break
+            except Exception as e:
+                logger.error(f"{type(e)} : {e}")
 
     def get_channel_and_result(self, read_line):
         split_read_line = read_line.split(',')
@@ -88,7 +105,7 @@ class SerialMachine(Serial):
 
     def air_leak_read_thread(self):
         self.flushInput()
-        while True:
+        while self.is_open:
             try:
                 if result := re.search("[A-Z]{2}", self.readline().decode()):
                     logger.info(result)
@@ -96,7 +113,10 @@ class SerialMachine(Serial):
                     self.signal.machine_result_signal.emit(result)
             except SerialException:
                 self.is_open_close()
+                self.signal.machine_serial_error.emit(self)
                 break
+            except Exception as e:
+                logger.error(f"{type(e)} : {e}")
 
     def get_serial_readline_with_decode(self):
         return self.readline().decode().replace('\r', '').replace('\n', '')

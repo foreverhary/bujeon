@@ -7,7 +7,7 @@ from process_package.SerialMachine import SerialMachine
 from process_package.check_string import check_dm
 from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import AIR_LEAK_RESULT_SIZE, COMPORT_SECTION, \
-    MACHINE_COMPORT_1, CONFIG_FILE_NAME, AIR_LEAK_KSD, OK, LIGHT_SKY_BLUE, RED
+    MACHINE_COMPORT_1, CONFIG_FILE_NAME, AIR_LEAK_KSD, OK, LIGHT_SKY_BLUE, RED, BLUE
 
 SLOT_MINIMUM_WIDTH = 300
 AIR_LEAK_NFC_COUNT = 4
@@ -106,7 +106,7 @@ class AirLeakAutomationUi(QWidget):
         else:
             button = self.sender()
 
-        if self.serial_machine.connect_with_button_color(self.machine_comport.currentText(), button):
+        if self.serial_machine.connect_serial(self.machine_comport.currentText()):
             set_config_value(
                 CONFIG_FILE_NAME,
                 COMPORT_SECTION,
@@ -114,3 +114,12 @@ class AirLeakAutomationUi(QWidget):
                 self.serial_machine.port
             )
             self.serial_machine.start_machine_read()
+        self.check_serial_connection()
+
+    def check_serial_connection(self):
+        if self.serial_machine.is_open:
+            self.machine_port_connect_button.set_clicked(BLUE)
+            self.machine_comport.setDisabled(True)
+        else:
+            self.machine_port_connect_button.set_clicked(RED)
+            self.machine_comport.setEnabled(True)

@@ -10,7 +10,8 @@ from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
-    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time, AIR_LEAK
+    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time, AIR_LEAK, \
+    make_error_popup
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -76,6 +77,12 @@ class AirLeak(AirLeakUi):
         self.status_signal.connect(self.status_update)
         self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
+        self.serial_machine.signal.machine_serial_error.connect(self.receive_machine_serial_error)
+
+    @pyqtSlot(object)
+    def receive_machine_serial_error(self, machine):
+        self.check_serial_connection()
+        make_error_popup(f"{self.serial_machine.port} Connect Fail!!")
 
     @pyqtSlot(list)
     def receive_machine_result(self, result):

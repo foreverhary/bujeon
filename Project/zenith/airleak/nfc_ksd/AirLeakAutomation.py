@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication
 from airleak.nfc_ksd.AirLeakAutomationUi import AirLeakAutomationUi, AIR_LEAK_NFC_COUNT
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, RED, logger, \
-    AIR_LEAK_PREPROCESS, get_time
+    AIR_LEAK_PREPROCESS, get_time, make_error_popup
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -74,6 +74,7 @@ class AirLeakAutomation(AirLeakAutomationUi):
         self.status_signal.connect(self.status_update)
         self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.serial_machine.signal.machine_result_ksd_signal.connect(self.receive_machine_result)
+        self.serial_machine.signal.machine_serial_error.connect(self.receive_machine_serial_error)
 
     def is_odd_nfc_alive(self):
         return any(key % 2 and nfc.th.is_alive() for key, nfc in self.nfc.items())
@@ -97,6 +98,11 @@ class AirLeakAutomation(AirLeakAutomationUi):
             else:
                 nfc.power_down()
 
+    @pyqtSlot(object)
+    def receive_machine_serial_error(self, machine):
+        self.check_serial_connection()
+        make_error_popup(f"{self.serial_machine.port} Connect Fail!!")
+
     @pyqtSlot(tuple)
     def receive_machine_result(self, channel_data):
         logger.debug(channel_data)
@@ -119,8 +125,8 @@ class AirLeakAutomation(AirLeakAutomationUi):
         self.status_label.setText(msg)
         self.status_label.set_color(color)
 
-    def mousePressEvent(self, event):
-        if event.buttons() & Qt.RightButton:
+    def mousePressEvent(self, e):
+        if e.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
         if e.buttons() & Qt.LeftButton:
             self.m_flag = True

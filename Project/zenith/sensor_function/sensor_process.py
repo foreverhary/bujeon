@@ -3,12 +3,12 @@ from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, NFC_IN, SENSOR_PREPROCESS, \
-    NFC, RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, OK, SENSOR_PROCESS, WHITE, get_time, window_center
+    NFC, RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, OK, SENSOR_PROCESS, WHITE, get_time, window_center, make_error_popup
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from sensor_ui import SensorUI, NFC_IN_COUNT, NFC_OUT_COUNT
@@ -43,7 +43,7 @@ class SensorProcess(SensorUI):
         self.load_window.close()
         self.init_serial(nfc_list)
         style_sheet_setting(self.app)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        # self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.show()
         window_center(self)
 
@@ -73,6 +73,7 @@ class SensorProcess(SensorUI):
             frame.fill_available_ports()
             frame.connect_machine_button(1)
             frame.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
+            frame.serial_machine.signal.machine_serial_error.connect(self.receive_machine_serial_error)
 
         if self.nfc_check(nfc_list):
             self.status_update_signal.emit(self.status_label, "READY", LIGHT_SKY_BLUE)
@@ -98,34 +99,39 @@ class SensorProcess(SensorUI):
     def receive_serial_error(self, msg):
         self.status_update_signal.emit(self.status_label, msg, RED)
 
+    @pyqtSlot(object)
+    def receive_machine_serial_error(self, machine):
+        frame = self.ch_frame[0] if '1' in machine.serial_name else self.ch_frame[1]
+        frame.check_serial_connection()
+        make_error_popup(f"{frame.serial_machine.port} Connect Fail!!")
+
     @pyqtSlot(list)
     def receive_machine_result(self, result):
         serial_name, *machine_signal = result
+        print(machine_signal)
+        if len(machine_signal) < 2:
+            return
         if "1" in serial_name:
             nfc = self.nfc.get(f"{NFC}1")
             frame = self.ch_frame[0]
         else:
             nfc = self.nfc.get(f"{NFC}2")
             frame = self.ch_frame[1]
-        if "RESET" in machine_signal[0]:
-            # frame.resultInput.clear()
-            # frame.dmInput.clear()
-            return
         frame.init_result_true()
-        if not result[-1]:
-            result.pop()
-        if result[-1] != OK:
+        if not machine_signal[-1]:
+            machine_signal.pop()
+        if machine_signal[-1] != OK:
             for item, key in zip(result[1:-1], frame.error_code):
                 frame.error_code[key] = item == OK
         if nfc and frame:
             nfc.start_nfc_write(
                 unit_count=1,
-                process_result=f"{SENSOR_PROCESS}:{result[-1]}"
+                process_result=f"{SENSOR_PROCESS}:{machine_signal[-1]}"
             )
             self.status_update_signal.emit(
                 frame.resultInput,
-                result[-1],
-                LIGHT_SKY_BLUE if result[-1] == OK else RED
+                machine_signal[-1],
+                LIGHT_SKY_BLUE if machine_signal[-1] == OK else RED
             )
             self.status_update_signal.emit(
                 self.status_label,
