@@ -1,7 +1,8 @@
 from PyQt5.QtCore import Qt, QDate, QTimer
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit
 
-from process_package.defined_variable_function import DEFAULT_FONT_SIZE, WHITE, RED, YELLOW, LIGHT_YELLOW
+from process_package.defined_variable_function import DEFAULT_FONT_SIZE, WHITE, RED, YELLOW, LIGHT_YELLOW, \
+    BACK_GROUND_COLOR
 
 
 class Button(QPushButton):
@@ -57,6 +58,7 @@ class Label(QLabel):
         super(Label, self).__init__(txt)
         self.fontSize = font_size
         self.color = WHITE
+        self.background_color = BACK_GROUND_COLOR
         self.timer_color = QTimer(self)
         self.timer_color.start(100)
         self.timer_color.timeout.connect(self.change_color_in_msec)
@@ -65,23 +67,36 @@ class Label(QLabel):
                            f'font-size: {self.fontSize}px;')
         self.change_color_in_msec()
 
+    def clean(self):
+        self.set_background_color()
+        self.set_color(WHITE)
+        self.clear()
+
+    def set_background_color(self, color=BACK_GROUND_COLOR):
+        self.background_color = color
+        self.set_style_sheet()
+
     def keyPressEvent(self, event):
         pass
 
-    def set_text_property(self, size=None, color=WHITE):
+    def set_font_size(self, size=None):
         self.fontSize = size or self.fontSize
-        self.setStyleSheet('font-weight: bold;'
-                           f'font-size: {self.fontSize}px;'
-                           f'color: {color}')
+        self.set_style_sheet()
 
     def change_color_in_msec(self):
         if self.color in (RED, LIGHT_YELLOW):
             self.color = RED if self.color == LIGHT_YELLOW else LIGHT_YELLOW
-            self.set_text_property(color=self.color)
+            self.set_style_sheet()
+
+    def set_style_sheet(self):
+        self.setStyleSheet('font-weight: bold;'
+                           f'font-size: {self.fontSize}px;'
+                           f'color: {self.color};'
+                           f'background-color: {self.background_color}')
 
     def set_color(self, color):
         self.color = color
-        self.set_text_property(color=self.color)
+        self.set_style_sheet()
 
 
 class LeftAlignLabel(Label):

@@ -108,7 +108,7 @@ class AirLeak(AirLeakUi):
             if dm != '':
                 dms.append(dm)
                 output_label[RESULT].setText(result)
-                output_label[RESULT].set_text_property(color=(LIGHT_SKY_BLUE, RED)[result == NG])
+                output_label[RESULT].set_font_size(color=(LIGHT_SKY_BLUE, RED)[result == NG])
                 self.input_nfc[output_label[UNIT].text()][STATUS] = RESULT
                 self.input_nfc[output_label[UNIT].text()][RESULT] = result
         try:
@@ -123,7 +123,7 @@ class AirLeak(AirLeakUi):
         for output_label in self.unit_out_list:
             if output_label[UNIT].text() == self.input_nfc[uid]:
                 output_label[WRITE].setText(OK)
-                output_label[WRITE].set_text_property(color=LIGHT_SKY_BLUE)
+                output_label[WRITE].set_font_size(color=LIGHT_SKY_BLUE)
                 with lock:
                     self.input_nfc[self.input_nfc[uid]][STATUS] = DONE
                     self.delete_queue.put(uid)

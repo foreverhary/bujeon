@@ -28,10 +28,10 @@ class QRNFCWriterUI(QWidget):
         self.preprocess_label = preprocess
         self.dm_label = dm
         self.status_label = status
-        self.preprocess_label.set_text_property(size=QR_PREVIOUS_PROCESS_TEXT_SIZE)
+        self.preprocess_label.set_font_size(size=QR_PREVIOUS_PROCESS_TEXT_SIZE)
         self.dm_label.setMinimumWidth(QR_DM_MINIMUM_WIDTH_SIZE)
-        self.dm_label.set_text_property(size=QR_DM_TEXT_SIZE)
-        self.status_label.set_text_property(size=QR_STATUS_TEXT_SIZE)
+        self.dm_label.set_font_size(size=QR_DM_TEXT_SIZE)
+        self.status_label.set_font_size(size=QR_STATUS_TEXT_SIZE)
 
         self.setWindowTitle('DM Registration')
 

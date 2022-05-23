@@ -77,6 +77,7 @@ YELLOW = 'yellow'
 GREEN = 'green'
 LIGHT_SKY_BLUE = 'lightskyblue'
 LIGHT_YELLOW = 'lightyellow'
+BACK_GROUND_COLOR = '#19232D'
 
 # string
 DATA_MATRIX = "DATA MATRIX"

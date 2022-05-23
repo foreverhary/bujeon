@@ -39,8 +39,8 @@ class TouchUI(QWidget):
         self.machine_label = machine
         self.status_label = status
         self.dm_label.setMinimumWidth(500)
-        self.dm_label.set_text_property(size=80)
-        self.machine_label.set_text_property(size=120)
+        self.dm_label.set_font_size(size=80)
+        self.machine_label.set_font_size(size=120)
 
         self.setWindowTitle('Touch Process')
 

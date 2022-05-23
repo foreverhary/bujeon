@@ -38,13 +38,14 @@ class AirLeakUi(QWidget):
         self.out_grid_layout.addWidget(unit_out_label, 0, 1)
         self.out_grid_layout.addWidget(result_label, 0, 0)
         self.result_label = Label()
-        self.result_label.set_text_property(size=AIR_LEAK_RESULT_FONT_SIZE)
+        self.result_label.setMinimumWidth(AIR_LEAK_DM_UNIT_SIZE)
+        self.result_label.set_font_size(size=AIR_LEAK_RESULT_FONT_SIZE)
         self.out_grid_layout.addWidget(self.result_label, 1, 0, 5, 1)
 
         self.unit_list = [Label() for _ in
                           range(AIR_LEAK_UNIT_COUNT)]
         for index, out_item in enumerate(self.unit_list):
-            out_item.set_text_property(size=AIR_LEAK_DM_UNIT_FONT_SIZE)
+            out_item.set_font_size(size=AIR_LEAK_DM_UNIT_FONT_SIZE)
             self.out_grid_layout.addWidget(out_item, index + 1, 1)
 
         out_group = QGroupBox("OUT")

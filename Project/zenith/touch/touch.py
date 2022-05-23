@@ -66,7 +66,7 @@ class Touch(TouchUI):
                                           get_time(),
                                           get_order_number(),
                                           dm)
-            self.machine_label.clear()
+            self.machine_label.clean()
             self.update_status_msg("Wait for Machine Result", WHITE)
 
     @pyqtSlot(object)
@@ -79,7 +79,7 @@ class Touch(TouchUI):
         logger.info(result)
         self.result = result[0]
         self.machine_label.setText(self.result)
-        self.machine_label.set_color((LIGHT_SKY_BLUE, RED)[self.result == NG])
+        self.machine_label.set_background_color((LIGHT_SKY_BLUE, RED)[self.result == NG])
         if self.order_label.text() and self.dm_label.text():
             self.mssql.start_query_thread(self.mssql.insert_pprd,
                                           get_time(),

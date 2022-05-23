@@ -35,8 +35,8 @@ class AirLeakMainLayout(QVBoxLayout):
         self.lineCombo.setMinimumWidth(50)
         self.comportCombo.addItems(ports)
         self.comportCombo.setMinimumWidth(200)
-        list(map(lambda x: x.set_text_property(DM_FONT_SIZE), self.leftUnitDM))
-        list(map(lambda x: x.set_text_property(DM_FONT_SIZE), self.rightUnitDM))
+        list(map(lambda x: x.set_font_size(DM_FONT_SIZE), self.leftUnitDM))
+        list(map(lambda x: x.set_font_size(DM_FONT_SIZE), self.rightUnitDM))
 
         # layout
         topMenuLayout = QHBoxLayout()

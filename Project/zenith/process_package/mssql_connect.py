@@ -136,7 +136,7 @@ class MSSQL:
         self.cur.execute(sql)
 
     def start_query_thread(self, *args):
-        Thread(target=self.start_sql_func, args=(*args,)).start()
+        Thread(target=self.start_sql_func, args=(*args,), daemon=True).start()
 
     def start_sql_func(self, *args):
         self(*args)

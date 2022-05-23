@@ -28,7 +28,7 @@ class SensorUI(QWidget):
             previous_process_group.setLayout(group_layout := QVBoxLayout())
             self.previous_process_label.append(label := Label(''))
             group_layout.addWidget(label)
-            label.set_text_property(size=PREVIOUS_PROCESS_TEXT_SIZE)
+            label.set_font_size(size=PREVIOUS_PROCESS_TEXT_SIZE)
 
         # Frame
         layout.addLayout(frame_layout := QHBoxLayout())
@@ -90,7 +90,7 @@ class SensorChannelLayout(QGroupBox):
         result_label = CustomLabel("RESULT")
         self.resultInput = CustomLabel('')
         self.resultInput.setFixedHeight(SENSOR_RESULT_HEIGHT_SIZE)
-        self.resultInput.set_text_property(size=SENSOR_RESULT_TEXT_SIZE)
+        self.resultInput.set_font_size(size=SENSOR_RESULT_TEXT_SIZE)
 
         layout.addWidget(result_label)
         layout.addWidget(self.resultInput)

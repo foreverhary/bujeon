@@ -74,7 +74,6 @@ class NFCIDCreator(QWidget):
                     Beep(FREQ, DUR)
 
 
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = NFCIDCreator(app)

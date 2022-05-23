@@ -11,7 +11,7 @@ from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
     RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time, AIR_LEAK, \
-    make_error_popup
+    make_error_popup, WHITE, OK
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -88,10 +88,11 @@ class AirLeak(AirLeakUi):
     def receive_machine_result(self, result):
         logger.info(result)
         self.result = result[0]
-        self.result_label.setText(self.result)
-        self.result_label.set_color((LIGHT_SKY_BLUE, RED)[self.result == NG])
+        self.result_label.set_background_color((RED, LIGHT_SKY_BLUE)[self.result == OK])
+        self.result_label.set_color(WHITE)
+        self.result_label.setText((NG, OK)[self.result == OK])
         for unit_label in self.unit_list:
-            unit_label.setText('')
+            unit_label.clean()
         if self.nfc.get(f"{NFC}1"):
             self.nfc[f"{NFC}1"].start_nfc_write(
                 unit_count=AIR_LEAK_UNIT_COUNT,
@@ -105,13 +106,15 @@ class AirLeak(AirLeakUi):
         for output_label in self.unit_list:
             if output_label.text() == '':
                 output_label.setText(nfc.dm)
+                # output_label.set_background_color((LIGHT_SKY_BLUE, RED)[self.result == NG])
+                output_label.set_color(WHITE)
                 self.mssql.start_query_thread(self.mssql.insert_pprd,
                                               get_time(),
                                               nfc.dm,
                                               self.result)
                 break
         if not nfc.unit_count:
-            self.result_label.clear()
+            self.result_label.clean()
             self.status_signal.emit("UNIT WRITE DONE!!", LIGHT_SKY_BLUE)
 
     @pyqtSlot(str, str)

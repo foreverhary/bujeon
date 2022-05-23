@@ -218,8 +218,8 @@ class SerialNFC(Serial):
                 self.nfc_previous_process = split_data[2:]
                 logger.debug(self.write_msg)
                 if self.is_need_to_write() and not self.write_msg:
-                    if SENSOR_PROCESS in self.current_process_result or AIR_LEAK_PROCESS in self.current_process_result:
-                        Beep(FREQ - 500, DUR)
+                    # if SENSOR_PROCESS in self.current_process_result or AIR_LEAK_PROCESS in self.current_process_result:
+                    #     Beep(FREQ - 500, DUR)
                     self.write(f"{self.make_write_nfc()}".encode())
                     self.read_nfc_valid()
 

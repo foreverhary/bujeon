@@ -71,7 +71,8 @@ class ReleaseProcess(ReleaseProcessUI):
                 color = YELLOW
             elif msg == C:
                 color = GREEN
-            self.result_input_label.set_text_property(size=RELEASE_GRADE_TEXT_SIZE)
+            self.result_input_label.set_font_size(size=RELEASE_GRADE_TEXT_SIZE)
+            self.result_input_label.clean()
             self.result_input_label.set_color(color)
         else:
             for process in nfc.previous_processes:
@@ -82,8 +83,9 @@ class ReleaseProcess(ReleaseProcessUI):
                         msg += '\n'
                     msg += f"{PROCESS_FULL_NAMES[process]} : {result}"
 
-            self.result_input_label.set_text_property(size=RELEASE_FIXED_RESULT_FONT_SIZE)
-            self.result_input_label.set_color(RED)
+            self.result_input_label.set_font_size(size=RELEASE_FIXED_RESULT_FONT_SIZE)
+            self.result_input_label.set_background_color(RED)
+            self.result_input_label.set_color(WHITE)
         self.dm_input_label.setText(nfc.dm)
         self.result_input_label.setText(msg or NG)
 

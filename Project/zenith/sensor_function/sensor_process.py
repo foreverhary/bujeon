@@ -3,7 +3,7 @@ from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
@@ -128,10 +128,11 @@ class SensorProcess(SensorUI):
                 unit_count=1,
                 process_result=f"{SENSOR_PROCESS}:{machine_signal[-1]}"
             )
+            frame.resultInput.set_background_color(LIGHT_SKY_BLUE if machine_signal[-1] == OK else RED)
             self.status_update_signal.emit(
                 frame.resultInput,
                 machine_signal[-1],
-                LIGHT_SKY_BLUE if machine_signal[-1] == OK else RED
+                WHITE
             )
             self.status_update_signal.emit(
                 self.status_label,
@@ -151,8 +152,8 @@ class SensorProcess(SensorUI):
                                       self.ch_frame[index_nfc].get_ecode())
         self.status_update_signal.emit(self.ch_frame[index_nfc].dmInput, nfc.dm, WHITE)
         self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", LIGHT_SKY_BLUE)
-        self.ch_frame[index_nfc].resultInput.clear()
-        Beep(FREQ, DUR)
+        self.ch_frame[index_nfc].resultInput.clean()
+        Beep(FREQ + 1000, DUR)
 
     @pyqtSlot(object, str, str)
     def update_label(self, label, text, color):
