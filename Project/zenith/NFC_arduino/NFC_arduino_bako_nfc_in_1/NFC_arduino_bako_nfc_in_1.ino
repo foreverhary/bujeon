@@ -89,6 +89,11 @@ void loop(void) {
                 Serial.println();
                 }
                 return;
+              }else if(data[pdata] == 0x00){
+                Serial.print("UID: ");
+                PrintCharHex(uid, uidLength);
+                Serial.println();
+                return;
               }else{
                 *pOut++ = (char)data[pdata];
               }
