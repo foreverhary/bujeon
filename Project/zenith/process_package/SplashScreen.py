@@ -101,7 +101,8 @@ class SplashScreen(QMainWindow):
         # SET VALUE TO PROGRESS BAR
         # fix max value error if > than 100
         self.ui.labelPercentage.setText(newHtml)
-        if value >= 100: value = 0
+        if value >= 100:
+            value = 0
         self.progressBarValue(value)
 
         # CLOSE SPLASH SCREE AND OPEN APP
@@ -124,8 +125,8 @@ class SplashScreen(QMainWindow):
         # PROGRESSBAR STYLESHEET BASE
         styleSheet = """
         QFrame{
-        	border-radius: 150px;
-        	background-color: qconicalgradient(cx:0.5, cy:0.5, angle:90, stop:{STOP_1} rgba(255, 0, 127, 0), stop:{STOP_2} rgba(85, 170, 255, 255));
+        border-radius: 150px;
+        background-color: qconicalgradient(cx:0.5, cy:0.5, angle:90, stop:{STOP_1} rgba(255, 0, 127, 0), stop:{STOP_2} rgba(85, 170, 255, 255));
         }
         """
 
@@ -164,19 +165,22 @@ class SplashScreen(QMainWindow):
         self.serial_check_signal.emit()
 
     def serial_nfc_check(self, port, ser_list):
+        logger.debug(port)
         ser = SerialNFC(port, 115200, timeout=2)
         if ser.is_nfc():
             ser_list.append(ser)
         self.serial_check_signal.emit()
+        logger.debug(f"{port} Done")
 
     def setting_serial_automation(self):
         logger.debug("setting_serial_automation")
         th = []
         ser_list = []
         for port in ports:
-            t = Thread(target=self.serial_nfc_check, args=(port, ser_list), daemon=True)
-            t.start()
-            th.append(t)
+            if 'COM' in port:
+                t = Thread(target=self.serial_nfc_check, args=(port, ser_list), daemon=True)
+                t.start()
+                th.append(t)
         for t in th:
             t.join()
         for ser in ser_list:

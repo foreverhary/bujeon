@@ -28,8 +28,8 @@ def check_nfc_uid(string):
 # DM 값 체크
 def check_dm(string):
     if re.match('[A-Z]{2}[0-9][A-Z][0-9]{10}$', string) \
-            or re.match('[VG][A-Z][1-9][0-9A-Z]{5}$', string) \
-            or re.match('[VGAB][A-Z][1-9][1-9][0-9A-Z]{5}$', string):
+            or re.match('[VBAG][A-Z][1-9A-C][0-9A-Z]{5}$', string) \
+            or re.match('[VGAB][A-Z][1-9A-C][0-9A-Z]{6}$', string):
         return string
     return ''
 

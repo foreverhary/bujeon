@@ -54,18 +54,29 @@ class ComboBox(QComboBox):
 
 
 class Label(QLabel):
-    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE):
+    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False):
         super(Label, self).__init__(txt)
         self.fontSize = font_size
+        self.is_clean = is_clean
         self.color = WHITE
         self.background_color = BACK_GROUND_COLOR
         self.timer_color = QTimer(self)
         self.timer_color.start(100)
         self.timer_color.timeout.connect(self.change_color_in_msec)
+
+        self.timer_clean = QTimer(self)
+        self.timer_clean.timeout.connect(self.clean)
+        self.timer_clean.stop()
         self.setAlignment(Qt.AlignCenter)
         self.setStyleSheet('font-weight: bold;'
                            f'font-size: {self.fontSize}px;')
         self.change_color_in_msec()
+
+    def setText(self, txt):
+        super().setText(txt)
+        self.timer_clean.stop()
+        if self.is_clean:
+            self.timer_clean.start(2000)
 
     def clean(self):
         self.set_background_color()

@@ -1,13 +1,12 @@
 import re
 from threading import Thread
-from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, QObject
 from serial import Serial, SerialException
 
 from process_package.check_string import check_nfc_uid, check_dm
-from process_package.defined_variable_function import SENSOR_PREPROCESS, logger, NFC, \
-    PROCESS_RESULTS, PROCESS_NAMES, PROCESS_OK_RESULTS, FREQ, DUR, SENSOR_PROCESS, AIR_LEAK_PROCESS
+from process_package.defined_variable_function import SENSOR_PREVIOUS_PROCESS, logger, NFC, \
+    PROCESS_RESULTS, PROCESS_NAMES, PROCESS_OK_RESULTS
 
 
 class SerialNFCSignal(QObject):
@@ -41,6 +40,7 @@ class SerialNFC(Serial):
         self.write_msg = self.uid = self.dm = self.write_dm = ''
         self.check_dm = None
         self.dm_list = []
+        self.enable = True
 
         self.unit_count = 0
 
@@ -90,18 +90,21 @@ class SerialNFC(Serial):
                 logger.warning(f"{type(e)} : {e}")
                 self._nfc_previous_process = {}
 
+    def clean_check_dm(self):
+        self.check_dm = ''
+
+    def read_line_decode(self):
+        return self.readline().decode().replace('\r', '').replace('\n', '')
+
     def is_nfc(self):
         return_value = False
         try:
             self.open()
-            if check_string := self.readline().decode().replace('\r\n', ''):
-                if re.search(NFC, check_string):
-                    self.timeout = None
-                    self.serial_name = check_string.replace(' ', '').upper()
-                    self.num = int(self.serial_name[-1])
-                    return_value = True
-                else:
-                    self.is_open_close()
+            if (check_string := self.read_line_decode()) and re.search(NFC, check_string):
+                self.timeout = None
+                self.serial_name = check_string.replace(' ', '').upper()
+                self.num = int(self.serial_name[-1])
+                return_value = True
             else:
                 self.is_open_close()
         except (SerialException, UnicodeDecodeError) as e:
@@ -109,7 +112,7 @@ class SerialNFC(Serial):
         return return_value
 
     def start_read_dm_thread(self):
-        self.keep_threading = True
+        self.enable = True
         if not self.th.is_alive():
             self.th = Thread(target=self.read_dm_thread, daemon=True)
             self.th.start()
@@ -118,13 +121,11 @@ class SerialNFC(Serial):
         self.close_and_open()
         self.flushInput()
         logger.debug(self.serial_name)
-        while True:
-            if not self.keep_threading:
-                break
+        while self.enable:
             if self.split_uid_dm(self.get_serial_readline_with_decode().split(',')) \
                     and self.dm != self.check_dm:
                 self.check_dm = self.dm
-                self.keep_threading = False
+                self.enable = False
                 self.signal.dm_read_done_signal.emit(self)
 
     def start_previous_process_check_thread(self):
@@ -135,8 +136,11 @@ class SerialNFC(Serial):
         self.flushInput()
         while True:
             try:
-                split_data = self.readline().decode().replace('\r\n', '').split(',')
-
+                self.is_close_open()
+                line_data = self.read_line_decode()
+                if not self.enable or not line_data:
+                    continue
+                split_data = line_data.split(',')
                 if not self.is_valid_input(split_data):
                     continue
                 if self.dm == self.check_dm:
@@ -177,10 +181,7 @@ class SerialNFC(Serial):
         self.uid = self.dm = ''
         self.dm_list = []
         if not self.th.is_alive():
-            if self.write_dm:
-                self.th = Thread(target=self.nfc_qr_write_thread, daemon=True)
-            else:
-                self.th = Thread(target=self.nfc_write_thread, daemon=True)
+            self.th = Thread(target=self.nfc_qr_write_thread, daemon=True)
             self.th.start()
 
     def nfc_qr_write_thread(self):
@@ -191,68 +192,19 @@ class SerialNFC(Serial):
                 logger.debug(self.write_dm)
                 self.write(f"{self.write_dm}".encode())
                 self.read_nfc_valid()
-                # self.read_nfc_valid()
             self.write_dm = None
             self.signal.qr_write_done_signal.emit()
         except Exception as e:
             logger.error(f"{type(e)} : {e}")
             self.signal.serial_error_signal.emit("ERROR NFC PLEASE RESTART PROGRAM")
-            # self.signal.qr_write_done_signal.emit("CHECK NFC AND RESTART PROGRAM!!", RED)
 
-    def make_write_nfc(self):
-        self.write_msg = self.dm
-        merge_previous_process = [f"{key}:{value}" for key, value in self.nfc_previous_process.items()]
-        self.write_msg = ','.join([self.dm] + merge_previous_process + [self.current_process_result])
-        logger.debug(self.write_msg)
-        return self.write_msg
-
-    def nfc_write_thread(self):
-        self.flushInput()
-        self.flushOutput()
-        while self.unit_count:
-            try:
-                split_data = self.readline().decode().replace('\r\n', '').split(',')
-                logger.debug(split_data)
-                if not self.is_valid_input(split_data) or self.is_write_done():
-                    continue
-                self.nfc_previous_process = split_data[2:]
-                logger.debug(self.write_msg)
-                if self.is_need_to_write() and not self.write_msg:
-                    # if SENSOR_PROCESS in self.current_process_result or AIR_LEAK_PROCESS in self.current_process_result:
-                    #     Beep(FREQ - 500, DUR)
-                    self.write(f"{self.make_write_nfc()}".encode())
-                    self.read_nfc_valid()
-
-                if self.check_write_done(split_data[1:]):
-                    self.write_done()
-
-            except SerialException as e:
-                logger.error(f"{type(e)} : {e}")
-                self.signal.serial_error_signal.emit("ERROR NFC PLEASE RESTART PROGRAM")
-                self.unit_count = 0
-            except Exception as e:
-                logger.error(f"{type(e)} : {e}")
-
-    def check_write_done(self, split_data):
-        return self.write_msg == ','.join(split_data)
-
-    def write_done(self):
-        self.write_msg = ''
-        self.dm_list.append(self.dm)
-        self.unit_count -= 1
-        self.signal.nfc_write_done_signal.emit(self)
-
-    def check_pre_process(self):
-        for (process, result), previous_process in zip(self.nfc_previous_process.items(), self.previous_processes):
-            if process != previous_process or result not in PROCESS_OK_RESULTS:
-                return False
-        return self.is_need_to_write()
-
-    def is_need_to_write(self):
-        return len(self.nfc_previous_process) == len(self.previous_processes)
-
-    def is_write_done(self):
-        return self.dm in self.dm_list
+    def check_pre_process(self, previous_processes):
+        return not any(
+            previous_process not in self.nfc_previous_process
+            or self.nfc_previous_process[previous_process]
+            not in PROCESS_OK_RESULTS
+            for previous_process in previous_processes
+        )
 
     def is_valid_pre_process(self, processes):
         if not isinstance(processes, list):
@@ -300,7 +252,7 @@ class SerialNFC(Serial):
 if __name__ == '__main__':
     ser = SerialNFC('com10', 115200, timeout=2)
     if ser.is_nfc():
-        ser.start_previous_process_check_thread(SENSOR_PREPROCESS)
+        ser.start_previous_process_check_thread(SENSOR_PREVIOUS_PROCESS)
 
     while True:
         pass

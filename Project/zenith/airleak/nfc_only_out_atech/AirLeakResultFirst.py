@@ -1,5 +1,6 @@
 import re
 import sys
+from threading import Timer
 from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
@@ -9,8 +10,8 @@ from PyQt5.QtWidgets import QApplication
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
-from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, LIGHT_SKY_BLUE, \
-    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREPROCESS, FREQ, DUR, get_time, AIR_LEAK, \
+from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, LIGHT_SKY_BLUE, \
+    RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREVIOUS_PROCESS, FREQ, DUR, get_time, AIR_LEAK, \
     make_error_popup, WHITE, OK
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
@@ -29,6 +30,7 @@ class AirLeak(AirLeakUi):
 
         # variable
         self.nfc = {}
+        self.unit_count = AIR_LEAK_UNIT_COUNT
 
         self.mssql_config_window = MSSQLDialog()
 
@@ -57,10 +59,11 @@ class AirLeak(AirLeakUi):
     def init_serial(self, nfc_list):
 
         for nfc in nfc_list:
-            nfc.previous_processes = AIR_LEAK_PREPROCESS
             if re.search(f'{NFC}1', nfc.serial_name):
                 self.nfc[nfc.serial_name] = nfc
-                nfc.signal.nfc_write_done_signal.connect(self.update_sql)
+                nfc.enable = False
+                nfc.start_previous_process_check_thread()
+                nfc.signal.previous_process_signal.connect(self.received_previous_process)
             else:
                 nfc.close()
 
@@ -88,32 +91,43 @@ class AirLeak(AirLeakUi):
     def receive_machine_result(self, result):
         logger.info(result)
         self.result = result[0]
+        self.result = (NG, OK)[self.result == OK]
         self.result_label.set_background_color((RED, LIGHT_SKY_BLUE)[self.result == OK])
         self.result_label.set_color(WHITE)
-        self.result_label.setText((NG, OK)[self.result == OK])
+        self.result_label.setText(self.result)
         for unit_label in self.unit_list:
             unit_label.clean()
-        if self.nfc.get(f"{NFC}1"):
-            self.nfc[f"{NFC}1"].start_nfc_write(
-                unit_count=AIR_LEAK_UNIT_COUNT,
-                process_result=f"{AIR_LEAK_PROCESS}:{self.result}"
-            )
+        for nfc in self.nfc.values():
+            nfc.enable = True
         self.status_signal.emit("MACHINE RESULT RECEIVED ➡️ TAG NFC ZIG", LIGHT_SKY_BLUE)
 
     @pyqtSlot(object)
+    def received_previous_process(self, nfc):
+        msg = [nfc.dm, f"{AIR_LEAK_PROCESS}:{self.result_label.text()}"]
+        nfc.write(','.join(msg).encode())
+
+        self.mssql.start_query_thread(self.mssql.insert_pprd,
+                                      get_time(),
+                                      nfc.dm,
+                                      self.result_label.text())
+        timer = Timer(0.5, self.update_sql, args=(nfc,))
+        timer.daemon = True
+        timer.start()
+
     def update_sql(self, nfc):
         Beep(FREQ, DUR)
         for output_label in self.unit_list:
             if output_label.text() == '':
                 output_label.setText(nfc.dm)
-                # output_label.set_background_color((LIGHT_SKY_BLUE, RED)[self.result == NG])
                 output_label.set_color(WHITE)
                 self.mssql.start_query_thread(self.mssql.insert_pprd,
                                               get_time(),
                                               nfc.dm,
                                               self.result)
+                self.unit_count -= 1
                 break
-        if not nfc.unit_count:
+        if not self.unit_count:
+            nfc.enable = False
             self.result_label.clean()
             self.status_signal.emit("UNIT WRITE DONE!!", LIGHT_SKY_BLUE)
 

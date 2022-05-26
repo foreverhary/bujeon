@@ -53,7 +53,7 @@ void loop(void) {
   }
   if(cmd[0] == 0xff){
     nfc.shutDown();
-    keep_going = false;
+    Serial.println("OK");    keep_going = false;
     return;
   }
 
@@ -61,7 +61,7 @@ void loop(void) {
     return;
   }
   
-  if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 2000)){
+  if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 500)){
     if(cmd_index > 0){
       WriteNfc(cmd, cmd_index);
     }else{
@@ -77,22 +77,19 @@ void loop(void) {
           }
           else{
             for(uint8_t pdata=0;pdata<4;pdata++){
-              if(data[pdata] == 0xfe){
-                Serial.print("UID: ");
-                PrintCharHex(uid, uidLength);
-                
-                if(strlen(out_data)){
-                  Serial.print(",");
-                  PrintChar(out_data, strlen(out_data));
+              if(data[pdata] == 0xfe or data[pdata] == 0x00){
+                for(int j=0; j<2;j++){
+                  Serial.print("UID: ");
+                  PrintCharHex(uid, uidLength);
+                  
+                  if(strlen(out_data)){
+                    Serial.print(",");
+                    PrintChar(out_data, strlen(out_data));
+                  }
+                  Serial.println();
                 }
-                Serial.println();
                 return;
-              }else if(data[pdata] == 0x00){
-                Serial.print("UID: ");
-                PrintCharHex(uid, uidLength);
-                Serial.println();
-                return;
-              }else{
+                }else{
                 *pOut++ = (char)data[pdata];
               }
             }

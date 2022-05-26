@@ -77,7 +77,7 @@ void loop(void) {
           }
           else{
             for(uint8_t pdata=0;pdata<4;pdata++){
-              if(data[pdata] == 0xfe){
+              if(data[pdata] == 0xfe or data[pdata] == 0x00){
                 for(int j=0; j<2;j++){
                   Serial.print("UID: ");
                   PrintCharHex(uid, uidLength);
@@ -89,12 +89,7 @@ void loop(void) {
                   Serial.println();
                 }
                 return;
-              }else if(data[pdata] == 0x00){
-                Serial.print("UID: ");
-                PrintCharHex(uid, uidLength);
-                Serial.println();
-                return;
-              }else{
+                }else{
                 *pOut++ = (char)data[pdata];
               }
             }

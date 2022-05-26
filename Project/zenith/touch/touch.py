@@ -10,7 +10,7 @@ from process_package.LineReadKeyboard import LineReadKeyboard
 from process_package.SerialMachine import SerialMachine
 from process_package.check_string import check_dm
 from process_package.defined_variable_function import style_sheet_setting, window_center, logger, WHITE, \
-    CONFIG_FILE_NAME, COMPORT_SECTION, AIR_LEAK_ATECH, LIGHT_SKY_BLUE, RED, NG, MACHINE_COMPORT_1, TOUCH, \
+    CONFIG_FILE_NAME, COMPORT_SECTION, LIGHT_SKY_BLUE, RED, NG, MACHINE_COMPORT_1, TOUCH, \
     get_time, BLUE, make_error_popup
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
@@ -90,7 +90,6 @@ class Touch(TouchUI):
 
     def connect_machine_button(self, not_key=None):
         if not_key:
-            button = self.connect_button
             self.comport_combobox.setCurrentText(
                 get_config_value(
                     CONFIG_FILE_NAME,
@@ -98,8 +97,6 @@ class Touch(TouchUI):
                     MACHINE_COMPORT_1
                 )
             )
-        else:
-            button = self.sender()
 
         if self.serial_machine.connect_serial(self.comport_combobox.currentText()):
             set_config_value(
@@ -144,6 +141,7 @@ class Touch(TouchUI):
     def show_main_window(self):
         style_sheet_setting(self.app)
         # self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        # self.showMaximized()
         self.show()
         window_center(self)
 

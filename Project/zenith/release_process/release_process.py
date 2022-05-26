@@ -1,4 +1,5 @@
 import sys
+from threading import Timer
 from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -6,7 +7,7 @@ from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
-from process_package.defined_variable_function import window_center, style_sheet_setting, NFC_IN, FUNCTION_PROCESS, \
+from process_package.defined_variable_function import style_sheet_setting, NFC_IN, FUNCTION_PROCESS, \
     PROCESS_OK_RESULTS, PROCESS_NAMES, FREQ, DUR, NG, RED, LIGHT_SKY_BLUE, PROCESS_FULL_NAMES, WHITE, A, B, YELLOW, C, \
     GREEN, RELEASE_GRADE_TEXT_SIZE
 from release_process_ui import ReleaseProcessUI, RELEASE_FIXED_RESULT_FONT_SIZE
@@ -24,10 +25,10 @@ class ReleaseProcess(ReleaseProcessUI):
 
         self.load_window = SplashScreen("Release")
         self.load_window.start_signal.connect(self.show_main_window)
+        self.clean_timer = Timer(1, self.show_main_window)
 
     def show_main_window(self, nfcs):
         self.load_window.close()
-        self.init_event()
         if self.init_nfc_serial(nfcs):
             self.status_label.set_color(LIGHT_SKY_BLUE)
             self.status_label.setText('NFC READY')
@@ -36,20 +37,14 @@ class ReleaseProcess(ReleaseProcessUI):
             self.status_label.setText('CHECK NFC AND RESTART PROGRAM')
         style_sheet_setting(self.app)
 
-        # self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.showMaximized()
         self.show()
-
-        window_center(self)
-
-    def init_event(self):
-        pass
 
     def init_nfc_serial(self, nfcs):
         nfc_in_count = 0
         for nfc in nfcs:
             if NFC_IN in nfc.serial_name:
-                nfc.previous_processes = PROCESS_NAMES
                 self.nfc = nfc
                 nfc.signal.previous_process_signal.connect(self.received_previous_process)
                 nfc.start_previous_process_check_thread()
@@ -61,9 +56,20 @@ class ReleaseProcess(ReleaseProcessUI):
 
     # @pyqtSignal(object)
     def received_previous_process(self, nfc):
+        if self.clean_timer.is_alive():
+            self.clean_timer.cancel()
         Beep(FREQ, DUR)
+        self.dm_input_label.setText(nfc.dm)
+        self.result_input_label.clean()
+        t = Timer(0.5, self.display_result, args=(nfc,))
+        t.start()
+
+    def display_result(self, nfc):
+
         msg = ''
-        if nfc.check_pre_process():
+        color = WHITE
+        self.result_input_label.clean()
+        if nfc.check_pre_process(PROCESS_NAMES):
             msg += nfc.nfc_previous_process[FUNCTION_PROCESS]
             if msg == A:
                 color = WHITE
@@ -72,10 +78,8 @@ class ReleaseProcess(ReleaseProcessUI):
             elif msg == C:
                 color = GREEN
             self.result_input_label.set_font_size(size=RELEASE_GRADE_TEXT_SIZE)
-            self.result_input_label.clean()
-            self.result_input_label.set_color(color)
         else:
-            for process in nfc.previous_processes:
+            for process in PROCESS_NAMES:
                 if not (result := nfc.nfc_previous_process.get(process)):
                     result = 'MISS'
                 if result not in PROCESS_OK_RESULTS:
@@ -85,11 +89,22 @@ class ReleaseProcess(ReleaseProcessUI):
 
             self.result_input_label.set_font_size(size=RELEASE_FIXED_RESULT_FONT_SIZE)
             self.result_input_label.set_background_color(RED)
-            self.result_input_label.set_color(WHITE)
-        self.dm_input_label.setText(nfc.dm)
+        self.result_input_label.set_color(color)
         self.result_input_label.setText(msg or NG)
+        self.clean_timer = Timer(1.5, self.clean_display)
+        self.clean_timer.start()
+
+    def clean_display(self):
+        self.dm_input_label.clean()
+        self.result_input_label.clean()
+        self.nfc.check_dm = ''
 
     def mousePressEvent(self, e):
+        if e.buttons() & Qt.RightButton:
+            self.result_input_label.clean()
+            self.dm_input_label.clean()
+            self.status_label.set_color(LIGHT_SKY_BLUE)
+            self.status_label.setText('NFC READY')
         if e.buttons() & Qt.LeftButton:
             self.m_flag = True
             self.m_Position = e.globalPos() - self.pos()

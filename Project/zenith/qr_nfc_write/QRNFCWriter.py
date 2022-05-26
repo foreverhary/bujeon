@@ -10,7 +10,7 @@ from process_package.LineReadKeyboard import LineReadKeyboard
 from process_package.SplashScreen import SplashScreen
 from process_package.check_string import check_dm
 from process_package.defined_serial_port import ports
-from process_package.defined_variable_function import BLUE, RED, style_sheet_setting, window_center, logger, WHITE, NFC, \
+from process_package.defined_variable_function import RED, style_sheet_setting, window_center, logger, WHITE, NFC, \
     FREQ, DUR, OK, LIGHT_SKY_BLUE, TOUCH, PREVIOUS_PROCESS_OK, PREVIOUS_PROCESS_NG, TRY_NEXT_QR_SCAN, TAG_NFC_ZIG, \
     WRITE_DONE, READY_TO_QR_SCAN, CHECK_NFC_RESTART_PROGRAM
 from process_package.mssql_connect import MSSQL

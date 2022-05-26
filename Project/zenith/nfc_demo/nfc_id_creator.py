@@ -3,6 +3,7 @@ from threading import Thread
 from winsound import Beep
 
 from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QGridLayout, QGroupBox
 
 from NFC import VirtualNFC
@@ -11,7 +12,9 @@ from process_package.SplashScreen import SplashScreen
 from process_package.check_string import check_nfc_uid
 from process_package.defined_variable_function import style_sheet_setting, window_bottom_left, FREQ, DUR, logger
 
-LOCATION = 'AA'
+LOCATION = 'BT5000'
+
+numbers = [str(index) for index in range(10)] + [chr(i) for i in range(ord('A'), ord('Z') + 1)]
 
 
 class NFCIDCreator(QWidget):
@@ -20,7 +23,7 @@ class NFCIDCreator(QWidget):
     def __init__(self, app):
         super(NFCIDCreator, self).__init__()
         self.app = app
-        self.id_num = 1100001
+        self.id_num = 100
         self.setLayout(layout := QGridLayout())
         layout.addWidget(Label('ID'), 0, 0)
         layout.addWidget(id_value := LineEdit(LOCATION + str(self.id_num)), 0, 1)
@@ -49,6 +52,7 @@ class NFCIDCreator(QWidget):
         self.show()
 
     def up_id(self):
+        self.id_num += 1
         self.id.setText(LOCATION + str(self.id_num))
 
     def write_auto(self):
@@ -61,17 +65,34 @@ class NFCIDCreator(QWidget):
                 if uid != saved_uid:
                     saved_uid = uid
                     write_msg = self.id.text()
+                    self.id_num = int(write_msg[6:])
                     if self.result.text():
                         write_msg += f',{self.result.text()}'
                     logger.debug(write_msg)
                     self.nfc.write(write_msg.encode())
-                    self.id_num += 1
 
-                    self.update_id_signal.emit()
+
                 elif write_msg and write_msg in read_line:
                     logger.debug(read_line)
                     write_msg = ''
                     Beep(FREQ, DUR)
+                    self.update_id_signal.emit()
+
+    def mousePressEvent(self, e):
+        if e.buttons() & Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
+            e.accept()
+            self.setCursor((QCursor(Qt.OpenHandCursor)))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.m_flag:
+            self.move(QMouseEvent.globalPos() - self.m_Position)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.m_flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
 
 
 if __name__ == '__main__':

@@ -76,7 +76,7 @@ class SerialMachine(Serial):
         while self.is_open:
             try:
                 if result := self.readline().decode().replace('\r', '').replace('\n', '').upper().split(','):
-                    self.signal.machine_result_signal.emit([self.serial_name] + result)
+                    self.signal.machine_result_signal.emit(result)
             except SerialException:
                 self.is_open_close()
                 self.signal.machine_serial_error.emit(self)
