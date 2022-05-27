@@ -63,13 +63,10 @@ class QRNFCWriter(QRNFCWriterUI):
     def init_serial(self, nfc_list):
         ready_nfc = False
         for nfc in nfc_list:
-            if nfc.serial_name == f"{NFC}1":
-                self.nfc = nfc
-                self.nfc.signal.qr_write_done_signal.connect(self.received_qr_write)
-                self.nfc.signal.serial_error_signal.connect(self.receive_serial_error)
-                ready_nfc = True
-            else:
-                nfc.close()
+            self.nfc = nfc
+            self.nfc.signal.qr_write_done_signal.connect(self.received_qr_write)
+            self.nfc.signal.serial_error_signal.connect(self.receive_serial_error)
+            ready_nfc = True
         if ready_nfc:
             self.status_signal.emit(READY_TO_QR_SCAN, LIGHT_SKY_BLUE)
         else:

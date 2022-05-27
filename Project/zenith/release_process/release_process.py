@@ -44,15 +44,12 @@ class ReleaseProcess(ReleaseProcessUI):
     def init_nfc_serial(self, nfcs):
         nfc_in_count = 0
         for nfc in nfcs:
-            if NFC_IN in nfc.serial_name:
-                self.nfc = nfc
-                nfc.signal.previous_process_signal.connect(self.received_previous_process)
-                nfc.start_previous_process_check_thread()
-                nfc_in_count += 1
-            else:
-                nfc.close()
+            self.nfc = nfc
+            nfc.signal.previous_process_signal.connect(self.received_previous_process)
+            nfc.start_previous_process_check_thread()
+            nfc_in_count += 1
 
-        return nfc_in_count == NFC_IN_COUNT
+        return nfc_in_count
 
     # @pyqtSignal(object)
     def received_previous_process(self, nfc):

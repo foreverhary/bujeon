@@ -13,8 +13,8 @@ RELEASE_FIXED_STATUS_FONT_SIZE = 35
 
 
 class CustomLabel(Label):
-    def __init__(self, width=300, height=200, font_size=30):
-        super(CustomLabel, self).__init__(font_size=font_size)
+    def __init__(self, width=300, height=200, font_size=30, is_clean=False, clean_time=2000):
+        super(CustomLabel, self).__init__(font_size=font_size, is_clean=False, clean_time=2000)
         self.setMinimumSize(width, height)
 
 
@@ -31,12 +31,16 @@ class ReleaseProcessUI(QWidget):
         result_groupbox.setLayout(result_layout := QVBoxLayout())
         result_layout.addWidget(result_input_label := CustomLabel(RELEASE_FIXED_WIDTH,
                                                                   RELEASE_FIXED_RESULT_HEIGHT,
-                                                                  RELEASE_FIXED_RESULT_FONT_SIZE))
+                                                                  RELEASE_FIXED_RESULT_FONT_SIZE,
+                                                                  is_clean=True,
+                                                                  clean_time=2000))
         layout.addWidget(status_groupbox := QGroupBox('STATUS'))
         status_groupbox.setLayout(status_layout := QVBoxLayout())
         status_layout.addWidget(status_label := CustomLabel(RELEASE_FIXED_WIDTH,
                                                             RELEASE_FIXED_DM_HEIGHT,
-                                                            RELEASE_FIXED_STATUS_FONT_SIZE))
+                                                            RELEASE_FIXED_STATUS_FONT_SIZE,
+                                                            is_clean=True,
+                                                            clean_time=1500))
         self.dm_input_label = dm_input_label
         self.result_input_label = result_input_label
         self.status_label = status_label

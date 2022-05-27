@@ -1,14 +1,16 @@
 import sys
+from threading import Timer
 from winsound import Beep
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication
 
+from nfc_demo.nfc_checker import NFCCheckerDialog
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, NFC_IN, SENSOR_PREVIOUS_PROCESS, \
-    RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, window_center, make_error_popup, \
+    NFC, RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, OK, SENSOR_PROCESS, WHITE, window_center, make_error_popup, \
     NFCIN1, NFC1, NFC2
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
@@ -18,6 +20,7 @@ from sensor_ui import SensorUI
 class SensorProcess(SensorUI):
     status_update_signal = pyqtSignal(object, str, str)
     machine_signal = pyqtSignal(str)
+    checker_signal = pyqtSignal(object)
 
     def __init__(self, app):
         super(SensorProcess, self).__init__()
@@ -60,11 +63,9 @@ class SensorProcess(SensorUI):
                 nfc.signal.previous_process_signal.connect(self.received_previous_process)
             else:
                 self.ch_frame[int(nfc.serial_name[-1]) - 1].nfc = nfc
-                nfc.enable = False
                 nfc.signal.previous_process_signal.connect(
                     self.ch_frame[int(nfc.serial_name[-1]) - 1].received_previous_process
                 )
-
         check_nfc_set = {NFCIN1, NFC1, NFC2}
         connected_nfc_set = {nfc.serial_name for nfc in self.nfc.values()}
         if not check_nfc_set - connected_nfc_set:
@@ -93,9 +94,15 @@ class SensorProcess(SensorUI):
     @pyqtSlot(object)
     def received_previous_process(self, nfc):
         Beep(FREQ, DUR)
-        color = LIGHT_SKY_BLUE if nfc.check_pre_process(SENSOR_PREVIOUS_PROCESS) else RED
         label = self.previous_process_label[int(nfc.serial_name.replace(NFC_IN, '')) - 1]
-        self.status_update_signal.emit(label, nfc.dm, color)
+        if nfc.dm and nfc.check_pre_process(SENSOR_PREVIOUS_PROCESS):
+            color = LIGHT_SKY_BLUE
+        else:
+            color = RED
+
+        label.set_background_color(color)
+        if nfc.dm:
+            self.status_update_signal.emit(label, nfc.dm, WHITE)
         nfc.clean_check_dm()
 
     @pyqtSlot(str)
@@ -107,6 +114,40 @@ class SensorProcess(SensorUI):
         frame = self.ch_frame[0] if '1' in machine.serial_name else self.ch_frame[1]
         frame.check_serial_connection()
         make_error_popup(f"{frame.serial_machine.port} Connect Fail!!")
+
+    @pyqtSlot(list)
+    def receive_machine_result(self, result):
+        serial_name, *machine_signal = result
+        print(machine_signal)
+        if len(machine_signal) < 2:
+            return
+        if "1" in serial_name:
+            nfc = self.nfc.get(f"{NFC}1")
+            frame = self.ch_frame[0]
+        else:
+            nfc = self.nfc.get(f"{NFC}2")
+            frame = self.ch_frame[1]
+        frame.init_result_true()
+        if not machine_signal[-1]:
+            machine_signal.pop()
+        if machine_signal[-1] != OK:
+            for item, key in zip(result[1:-1], frame.error_code):
+                frame.error_code[key] = item == OK
+        if nfc and frame:
+            nfc.start_nfc_write(
+                unit_count=1,
+                process_result=f"{SENSOR_PROCESS}:{machine_signal[-1]}"
+            )
+            frame.resultInput.set_background_color(LIGHT_SKY_BLUE if machine_signal[-1] == OK else RED)
+            self.status_update_signal.emit(
+                frame.resultInput,
+                machine_signal[-1],
+                WHITE
+            )
+            self.status_update_signal.emit(
+                self.status_label,
+                "MACHINE RESULT RECEIVED ➡️ TAG NFC",
+                LIGHT_SKY_BLUE)
 
     @pyqtSlot(object, str, str)
     def update_label(self, label, text, color):

@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt, QDate, QTimer
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit
 
 from process_package.defined_variable_function import DEFAULT_FONT_SIZE, WHITE, RED, YELLOW, LIGHT_YELLOW, \
-    BACK_GROUND_COLOR
+    BACK_GROUND_COLOR, LIGHT_SKY_BLUE, LIGHT_BLUE
 
 
 class Button(QPushButton):
@@ -54,12 +54,13 @@ class ComboBox(QComboBox):
 
 
 class Label(QLabel):
-    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False):
+    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):
         super(Label, self).__init__(txt)
         self.fontSize = font_size
         self.is_clean = is_clean
         self.color = WHITE
         self.background_color = BACK_GROUND_COLOR
+        self.clean_time = clean_time
         self.timer_color = QTimer(self)
         self.timer_color.start(100)
         self.timer_color.timeout.connect(self.change_color_in_msec)
@@ -67,6 +68,12 @@ class Label(QLabel):
         self.timer_clean = QTimer(self)
         self.timer_clean.timeout.connect(self.clean)
         self.timer_clean.stop()
+
+        self.timer_nfc_tag = QTimer(self)
+        self.timer_nfc_tag.start(200)
+        self.timer_nfc_tag.timeout.connect(self.blink_background)
+        self.nfc_tag = False
+
         self.setAlignment(Qt.AlignCenter)
         self.setStyleSheet('font-weight: bold;'
                            f'font-size: {self.fontSize}px;')
@@ -76,7 +83,7 @@ class Label(QLabel):
         super().setText(txt)
         self.timer_clean.stop()
         if self.is_clean:
-            self.timer_clean.start(2000)
+            self.timer_clean.start(self.clean_time)
 
     def clean(self):
         self.set_background_color()
@@ -86,6 +93,10 @@ class Label(QLabel):
     def set_background_color(self, color=BACK_GROUND_COLOR):
         self.background_color = color
         self.set_style_sheet()
+
+    def blink_background(self):
+        if self.background_color == LIGHT_BLUE:
+            self.set_background_color()
 
     def keyPressEvent(self, event):
         pass

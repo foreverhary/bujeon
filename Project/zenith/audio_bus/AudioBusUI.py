@@ -14,7 +14,7 @@ class AudioBusUI(QWidget):
         previous_process_groupbox = QGroupBox()
         previous_process_groupbox.setTitle(PREVIOUS_PROCESS)
 
-        self.previous_process_label = Label('')
+        self.previous_process_label = Label(is_clean=True)
 
         previous_layout = QVBoxLayout()
         previous_layout.addWidget(self.previous_process_label)

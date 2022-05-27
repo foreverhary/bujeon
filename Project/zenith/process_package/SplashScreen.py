@@ -71,10 +71,6 @@ class SplashScreen(QMainWindow):
 
         # Start Serial Thread
         Thread(target=self.setting_serial_automation, daemon=True).start()
-        # if app_name == "IR SENSOR" or app_name == "QR RESISTOR" or app_name == 'AIR LEAK':
-        #     thread = Thread(target=self.setting_serial_automation)
-        # else:
-        #     thread = Thread(target=self.setting_serial_automation_old)
 
     def start_progress(self):
         self.jumper += 1 / ports.__len__() * 100
@@ -144,26 +140,6 @@ class SplashScreen(QMainWindow):
         # APPLY STYLESHEET WITH NEW VALUES
         self.ui.circularProgress.setStyleSheet(newStylesheet)
 
-    def serial_nfc_check_old(self, port, ser_list):
-        ser = Serial()
-        ser.port = port
-        ser.timeout = 2
-        ser.baudrate = 115200
-        try:
-            ser.open()
-            if check_string := ser.readline().decode().replace('\r\n', ''):
-                if re.search("NFC", check_string):
-                    ser.timeout = None
-                    ser_list[check_string] = ser
-                else:
-                    ser.close()
-            else:
-                ser.close()
-        except Exception as e:
-            logger.error(port)
-            logger.error(f"{type(e)}, {e}")
-        self.serial_check_signal.emit()
-
     def serial_nfc_check(self, port, ser_list):
         logger.debug(port)
         ser = SerialNFC(port, 115200, timeout=2)
@@ -186,18 +162,6 @@ class SplashScreen(QMainWindow):
         for ser in ser_list:
             logger.info(ser.serial_name)
         self.ser_list = ser_list
-
-    def setting_serial_automation_old(self):
-        th = []
-        ser_list = {}
-        for port in ports:
-            t = Thread(target=self.serial_nfc_check_old, args=(port, ser_list), daemon=True)
-            t.start()
-            th.append(t)
-        for t in th:
-            t.join()
-        print(ser_list)
-        self.ser_list_old = ser_list
 
 
 if __name__ == "__main__":

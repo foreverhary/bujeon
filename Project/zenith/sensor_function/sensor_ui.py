@@ -1,4 +1,3 @@
-from threading import Timer
 from winsound import Beep
 
 import serial.tools.list_ports
@@ -12,7 +11,7 @@ from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import SENSOR_ATECH, COMPORT_SECTION, \
     CONFIG_FILE_NAME, CON_OS, POGO_OS, LED, VBAT_ID, C_TEST, BATTERY, MIC, PROX_TEST, PCM, Hall_IC, \
     SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE, PREVIOUS_PROCESS, PREVIOUS_PROCESS_TEXT_SIZE, BLUE, RED, \
-    SENSOR_PREVIOUS_PROCESS, SENSOR_PROCESS, OK, LIGHT_SKY_BLUE, get_time, SENSOR, FREQ, DUR
+    SENSOR_PREVIOUS_PROCESS, SENSOR_PROCESS, OK, LIGHT_SKY_BLUE, get_time, SENSOR, FREQ, DUR, PROCESS_NAMES, LIGHT_BLUE
 
 NFC_IN_COUNT = 1
 NFC_OUT_COUNT = 2
@@ -110,6 +109,8 @@ class SensorChannelLayout(QGroupBox):
 
         self.connectButton.clicked.connect(self.connect_machine_button)
 
+        self.write_nfc_msg = ''
+
     def fill_available_ports(self):
         serial_ports = [s.device for s in serial.tools.list_ports.comports()]
         self.serialComboBox.clear()
@@ -158,6 +159,7 @@ class SensorChannelLayout(QGroupBox):
         self.nfc.current_process_result = f"{SENSOR_PROCESS}:{result[-1]}"
         self.nfc.enable = True
         self.nfc.clean_check_dm()
+        self.dmInput.clean()
 
     def init_result_true(self):
         self.error_code = {key: True for key in self.error_number}
@@ -168,19 +170,32 @@ class SensorChannelLayout(QGroupBox):
         ])
 
     def received_previous_process(self, nfc):
-        self.update_sql()
+        nfc.check_dm = ''
+        self.dmInput.set_background_color(LIGHT_BLUE)
+        if not nfc.check_pre_process_valid(SENSOR_PREVIOUS_PROCESS):
+            return
         msg = [self.nfc.dm]
         msg.extend(
             f"{process_name}:{self.nfc.nfc_previous_process[process_name]}"
-            for process_name in SENSOR_PREVIOUS_PROCESS
+            for process_name in PROCESS_NAMES
             if process_name in self.nfc.nfc_previous_process
         )
-        msg.append(f"{SENSOR_PROCESS}:{self.resultInput.text()}")
-        self.nfc.write(','.join(msg).encode())
-        self.nfc.enable = False
-        Timer(0.5, self.display_nfc_write).start()
+        if self.write_nfc_msg != ','.join(msg):
+            write_msg = [self.nfc.dm]
+            write_msg.extend(
+                f"{process_name}:{self.nfc.nfc_previous_process[process_name]}"
+                for process_name in SENSOR_PREVIOUS_PROCESS
+                if process_name in self.nfc.nfc_previous_process
+            )
+            write_msg.append(f"{SENSOR_PROCESS}:{self.resultInput.text()}")
+            self.write_nfc_msg = ','.join(write_msg)
+            self.nfc.write(self.write_nfc_msg.encode())
+        else:
+            self.update_sql()
+            self.display_nfc_write()
 
     def display_nfc_write(self):
+        self.nfc.enable = False
         self.resultInput.clean()
         self.dmInput.setText(self.nfc.dm)
         self.signal_update_sql.emit(self.nfc)

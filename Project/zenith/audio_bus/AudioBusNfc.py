@@ -122,7 +122,8 @@ class AudioBus(AudioBusUI):
                                       self.grade,
                                       FUNCTION,
                                       self.get_ecode())
-        self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", LIGHT_SKY_BLUE)
+        self.status_label.set_background_color(LIGHT_SKY_BLUE)
+        self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", WHITE)
 
         for index in range(1, 3):
             self.nfc[f"{NFC}{index}"].unit_count = 0
@@ -161,15 +162,19 @@ class AudioBus(AudioBusUI):
             if NFCIN1 == nfc.serial_name:
                 Beep(FREQ, DUR)
                 color = LIGHT_SKY_BLUE if nfc.check_pre_process(FUNCTION_PREVIOUS_PROCESS) else RED
-                self.status_update_signal.emit(self.previous_process_label, nfc.dm, color)
-            else:
+                self.previous_process_label.set_background_color(color)
+                self.status_update_signal.emit(self.previous_process_label, nfc.dm, WHITE)
+                nfc.check_dm = ''
+            elif nfc.check_pre_process_valid(FUNCTION_PREVIOUS_PROCESS):
                 self.received_nfc = nfc
                 self.reset_anti_repeat_parameter()
         else:
             color = LIGHT_SKY_BLUE if nfc.check_pre_process(FUNCTION_PREVIOUS_PROCESS) else RED
-            self.status_update_signal.emit(self.previous_process_label, nfc.dm, color)
-            self.received_nfc = nfc
-            self.reset_anti_repeat_parameter()
+            self.previous_process_label.set_background_color(color)
+            self.status_update_signal.emit(self.previous_process_label, nfc.dm, WHITE)
+            if nfc.check_pre_process_valid(FUNCTION_PREVIOUS_PROCESS):
+                self.received_nfc = nfc
+                self.reset_anti_repeat_parameter()
 
     @pyqtSlot(object, str, str)
     def update_label(self, label, text, color):
@@ -187,6 +192,7 @@ class AudioBus(AudioBusUI):
                     if line[0].upper() == "CH1":
                         self.grade = float(line[1])
                         break
+            self.status_label.clean()
             self.status_update_signal.emit(self.status_label, 'Reading Grade File...', WHITE)
             self.summary_file_path = None
         except Exception as e:
@@ -201,7 +207,8 @@ class AudioBus(AudioBusUI):
             self.status_update_signal.emit(self.status_label, 'Read Result...', WHITE)
             sheet = open_workbook(file_path).sheet_by_name('Summary')
             self.parse_and_check_result(sheet)
-            self.status_update_signal.emit(self.status_label, f'{self.received_nfc.dm} DONE', LIGHT_SKY_BLUE)
+            # self.status_label.set_background_color(LIGHT_SKY_BLUE)
+            # self.status_update_signal.emit(self.status_label, f'{self.received_nfc.dm} DONE', WHITE)
         except ValueError as e:
             logger.error(type(e))
         except Exception as e:

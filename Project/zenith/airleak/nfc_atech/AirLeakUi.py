@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QW
 
 from process_package.PyQtCustomComponent import Button, Label, ComboBox
 from process_package.defined_serial_port import ports
-from process_package.defined_variable_function import AIR_LEAK_DM_UNIT_SIZE, AIR_LEAK_RESULT_SIZE, AIR_LEAK_UNIT_COUNT, \
+from process_package.defined_variable_function import AIR_LEAK_DM_UNIT_WIDTH_SIZE, AIR_LEAK_RESULT_SIZE, AIR_LEAK_UNIT_COUNT, \
     UNIT, RESULT, WRITE
 
 
@@ -37,13 +37,13 @@ class AirLeakUi(QWidget):
         in_group = QGroupBox("IN")
         self.in_grid_layout = QGridLayout()
         unit_in_label = Label("UNIT")
-        unit_in_label.setMinimumWidth(AIR_LEAK_DM_UNIT_SIZE)
+        unit_in_label.setMinimumWidth(AIR_LEAK_DM_UNIT_WIDTH_SIZE)
         self.in_grid_layout.addWidget(unit_in_label)
 
         out_group = QGroupBox("OUT")
         self.out_grid_layout = QGridLayout()
         unit_out_label = Label(UNIT)
-        unit_out_label.setMinimumWidth(AIR_LEAK_DM_UNIT_SIZE)
+        unit_out_label.setMinimumWidth(AIR_LEAK_DM_UNIT_WIDTH_SIZE)
         result_label = Label(RESULT)
         result_label.setMinimumWidth(AIR_LEAK_RESULT_SIZE)
         write_label = Label(WRITE)
