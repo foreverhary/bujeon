@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QWidget, QApplication, QGridLayout, QDialog
 
-from nfc_demo.nfc_layout import NFCLayout
+from nfc_layout import NFCLayout
 from process_package.PyQtCustomComponent import Label
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, RED

@@ -61,4 +61,4 @@ class VirtualNFC(Serial):
                 msg = self.read_all().decode()
                 print(msg)
                 self.signal.signal_read_msg.emit(msg)
-                self.send_msg(msg)
+                # self.send_msg(msg)

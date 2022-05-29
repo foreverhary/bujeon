@@ -1,6 +1,7 @@
 import csv
 import os.path
 import sys
+from threading import Timer
 from winsound import Beep
 
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
@@ -12,14 +13,15 @@ from AudioBusUI import AudioBusUI
 from FileObserver import Target
 from audio_bus.AudioBusConfig import AudioBusConfig
 from process_package.Config import get_config_audio_bus
+from process_package.NGScreen import NGScreen
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, window_right, logger, \
     FUNCTION_PREVIOUS_PROCESS, \
-    NFC, LIGHT_SKY_BLUE, RED, GRADE_FILE_PATH, WHITE, SUMMARY_FILE_PATH, A, B, C, C_GRADE_MIN, \
+    LIGHT_SKY_BLUE, RED, GRADE_FILE_PATH, WHITE, SUMMARY_FILE_PATH, A, B, C, C_GRADE_MIN, \
     C_GRADE_MAX, B_GRADE_MAX, A_GRADE_MAX, NG, \
     FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR, get_time, YELLOW, \
-    GREEN, NFCIN1, NFC1, NFC2
+    GREEN, NFCIN1, NFC1, LIGHT_BLUE, PROCESS_NAMES
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -52,6 +54,7 @@ class AudioBus(AudioBusUI):
         # sub windows
         self.audio_bus_config_window = AudioBusConfig()
         self.mssql_config_window = MSSQLDialog()
+        self.ng_screen = NGScreen()
 
         # variable
         self.nfc = {}
@@ -69,6 +72,12 @@ class AudioBus(AudioBusUI):
         self.load_window.start_signal.connect(self.show_main_window)
         if not ports:
             self.show_main_window([])
+
+        self.timer_check_result = Timer(3, self.check_result)
+
+        self.write_nfc_msg = ''
+        self.write_delay_count = 0
+        self.nfc_write_result = ''
 
     def show_main_window(self, nfc_list):
         self.load_window.close()
@@ -122,11 +131,6 @@ class AudioBus(AudioBusUI):
                                       self.grade,
                                       FUNCTION,
                                       self.get_ecode())
-        self.status_label.set_background_color(LIGHT_SKY_BLUE)
-        self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", WHITE)
-
-        for index in range(1, 3):
-            self.nfc[f"{NFC}{index}"].unit_count = 0
 
     def get_ecode(self):
         return ','.join([
@@ -160,14 +164,52 @@ class AudioBus(AudioBusUI):
         if self.is_nfc_in_exist():
             self.previous_process_label.is_clean = True
             if NFCIN1 == nfc.serial_name:
+                nfc.clean_check_dm()
+                if self.ng_screen.isActiveWindow():
+                    return
                 Beep(FREQ, DUR)
-                color = LIGHT_SKY_BLUE if nfc.check_pre_process(FUNCTION_PREVIOUS_PROCESS) else RED
+                if nfc.check_pre_process(FUNCTION_PREVIOUS_PROCESS):
+                    color = LIGHT_SKY_BLUE
+                else:
+                    self.ng_screen.set_text(nfc, FUNCTION_PREVIOUS_PROCESS)
+                    self.ng_screen.show_modal()
+                    return
                 self.previous_process_label.set_background_color(color)
                 self.status_update_signal.emit(self.previous_process_label, nfc.dm, WHITE)
-                nfc.check_dm = ''
-            elif nfc.check_pre_process_valid(FUNCTION_PREVIOUS_PROCESS):
-                self.received_nfc = nfc
-                self.reset_anti_repeat_parameter()
+            else:
+                nfc.clean_check_dm()
+                self.write_label.set_background_color(LIGHT_BLUE)
+                if not nfc.check_pre_process_valid(FUNCTION_PREVIOUS_PROCESS):
+                    return
+                msg = [nfc.dm]
+                msg.extend(
+                    f"{process_name}:{nfc.nfc_previous_process[process_name]}"
+                    for process_name in PROCESS_NAMES
+                    if process_name in nfc.nfc_previous_process
+                )
+                if self.write_delay_count:
+                    self.write_delay_count -= 1
+                    return
+                if not self.nfc_write_result:
+                    return
+                if self.write_nfc_msg != ','.join(msg):
+                    self.write_delay_count += 1
+                    write_msg = [nfc.dm]
+                    write_msg.extend(
+                        f"{process_name}:{nfc.nfc_previous_process[process_name]}"
+                        for process_name in FUNCTION_PREVIOUS_PROCESS
+                        if process_name in nfc.nfc_previous_process
+                    )
+                    write_msg.append(f"{FUNCTION_PROCESS}:{self.nfc_write_result}")
+                    self.write_nfc_msg = ','.join(write_msg)
+                    msg = self.write_nfc_msg
+                    nfc.write(msg.encode())
+                else:
+                    self.write_label.setText(nfc.dm)
+                    self.update_sql(nfc)
+                    self.nfc_write_result = ''
+                    self.status_update_signal.emit(self.status_label, f"{nfc.dm} is Write Done", LIGHT_SKY_BLUE)
+                    self.reset_anti_repeat_parameter()
         else:
             color = LIGHT_SKY_BLUE if nfc.check_pre_process(FUNCTION_PREVIOUS_PROCESS) else RED
             self.previous_process_label.set_background_color(color)
@@ -207,18 +249,26 @@ class AudioBus(AudioBusUI):
             self.status_update_signal.emit(self.status_label, 'Read Result...', WHITE)
             sheet = open_workbook(file_path).sheet_by_name('Summary')
             self.parse_and_check_result(sheet)
-            # self.status_label.set_background_color(LIGHT_SKY_BLUE)
-            # self.status_update_signal.emit(self.status_label, f'{self.received_nfc.dm} DONE', WHITE)
+            self.status_update_signal.emit(self.status_label, 'NFC TAG', WHITE)
+            # self.update_sql(self.received_nfc)
+            # self.timer_check_result = Timer(3, self.check_result)
+            # self.timer_check_result.daemon = True
+            # self.timer_check_result.start()
         except ValueError as e:
             logger.error(type(e))
         except Exception as e:
             logger.debug(e)
 
+    def check_result(self):
+        self.status_label.set_background_color(RED)
+        self.status_update_signal.emit(self.status_label, f"{self.received_nfc.dm} WRITE MISS", WHITE)
+
     def is_nfc_in_exist(self):
         return NFCIN1 in self.nfc
 
     def is_nfc_ok(self):
-        check_nfc_set = {NFC1, NFC2}
+        # check_nfc_set = {NFC1, NFC2}
+        check_nfc_set = {NFC1}
         connected_nfc_set = {nfc.serial_name for nfc in self.nfc.values()}
         if not check_nfc_set - connected_nfc_set:
             return all(nfc.is_open for nfc in self.nfc.values())
@@ -243,25 +293,19 @@ class AudioBus(AudioBusUI):
         self.init_result_true()
         for name, result_value in result.items():
             for key in self.result:
-                logger.debug(f"key:{key}, name:{name}, result_value:{result_value}")
                 if key in name and 'Failed' in result_value:
                     self.result[key] = False
 
-        if False in self.result.values():
-            for k, v in self.result.items():
-                if not v:
-                    logger.debug(f"NG : {v}")
-            self.grade = NG
-        msg = [self.received_nfc.dm]
-        msg.extend(
-            f"{process_name}:{self.received_nfc.nfc_previous_process[process_name]}"
-            for process_name in FUNCTION_PREVIOUS_PROCESS
-            if process_name in self.received_nfc.nfc_previous_process
-        )
-
-        msg.append(f"{FUNCTION_PROCESS}:{self.grade}")
-        self.received_nfc.write(','.join(msg).encode())
-        self.update_sql(self.received_nfc)
+        self.nfc_write_result = NG if False in self.result.values() else self.grade
+        # msg = [self.received_nfc.dm]
+        # msg.extend(
+        #     f"{process_name}:{self.received_nfc.nfc_previous_process[process_name]}"
+        #     for process_name in FUNCTION_PREVIOUS_PROCESS
+        #     if process_name in self.received_nfc.nfc_previous_process
+        # )
+        #
+        # msg.append(f"{FUNCTION_PROCESS}:{self.grade}")
+        # self.received_nfc.write(','.join(msg).encode())
 
     def start_file_observe(self):
         if self.start_grade_file_observe() and self.start_summary_file_observe():

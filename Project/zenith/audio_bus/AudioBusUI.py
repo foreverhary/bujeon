@@ -25,25 +25,34 @@ class AudioBusUI(QWidget):
         grade_groupbox = QGroupBox()
         grade_groupbox.setTitle(GRADE)
         grade_layout = QVBoxLayout()
-        self.grade_label = Label('')
+        self.grade_label = Label()
         self.grade_label.setMinimumWidth(600)
         grade_layout.addWidget(self.grade_label)
         grade_groupbox.setLayout(grade_layout)
 
-        # process result
-        process_groupbox = QGroupBox()
-        process_groupbox.setTitle(STATUS)
+        # write
+        write_groupbox = QGroupBox('WRITE STATUS')
+        self.write_label = Label(is_clean=True, clean_time=1500)
 
-        self.status_label = Label('')
+        write_status_layout = QVBoxLayout()
+        write_status_layout.addWidget(self.write_label)
+        write_groupbox.setLayout(write_status_layout)
+
+        # status
+        status_groupbox = QGroupBox(STATUS)
+        status_groupbox.setTitle(STATUS)
+
+        self.status_label = Label()
         self.status_label.setMinimumWidth(600)
         self.status_label.set_color(RED)
 
-        process_layout = QVBoxLayout()
-        process_layout.addWidget(self.status_label)
-        process_groupbox.setLayout(process_layout)
+        status_layout = QVBoxLayout()
+        status_layout.addWidget(self.status_label)
+        status_groupbox.setLayout(status_layout)
 
         layout.addWidget(previous_process_groupbox)
         layout.addWidget(grade_groupbox)
-        layout.addWidget(process_groupbox)
+        layout.addWidget(write_groupbox)
+        layout.addWidget(status_groupbox)
         self.setLayout(layout)
         self.setWindowTitle('Audio Bus')

@@ -103,7 +103,6 @@ class SerialNFC(Serial):
                     self.signal.debug_nfc_signal.emit(line_data)
 
     def clean_check_dm(self):
-        print('ok')
         self.check_dm = ''
 
     def read_line_decode(self):
@@ -152,32 +151,31 @@ class SerialNFC(Serial):
     def previous_process_check_thread(self):
         self.flushInput()
         while True:
-            while not self.debug:
-                try:
-                    self.is_close_open()
-                    line_data = self.read_line_decode()
-                    if not self.enable or not line_data:
-                        continue
-                    logger.debug(line_data)
-                    split_data = line_data.split(',')
-                    self.split_input(split_data)
-                    if self.uid and not self.dm:
-                        self.signal.previous_process_signal.emit(self)
-                        continue
-
-                    if self.dm == self.check_dm:
-                        continue
-                    self.nfc_previous_process = split_data[2:]
+            try:
+                self.is_close_open()
+                line_data = self.read_line_decode()
+                if not self.enable or not line_data:
+                    continue
+                logger.debug(line_data)
+                split_data = line_data.split(',')
+                self.split_input(split_data)
+                if self.uid and not self.dm:
                     self.signal.previous_process_signal.emit(self)
-                    self.check_dm = self.dm
-                except (UnicodeDecodeError, ValueError) as e:
-                    logger.error(f"{type(e)} : {e}")
-                except SerialException:
-                    logger.error(SerialException)
-                    self.signal.serial_error_signal.emit("ERROR NFC PLEASE RESTART PROGRAM")
-                    break
-                except Exception as e:
-                    logger.error(f"{type(e)} : {e}")
+                    continue
+
+                if self.dm == self.check_dm:
+                    continue
+                self.nfc_previous_process = split_data[2:]
+                self.signal.previous_process_signal.emit(self)
+                self.check_dm = self.dm
+            except (UnicodeDecodeError, ValueError) as e:
+                logger.error(f"{type(e)} : {e}")
+            except SerialException:
+                logger.error(f"{SerialException}:{self.serial_name}")
+                self.signal.serial_error_signal.emit("ERROR NFC PLEASE RESTART PROGRAM")
+                break
+            except Exception as e:
+                logger.error(f"{type(e)} : {e}")
 
     def power_down(self):
         if self.is_open:

@@ -24,23 +24,26 @@ class ReleaseProcessUI(QWidget):
         self.setLayout(layout := QVBoxLayout())
         layout.addWidget(dm_groupbox := QGroupBox('DM'))
         dm_groupbox.setLayout(dm_layout := QVBoxLayout())
-        dm_layout.addWidget(dm_input_label := CustomLabel(RELEASE_FIXED_WIDTH,
-                                                          RELEASE_FIXED_DM_HEIGHT,
-                                                          RELEASE_FIXED_DM_FONT_SIZE))
+        dm_layout.addWidget(dm_input_label := Label(
+            font_size=RELEASE_FIXED_DM_FONT_SIZE,
+            is_clean=True,
+            clean_time=2000
+        ))
+        dm_input_label.setMinimumSize(RELEASE_FIXED_WIDTH,
+                                      RELEASE_FIXED_DM_HEIGHT)
         layout.addWidget(result_groupbox := QGroupBox('RESULT'))
         result_groupbox.setLayout(result_layout := QVBoxLayout())
-        result_layout.addWidget(result_input_label := CustomLabel(RELEASE_FIXED_WIDTH,
-                                                                  RELEASE_FIXED_RESULT_HEIGHT,
-                                                                  RELEASE_FIXED_RESULT_FONT_SIZE,
-                                                                  is_clean=True,
-                                                                  clean_time=2000))
+        result_layout.addWidget(result_input_label := Label(
+            font_size=RELEASE_FIXED_RESULT_FONT_SIZE,
+            is_clean=True,
+            clean_time=1500))
+        result_input_label.setMinimumSize(RELEASE_FIXED_WIDTH,
+                                          RELEASE_FIXED_RESULT_HEIGHT)
         layout.addWidget(status_groupbox := QGroupBox('STATUS'))
         status_groupbox.setLayout(status_layout := QVBoxLayout())
         status_layout.addWidget(status_label := CustomLabel(RELEASE_FIXED_WIDTH,
                                                             RELEASE_FIXED_DM_HEIGHT,
-                                                            RELEASE_FIXED_STATUS_FONT_SIZE,
-                                                            is_clean=True,
-                                                            clean_time=1500))
+                                                            RELEASE_FIXED_STATUS_FONT_SIZE))
         self.dm_input_label = dm_input_label
         self.result_input_label = result_input_label
         self.status_label = status_label

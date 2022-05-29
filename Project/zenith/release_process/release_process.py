@@ -92,8 +92,8 @@ class ReleaseProcess(ReleaseProcessUI):
         self.clean_timer.start()
 
     def clean_display(self):
-        self.dm_input_label.clean()
-        self.result_input_label.clean()
+        # self.dm_input_label.clean()
+        # self.result_input_label.clean()
         self.nfc.check_dm = ''
 
     def mousePressEvent(self, e):

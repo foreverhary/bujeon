@@ -110,6 +110,7 @@ class SensorChannelLayout(QGroupBox):
         self.connectButton.clicked.connect(self.connect_machine_button)
 
         self.write_nfc_msg = ''
+        self.write_delay_count = 0
 
     def fill_available_ports(self):
         serial_ports = [s.device for s in serial.tools.list_ports.comports()]
@@ -180,7 +181,13 @@ class SensorChannelLayout(QGroupBox):
             for process_name in PROCESS_NAMES
             if process_name in self.nfc.nfc_previous_process
         )
-        if self.write_nfc_msg != ','.join(msg):
+        if self.write_delay_count:
+            self.write_delay_count -= 1
+            return
+        if not self.resultInput.text():
+            return
+        if self.write_nfc_msg != ','.join(msg) :
+            self.write_delay_count += 1
             write_msg = [self.nfc.dm]
             write_msg.extend(
                 f"{process_name}:{self.nfc.nfc_previous_process[process_name]}"
@@ -189,7 +196,9 @@ class SensorChannelLayout(QGroupBox):
             )
             write_msg.append(f"{SENSOR_PROCESS}:{self.resultInput.text()}")
             self.write_nfc_msg = ','.join(write_msg)
-            self.nfc.write(self.write_nfc_msg.encode())
+            msg = self.write_nfc_msg
+            self.nfc.write(msg.encode())
+            # self.nfc.readline()
         else:
             self.update_sql()
             self.display_nfc_write()
@@ -200,6 +209,7 @@ class SensorChannelLayout(QGroupBox):
         self.dmInput.setText(self.nfc.dm)
         self.signal_update_sql.emit(self.nfc)
         Beep(FREQ + 1000, DUR)
+        self.write_nfc_msg = ''
 
     def update_sql(self):
         self.mssql.start_query_thread(self.mssql.insert_pprd,
