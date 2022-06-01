@@ -125,8 +125,8 @@ class MSSQL:
             password=get_config_mssql(MSSQL_PASSWORD),
             database=get_config_mssql(MSSQL_DATABASE),
             autocommit=True,
-            login_timeout=0,
-            timeout=0,
+            login_timeout=3,
+            timeout=3,
         )
         logger.debug("get_mssql_conn end")
         self.cur = self.con.cursor()
@@ -171,7 +171,8 @@ class MSSQL:
             if "insert" in func.__name__:
                 logger.error(f"{func.__name__} Need to Save!!")
                 self.save_query_db_fail(func, *args)
-            self.con = None
+            if e == OperationalError:
+                self.con = None
             return False
         except Exception as e:
             logger.error(f"{type(e)} : {e}")

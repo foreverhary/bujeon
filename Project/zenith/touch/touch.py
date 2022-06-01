@@ -36,7 +36,6 @@ class Touch(TouchUI):
         self.serial_machine = SerialMachine(baudrate=115200, serial_name=TOUCH)
         self.connect_event()
         self.mssql = MSSQL(TOUCH)
-        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
         self.mssql.timer_for_db_connect(self)
 
         self.input_order_number()

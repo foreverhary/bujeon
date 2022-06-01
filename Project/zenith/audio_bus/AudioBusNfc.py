@@ -48,7 +48,6 @@ class AudioBus(AudioBusUI):
         self.app = app
 
         self.mssql = MSSQL(AUD)
-        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
         self.mssql.timer_for_db_connect(self)
 
         # sub windows

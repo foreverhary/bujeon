@@ -57,9 +57,10 @@ class ReleaseProcess(ReleaseProcessUI):
             self.clean_timer.cancel()
         Beep(FREQ, DUR)
         self.dm_input_label.setText(nfc.dm)
-        self.result_input_label.clean()
-        t = Timer(0.5, self.display_result, args=(nfc,))
-        t.start()
+        self.display_result(nfc)
+        # self.result_input_label.clean()
+        # t = Timer(0.5, self.display_result, args=(nfc,))
+        # t.start()
 
     def display_result(self, nfc):
 

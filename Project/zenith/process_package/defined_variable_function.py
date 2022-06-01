@@ -15,8 +15,8 @@ lock = Lock()
 logger = get_logger("My Logger")
 
 # Time
-CHECK_DB_TIME = 60000
-CHECK_DB_UPDATE_TIME = 600000
+CHECK_DB_TIME = 10000
+CHECK_DB_UPDATE_TIME = 60000
 
 # size
 DM_FONT_SIZE = 25
@@ -160,7 +160,7 @@ SAVE_DB_RETRY_FILE_NAME = './log/save_db_retry.log'
 TOUCH = 'TOUCH'
 
 # AIR LEAK
-AIR_LEAK_UNIT_COUNT = 4
+AIR_LEAK_UNIT_COUNT = 1
 AIR_LEAK = 'AIR LEAK'
 
 # MIC

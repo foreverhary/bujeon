@@ -18,13 +18,13 @@ class NFCDemo(QWidget):
         self.app = app
         self.setLayout(layout := QGridLayout())
         self.nfcs = []
-        layout.addWidget(groupbox := NFCSlot(0, COMPORT[0]), 0, 0)
-        self.nfcs.append(groupbox)
+        # layout.addWidget(groupbox := NFCSlot(0, COMPORT[0]), 0, 0)
+        # self.nfcs.append(groupbox)
         # layout.addWidget(groupbox := NFCSlot(2, COMPORT[2]), 0, 1)
         # self.nfcs.append(groupbox)
-        # for index, com in enumerate(COMPORT):
-        #     layout.addWidget(groupbox := NFCSlot(index, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
-        #     self.nfcs.append(groupbox)
+        for index, com in enumerate(COMPORT):
+            layout.addWidget(groupbox := NFCSlot(index, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
+            self.nfcs.append(groupbox)
 
         self.show_main_window()
 

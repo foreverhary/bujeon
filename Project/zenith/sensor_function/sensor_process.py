@@ -27,7 +27,6 @@ class SensorProcess(SensorUI):
         self.app = app
 
         self.mssql = MSSQL(SENSOR)
-        self.mssql.start_query_thread(self.mssql.get_mssql_conn)
         self.mssql.timer_for_db_connect(self)
 
         for frame in self.ch_frame:

@@ -1,7 +1,9 @@
 import os
 from threading import Thread
 
-from process_package.defined_variable_function import SAVE_DB_FILE_NAME, logger, SAVE_DB_RETRY_FILE_NAME
+from pymssql._pymssql import OperationalError
+
+from process_package.defined_variable_function import SAVE_DB_FILE_NAME, logger, SAVE_DB_RETRY_FILE_NAME, lock
 
 
 class UpdateDB(Thread):
@@ -14,11 +16,12 @@ class UpdateDB(Thread):
     def run(self):
         self.read_file(SAVE_DB_RETRY_FILE_NAME)
         self.db_update()
-        self.read_file(SAVE_DB_FILE_NAME)
+        with lock:
+            self.read_file(SAVE_DB_FILE_NAME)
         self.db_update()
 
     def db_update(self):
-        for query_str in self.query_lines:
+        for index, query_str in enumerate(self.query_lines):
             query_args = query_str.split('\t')
             if int(query_args[-1]) > 1000:
                 continue
@@ -30,6 +33,13 @@ class UpdateDB(Thread):
                 continue
             try:
                 func(*query_args[1:-1])
+            except OperationalError as e:
+                logger.debug(type(e))
+                with open(SAVE_DB_RETRY_FILE_NAME, 'a') as f:
+                    for lines in self.query_lines[index:]:
+                        lines[-1] = str(int(lines[-1]) + 1)
+                        f.write('\t'.join(lines) + '\n')
+                break
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")
                 logger.error(query_args)
