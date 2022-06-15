@@ -98,13 +98,16 @@ class AirLeak(AirLeakUi):
     @pyqtSlot(object)
     def received_previous_process(self, nfc):
         nfc.check_dm = ''
+        self.unit_list[len(self.dm_list)].set_background_color(LIGHT_BLUE)
         if nfc.dm in self.dm_list:
             self.receive_same_dm(self.dm_list.index(nfc.dm))
             return
-        self.unit_list[len(self.dm_list)].set_background_color(LIGHT_BLUE)
+        if not self.result_label.text():
+            return
         nfc_msg = [nfc.dm]
         nfc_msg.extend(f"{k}:{v}" for k, v in nfc.nfc_previous_process.items())
         msg = [nfc.dm, f"{AIR_LEAK_PROCESS}:{self.result_label.text()}"]
+        logger.info(msg)
         if ','.join(nfc_msg) == ','.join(msg):
             self.mssql.start_query_thread(self.mssql.insert_pprd,
                                           get_time(),
@@ -125,7 +128,7 @@ class AirLeak(AirLeakUi):
         timer.daemon = True
         timer.start()
 
-    @pyqtSlot(object)
+    # @pyqtSlot(object)
     def update_sql(self, nfc):
         Beep(FREQ, DUR)
         dm_label = self.unit_list[len(self.dm_list)]

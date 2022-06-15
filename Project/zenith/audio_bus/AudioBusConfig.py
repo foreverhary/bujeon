@@ -83,7 +83,7 @@ class AudioBusConfig(AudioBusConfigUI):
         self.df = None
         self.close()
 
-    def showModal(self):
+    def show_modal(self):
         return super().exec_()
 
 

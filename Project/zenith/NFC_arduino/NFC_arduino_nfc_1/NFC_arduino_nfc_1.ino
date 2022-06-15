@@ -11,6 +11,7 @@
 // Use this line for a breakout with a software SPI connection (recommended):
 Adafruit_PN532 nfc(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 bool keep_going = true;
+bool is_open = true;
 
 // classic
 #define LAST_SECTOR 3
@@ -96,6 +97,14 @@ void loop(void) {
           memset(data, 0 , 4);
         }
       }      
+    }
+  }else{
+    if(!nfc.getFirmwareVersion()){
+      Serial.println("disconnected");
+      is_open = false;
+    }else if(!is_open){
+      Serial.println("reconnect");
+      is_open=true;
     }
   }
 }
