@@ -1,12 +1,15 @@
 import qdarkstyle as qdarkstyle
+import serial.tools.list_ports
 from PySide6.QtCore import QTimer, Qt, QDate
 from PySide6.QtGui import QFontDatabase, QFont, QCursor
 from PySide6.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QGroupBox, QVBoxLayout, QHBoxLayout, \
     QWidget, QMessageBox
-from serial import Serial, SerialException
+from serial import SerialException
 
 from packages.component.style import STYLE
+from packages.serial.MachineSerial import SerialMachine
 from packages.variable.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW, BLUE
+from packages.variable.variables import logger, get_serial_available_list
 
 DEFAULT_FONT_SIZE = 30
 
@@ -204,15 +207,14 @@ class HBoxSerial(QHBoxLayout):
 
     def __init__(self, button_text='CONNECT'):
         super(HBoxSerial, self).__init__()
+        self.serial = None
         self.addWidget(comport := QComboBox())
         self.addWidget(button := Button(button_text))
 
         self.comport = comport
         self.button = button
-        self.serial = Serial()
 
         self.button.clicked.connect(self.clicked_button)
-        self.check_connect()
 
     def check_connect(self):
         if self.serial.is_open:
@@ -222,13 +224,32 @@ class HBoxSerial(QHBoxLayout):
             self.button.set_clicked(RED)
             self.comport.setEnabled(True)
 
-    def clicked_button(self):
+    def setup_serial(self, port, baudrate, serial_name):
+        self.fill_available_ports()
+        port = port or self.comport.currentText()
+        self.serial = SerialMachine(port=port, baudrate=baudrate, serial_name=serial_name)
         try:
-            if self.serial.is_open:
-                self.serial.close()
-            else:
-                self.serial.open()
+            self.toggle_serial()
         except SerialException:
+            logger.warn(f"{self.serial.port} cannot connect!!")
+        self.check_connect()
+
+    def fill_available_ports(self):
+        self.comport.clear()
+        self.comport.addItems(get_serial_available_list())
+
+    def toggle_serial(self):
+        self.serial.close() if self.serial.is_open else self.serial.open()
+
+    def set_port(self):
+        self.serial.port = self.comport.currentText() or None
+
+    def clicked_button(self):
+        self.set_port()
+        try:
+            self.toggle_serial()
+        except SerialException:
+            logger.warn(f"{self.serial.port} cannot connect!!")
             msg = QMessageBox()
             msg.setWindowTitle("CONNECT ERROR")
             msg.setText(f"{self.serial.port} Connect Fail")

@@ -4,11 +4,15 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QGroupBox
 
 from packages.component.CustomComponent import HBoxSerial, GroupLabel, style_sheet_setting, Widget
-from packages.variable.size import TOUCH_MACHINE_RESULT_FONT_SIZE, TOUCH_DATA_MATRIX_FONT_SIZE, TOUCH_COMPORT_MAXIMUM_HEIGHT, \
+from packages.config.config import get_config_value
+from packages.serial.MachineSerial import SerialMachine
+from packages.variable.size import TOUCH_MACHINE_RESULT_FONT_SIZE, TOUCH_DATA_MATRIX_FONT_SIZE, \
+    TOUCH_COMPORT_MAXIMUM_HEIGHT, \
     TOUCH_ORDER_MAXIMUM_HEIGHT, TOUCH_STATUS_MAXIMUM_HEIGHT, TOUCH_MACHINE_MINIMUM_WIDTH, \
     TOUCH_DATA_MATRIX_MAXIMUM_HEIGHT
-from packages.variable.string import MACHINE_COMPORT, ORDER_NUMBER, DATA_MATRIX, MACHINE_RESULT, STATUS
-from packages.variable.variables import logger
+from packages.variable.string import MACHINE_COMPORT, ORDER_NUMBER, DATA_MATRIX, MACHINE_RESULT, STATUS, TOUCH, \
+    CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1
+from packages.variable.variables import logger, BAUDRATE_115200
 
 
 class Touch(Widget):
@@ -24,7 +28,16 @@ class Touch(Widget):
 
         self.setup_ui()
 
+        self.setup_program()
+
         self.show()
+
+    def setup_program(self):
+        self.comport.setup_serial(
+            get_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1),
+            baudrate=BAUDRATE_115200,
+            serial_name=TOUCH
+        )
 
     def setup_ui(self):
         layout = QVBoxLayout(self)

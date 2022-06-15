@@ -14,6 +14,7 @@ RESULT = "RESULT"
 UNIT = "UNIT"
 GRADE = "GRADE"
 DM = "DM"
+TOUCH = "TOUCH"
 
 # config string
 POP_SECTION = 'pop'

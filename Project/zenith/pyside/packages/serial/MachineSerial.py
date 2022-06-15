@@ -6,4 +6,5 @@ class SerialMachine(Serial):
         super(SerialMachine, self).__init__()
         self.port, self.baudrate, self.timeout, self.serial_name = port, baudrate, timeout, serial_name
 
-        
+    def get_readline_with_decode(self):
+        return self.readline().decode().replace('\r', '').replace('\n', '')
