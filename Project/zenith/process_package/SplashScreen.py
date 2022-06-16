@@ -1,14 +1,12 @@
-import re
 import sys
 from threading import Thread
 
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QMainWindow, QGraphicsDropShadowEffect, QApplication, QDesktopWidget
-from serial import Serial
+from PySide2.QtCore import Qt, QTimer, Signal
+from PySide2.QtGui import QColor
+from PySide2.QtWidgets import QMainWindow, QGraphicsDropShadowEffect, QApplication, QDesktopWidget
 
 from process_package.SerialNFC import SerialNFC
-from process_package.defined_serial_port import ports
+from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import logger
 from process_package.ui_splash_screen import Ui_SplashScreen
 
@@ -18,17 +16,17 @@ jumper = 10
 
 
 class SplashScreen(QMainWindow):
-    serial_check_signal = pyqtSignal()
-    start_signal_old = pyqtSignal(dict)
-    start_signal = pyqtSignal(list)
+    serial_check_signal = Signal()
+    start_signal_old = Signal(dict)
+    start_signal = Signal(list)
 
-    def __init__(self, app_name):
+    def __init__(self, app_name, ser_list):
         QMainWindow.__init__(self)
         self.ui = Ui_SplashScreen()
         self.ui.setupUi(self, app_name)
 
         self.ser_list_old = {}
-        self.ser_list = []
+        self.ser_list = ser_list
 
         self.counter = 0
         self.jumper = 0
@@ -107,6 +105,7 @@ class SplashScreen(QMainWindow):
             self.timer.stop()
 
             # SHOW MAIN WINDOW
+            self.close()
             self.start_signal.emit(self.ser_list)
             self.start_signal_old.emit(self.ser_list_old)
             # self.start_signal.emit()
@@ -152,13 +151,14 @@ class SplashScreen(QMainWindow):
         logger.debug("setting_serial_automation")
         th = []
         ser_list = []
-        for port in ports:
+        for port in get_serial_available_list():
             if 'COM' in port:
                 t = Thread(target=self.serial_nfc_check, args=(port, ser_list), daemon=True)
                 t.start()
                 th.append(t)
         for t in th:
             t.join()
+        self.serial_check_signal.emit()
         for ser in ser_list:
             logger.info(ser.serial_name)
         self.ser_list = ser_list

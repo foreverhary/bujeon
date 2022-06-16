@@ -1,8 +1,39 @@
-from PyQt5.QtCore import Qt, QDate, QTimer
-from PyQt5.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit
+from PySide2.QtCore import Qt, QDate, QTimer
+from PySide2.QtGui import QCursor
+from PySide2.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QWidget
 
-from process_package.defined_variable_function import DEFAULT_FONT_SIZE, WHITE, RED, YELLOW, LIGHT_YELLOW, \
-    BACK_GROUND_COLOR, LIGHT_SKY_BLUE, LIGHT_BLUE
+from process_package.resource.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW
+from process_package.resource.size import DEFAULT_FONT_SIZE
+
+
+class Widget(QWidget):
+    def __init__(self):
+        super(Widget, self).__init__()
+        self.m_Position = None
+        self.m_flag = False
+
+    def mousePressEvent(self, e):
+        if e.buttons() & Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = e.globalPos() - self.pos()
+            e.accept()
+            self.setCursor((QCursor(Qt.OpenHandCursor)))
+
+    def mouseMoveEvent(self, e):
+        if Qt.LeftButton and self.m_flag:
+            self.move(e.globalPos() - self.m_Position)
+            e.accept()
+
+    def mouseReleaseEvent(self, e):
+        self.m_flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
+
+    def mouseDoubleClickEvent(self, e):
+        if e.buttons() & Qt.LeftButton:
+            if self.isMaximized():
+                self.showNormal()
+            else:
+                self.showMaximized()
 
 
 class Button(QPushButton):

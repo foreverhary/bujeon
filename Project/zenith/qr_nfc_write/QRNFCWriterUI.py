@@ -1,38 +1,47 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox
+from PySide2.QtWidgets import QVBoxLayout, QGroupBox
 
-from process_package.PyQtCustomComponent import Label
+from process_package.Views.CustomComponent import Label, Widget
+from process_package.Views.CustomMixComponent import GroupLabel
 from process_package.defined_variable_function import QR_DM_MINIMUM_WIDTH_SIZE, QR_DM_TEXT_SIZE, \
     QR_PREVIOUS_PROCESS_TEXT_SIZE, QR_STATUS_TEXT_SIZE, PREVIOUS_PROCESS, DATA_MATRIX, STATUS
+from process_package.resource.color import WHITE
+from process_package.resource.size import MATCHING_PREVIOUS_PROCESS_FONT_SIZE, MATCHING_PREVIOUS_PROCESS_MINIMUM_HEIGHT, \
+    MATCHING_DATA_MATRIX_FONT_SIZE, MATCHING_DATA_MATRIX_MINIMUM_WIDTH, MATCHING_STATUS_FONT_SIZE, \
+    MATCHING_STATUS_MAXIMUM_HEIGHT
+from process_package.resource.string import STR_PREVIOUS_PROCESS, STR_DATA_MATRIX, STR_STATUS, STR_QR_MATCHING
 
 
-class QRNFCWriterUI(QWidget):
+class QRNFCWriterUI(Widget):
     """
     등록 공정 UI
     """
 
     def __init__(self):
         super(QRNFCWriterUI, self).__init__()
-        self.setLayout(layout := QVBoxLayout())
-        layout.addWidget(preprocess_box := QGroupBox(PREVIOUS_PROCESS))
-        preprocess_box.setLayout(preprocess_layout := QVBoxLayout())
-        preprocess_layout.addWidget(preprocess := Label())
+        layout = QVBoxLayout(self)
+        layout.addWidget(previous_process := GroupLabel(STR_PREVIOUS_PROCESS))
+        layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX))
+        layout.addWidget(status := GroupLabel(STR_STATUS))
 
-        layout.addWidget(dm_box := QGroupBox(DATA_MATRIX))
-        dm_box.setLayout(dm_layout := QVBoxLayout())
-        dm_layout.addWidget(dm := Label())
+        previous_process.label.set_font_size(MATCHING_PREVIOUS_PROCESS_FONT_SIZE)
+        previous_process.setMaximumHeight(MATCHING_PREVIOUS_PROCESS_MINIMUM_HEIGHT)
+        data_matrix.label.set_font_size(MATCHING_DATA_MATRIX_FONT_SIZE)
+        data_matrix.label.setMinimumWidth(MATCHING_DATA_MATRIX_MINIMUM_WIDTH)
+        status.label.set_font_size(MATCHING_STATUS_FONT_SIZE)
+        status.setMaximumHeight(MATCHING_STATUS_MAXIMUM_HEIGHT)
 
-        layout.addWidget(status_box := QGroupBox(STATUS))
-        status_box.setLayout(status_layout := QVBoxLayout())
-        status_layout.addWidget(status := Label())
+        self.previous_process = previous_process.label
+        self.data_matrix = data_matrix.label
+        self.status = status.label
 
-        self.preprocess_label = preprocess
-        self.dm_label = dm
-        self.status_label = status
-        self.preprocess_label.set_font_size(size=QR_PREVIOUS_PROCESS_TEXT_SIZE)
-        self.dm_label.setMinimumWidth(QR_DM_MINIMUM_WIDTH_SIZE)
-        self.dm_label.set_font_size(size=QR_DM_TEXT_SIZE)
-        self.status_label.set_font_size(size=QR_STATUS_TEXT_SIZE)
-
-        self.setWindowTitle('DM Registration')
+        self.setWindowTitle(STR_QR_MATCHING)
 
         self.setLayout(layout)
+
+    def status_progress(self, percent):
+        print(percent)
+        self.status.setText(f"NFC Searching : {percent}%")
+
+    def status_update(self, msg, color=WHITE):
+        self.status.setText(msg)
+        self.status.set_color(color)

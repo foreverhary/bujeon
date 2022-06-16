@@ -3,10 +3,10 @@ from functools import wraps
 from threading import Lock
 
 import qdarkstyle
-from PyQt5.QtGui import QFontDatabase, QFont
-from PyQt5.QtWidgets import QDesktopWidget, QMessageBox
+from PySide2.QtGui import QFontDatabase, QFont
+from PySide2.QtWidgets import QDesktopWidget, QMessageBox
 
-from process_package.logger import get_logger
+from process_package.controllers.logger import get_logger
 from process_package.style.style import STYLE
 
 # thread lock
@@ -33,7 +33,6 @@ AIR_LEAK_RESULT_SIZE = 300
 AIR_LEAK_DM_UNIT_FONT_SIZE = 50
 AIR_LEAK_RESULT_FONT_SIZE = 100
 
-DEFAULT_FONT_SIZE = 30
 PREVIOUS_PROCESS_TEXT_SIZE = 80
 RELEASE_GRADE_TEXT_SIZE = 250
 
@@ -69,17 +68,6 @@ B_GRADE_MIN = 'b_min'
 B_GRADE_MAX = 'b_max'
 C_GRADE_MIN = 'c_min'
 C_GRADE_MAX = 'c_max'
-
-# color
-WHITE = 'white'
-BLUE = 'blue'
-RED = 'red'
-YELLOW = 'yellow'
-GREEN = 'green'
-LIGHT_SKY_BLUE = 'lightskyblue'
-LIGHT_BLUE = 'lightblue'
-LIGHT_YELLOW = 'lightyellow'
-BACK_GROUND_COLOR = '#19232D'
 
 # string
 DATA_MATRIX = "DATA MATRIX"

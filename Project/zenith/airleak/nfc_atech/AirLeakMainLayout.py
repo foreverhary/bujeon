@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox
 
-from process_package.PyQtCustomComponent import Button, LineEdit, Label, ComboBox
+from process_package.Views.CustomComponent import Button, LineEdit, Label, ComboBox
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import DM_FONT_SIZE, DM_LABEL_WIDTH_SIZE
 

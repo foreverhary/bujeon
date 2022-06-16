@@ -1,22 +1,22 @@
 import sys
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QCursor
+from PySide2.QtWidgets import QWidget, QApplication, QVBoxLayout
 
-from process_package.PyQtCustomComponent import Label
+from process_package.Views.CustomComponent import Label, Widget
 from process_package.SplashScreen import SplashScreen
-from process_package.defined_variable_function import style_sheet_setting, NFCIN1, MIC_PREVIOUS_PROCESS, PROCESS_NAMES, \
-    PROCESS_OK_RESULTS, PROCESS_FULL_NAMES, RED, LIGHT_SKY_BLUE, AIR_LEAK_PROCESS, window_center
+from process_package.defined_variable_function import style_sheet_setting, NFCIN1, PROCESS_OK_RESULTS, \
+    PROCESS_FULL_NAMES, RED, LIGHT_SKY_BLUE, AIR_LEAK_PROCESS
 
 
-class PreviousCheck(QWidget):
+class PreviousCheck(Widget):
     def __init__(self, app):
         super(PreviousCheck, self).__init__()
         self.app = app
         self.nfc = None
         self.init_ui()
-        self.load_window = SplashScreen("AIR LEAK")
+        self.load_window = SplashScreen("AIR LEAK", [])
         self.load_window.start_signal.connect(self.show_main_window)
 
     def init_ui(self):
@@ -58,26 +58,10 @@ class PreviousCheck(QWidget):
 
         self.result_label.setText(msg)
 
-
     def mousePressEvent(self, e):
+        super().mousePressEvent(e)
         if e.buttons() & Qt.RightButton:
             self.close()
-        if e.buttons() & Qt.LeftButton:
-            self.m_flag = True
-            self.m_Position = e.globalPos() - self.pos()
-            e.accept()
-            self.setCursor((QCursor(Qt.OpenHandCursor)))
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if Qt.LeftButton and self.m_flag:
-            self.move(QMouseEvent.globalPos() - self.m_Position)
-            QMouseEvent.accept()
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.m_flag = False
-        self.setCursor(QCursor(Qt.ArrowCursor))
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

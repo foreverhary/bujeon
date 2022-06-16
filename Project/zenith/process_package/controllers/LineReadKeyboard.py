@@ -1,12 +1,18 @@
+from threading import Thread
+
+from PySide2.QtCore import QObject, Signal
 from pynput import keyboard
 from pynput.keyboard import Key
 
 
-class LineReadKeyboard:
-    __slots__ = ['_line_data']
+class LineReadKeyboard(QObject):
+    keyboard_input_signal = Signal(str)
 
     def __init__(self):
+        super(LineReadKeyboard, self).__init__()
+        self.thread = None
         self._line_data = ''
+        self.start_listen_keyboard()
 
     def get_line(self):
         listener = keyboard.Listener(
@@ -27,6 +33,14 @@ class LineReadKeyboard:
             pass
         except Exception as e:
             print(type(e), e)
+
+    def start_listen_keyboard(self):
+        self.thread = Thread(target=self.listen_keyboard, daemon=True)
+        self.thread.start()
+
+    def listen_keyboard(self):
+        self.keyboard_input_signal.emit(self.get_line())
+        self.start_listen_keyboard()
 
 
 if __name__ == '__main__':

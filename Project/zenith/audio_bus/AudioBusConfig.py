@@ -1,10 +1,10 @@
 import sys
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QApplication, QFileDialog
+from PySide2.QtCore import Signal
+from PySide2.QtWidgets import QApplication, QFileDialog
 
 from AudioBusConfigUI import AudioBusConfigUI
-from process_package.Config import Config, get_config_audio_bus, set_config_audio_bus
+from process_package.models.Config import Config, get_config_audio_bus, set_config_audio_bus
 from process_package.defined_variable_function import *
 from process_package.style.style import STYLE
 
@@ -12,7 +12,7 @@ PATH_MAX_LENGTH = 30
 
 
 class AudioBusConfig(AudioBusConfigUI):
-    close_signal = pyqtSignal()
+    close_signal = Signal()
 
     def __init__(self):
         super(AudioBusConfig, self).__init__()
@@ -90,7 +90,7 @@ class AudioBusConfig(AudioBusConfigUI):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyleSheet(STYLE)
-    a = qdarkstyle.load_stylesheet_pyqt5()
+    a = qdarkstyle.load_stylesheet_PySide2()
     fontDB = QFontDatabase()
     fontDB.addApplicationFont("./font/D2Coding-Ver1.3.2-20180524-all.ttc")
     app.setFont(QFont('D2Coding-Ver1.3.2-20180524-all'))

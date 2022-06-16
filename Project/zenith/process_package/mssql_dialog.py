@@ -1,16 +1,16 @@
 import sys
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtCore import Qt, Signal
+from PySide2.QtWidgets import QApplication
 
-from process_package.Config import set_config_mssql, get_config_mssql
+from process_package.models.Config import set_config_mssql, get_config_mssql
 from process_package.defined_variable_function import style_sheet_setting, MSSQL_IP, MSSQL_PORT, \
     MSSQL_PASSWORD, MSSQL_DATABASE, MSSQL_ID
 from process_package.mssql_dialog_ui import MSSQLDialogUI
 
 
 class MSSQLDialog(MSSQLDialogUI):
-    mssql_change_signal = pyqtSignal()
+    mssql_change_signal = Signal()
 
     def __init__(self):
         super(MSSQLDialog, self).__init__()

@@ -1,16 +1,16 @@
 import re
 from threading import Thread
 
-from PyQt5.QtCore import pyqtSignal, QObject
+from PySide2.QtCore import Signal, QObject
 from serial import Serial, SerialException
 
 from process_package.defined_variable_function import logger, AIR_LEAK_ATECH, SENSOR_ATECH, AIR_LEAK_KSD, TOUCH, NG, OK
 
 
 class SerialMachineSignal(QObject):
-    machine_result_signal = pyqtSignal(list)
-    machine_result_ksd_signal = pyqtSignal(tuple)
-    machine_serial_error = pyqtSignal(object)
+    machine_result_signal = Signal(list)
+    machine_result_ksd_signal = Signal(tuple)
+    machine_serial_error = Signal(object)
 
 
 class SerialMachine(Serial):

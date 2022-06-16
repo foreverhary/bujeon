@@ -4,13 +4,12 @@ from winsound import Beep
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QGridLayout, QGroupBox
+from PyQt5.QtWidgets import QWidget, QApplication, QGridLayout
 
-from NFC import VirtualNFC
-from process_package.PyQtCustomComponent import LineEdit, Button, Label
+from process_package.Views.CustomComponent import LineEdit, Button, Label
 from process_package.SplashScreen import SplashScreen
 from process_package.check_string import check_nfc_uid
-from process_package.defined_variable_function import style_sheet_setting, window_bottom_left, FREQ, DUR, logger
+from process_package.defined_variable_function import style_sheet_setting, FREQ, DUR, logger
 
 LOCATION = 'BT5000'
 

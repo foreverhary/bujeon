@@ -1,20 +1,15 @@
 import serial.tools.list_ports
+from PySide2.QtSerialPort import QSerialPortInfo
 from serial import SerialException, Serial
 
 ports = [s.device for s in serial.tools.list_ports.comports()]
 ports.sort()
 
 
-def get_serial_available_list(serial_ports):
-    available_serial_list = []
-    for port in serial_ports:
-        try:
-            s = Serial(port)
-            available_serial_list.append(port)
-            s.close()
-        except SerialException:
-            pass
-    return available_serial_list
+def get_serial_available_list():
+    return [port.portName()
+            for port in QSerialPortInfo.availablePorts()
+            if not port.isBusy()]
 
 
 def connect_serial(ser, port, button):

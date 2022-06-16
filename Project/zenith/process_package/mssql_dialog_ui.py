@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QHBoxLayout
+from PySide2.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QHBoxLayout
 
-from process_package.PyQtCustomComponent import LeftAlignLabel, LineEdit, Button
+from process_package.Views.CustomComponent import LeftAlignLabel, LineEdit, Button
 
 
 class MSSQLDialogUI(QDialog):

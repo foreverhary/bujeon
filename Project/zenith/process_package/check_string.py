@@ -1,6 +1,6 @@
 import re
 
-from PyQt5.QtCore import Qt
+from PySide2.QtCore import Qt
 
 
 # Qt key값 ascii 인지 확인

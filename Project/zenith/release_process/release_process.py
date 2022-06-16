@@ -2,9 +2,9 @@ import sys
 from threading import Timer
 from winsound import Beep
 
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtCore import Signal, Qt
+from PySide2.QtGui import QCursor
+from PySide2.QtWidgets import QApplication
 
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, NFC_IN, FUNCTION_PROCESS, \
@@ -16,14 +16,14 @@ NFC_IN_COUNT = 1
 
 
 class ReleaseProcess(ReleaseProcessUI):
-    key_enter_input_signal = pyqtSignal()
+    key_enter_input_signal = Signal()
 
     def __init__(self, app):
         super(ReleaseProcess, self).__init__()
         self.app = app
         self.nfc = None
 
-        self.load_window = SplashScreen("Release")
+        self.load_window = SplashScreen("Release", [])
         self.load_window.start_signal.connect(self.show_main_window)
         self.clean_timer = Timer(1, self.show_main_window)
 
@@ -51,7 +51,7 @@ class ReleaseProcess(ReleaseProcessUI):
 
         return nfc_in_count
 
-    # @pyqtSignal(object)
+    # @Signal(object)
     def received_previous_process(self, nfc):
         if self.clean_timer.is_alive():
             self.clean_timer.cancel()

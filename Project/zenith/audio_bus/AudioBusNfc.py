@@ -2,17 +2,15 @@ import csv
 import os.path
 import sys
 from threading import Timer
-from winsound import Beep
 
-from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
-from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtCore import Qt, Slot, Signal
+from PySide2.QtWidgets import QApplication
+from winsound import Beep
 from xlrd import open_workbook
 
 from AudioBusUI import AudioBusUI
 from FileObserver import Target
 from audio_bus.AudioBusConfig import AudioBusConfig
-from process_package.Config import get_config_audio_bus
 from process_package.NGScreen import NGScreen
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
@@ -22,6 +20,7 @@ from process_package.defined_variable_function import style_sheet_setting, windo
     C_GRADE_MAX, B_GRADE_MAX, A_GRADE_MAX, NG, \
     FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR, get_time, YELLOW, \
     GREEN, NFCIN1, NFC1, LIGHT_BLUE, PROCESS_NAMES
+from process_package.models.Config import get_config_audio_bus
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
@@ -30,9 +29,9 @@ NFC_OUT_COUNT = 2
 
 
 class AudioBus(AudioBusUI):
-    status_update_signal = pyqtSignal(object, str, str)
-    grade_signal = pyqtSignal(str)
-    summary_signal = pyqtSignal(str)
+    status_update_signal = Signal(object, str, str)
+    grade_signal = Signal(str)
+    summary_signal = Signal(str)
     error_code = {
         SPL: 1,
         THD: 2,
@@ -67,7 +66,7 @@ class AudioBus(AudioBusUI):
         logger.debug(self.result)
 
         # NFC Auto connect
-        self.load_window = SplashScreen("Audio Bus")
+        self.load_window = SplashScreen("Audio Bus", [])
         self.load_window.start_signal.connect(self.show_main_window)
         if not ports:
             self.show_main_window([])
@@ -122,7 +121,7 @@ class AudioBus(AudioBusUI):
             self._grade = NG
         logger.debug(self._grade)
 
-    @pyqtSlot(object)
+    @Slot(object)
     def update_sql(self, nfc):
         self.mssql.start_query_thread(self.mssql.insert_pprd,
                                       get_time(),
@@ -154,11 +153,11 @@ class AudioBus(AudioBusUI):
             nfc.start_previous_process_check_thread()
         return self.is_nfc_ok()
 
-    @pyqtSlot(str)
+    @Slot(str)
     def receive_serial_error(self, msg):
         self.status_update_signal.emit(self.status_label, msg, RED)
 
-    @pyqtSlot(object)
+    @Slot(object)
     def receive_nfc_signal(self, nfc):
         if self.is_nfc_in_exist():
             self.previous_process_label.is_clean = True
@@ -217,12 +216,12 @@ class AudioBus(AudioBusUI):
                 self.received_nfc = nfc
                 self.reset_anti_repeat_parameter()
 
-    @pyqtSlot(object, str, str)
+    @Slot(object, str, str)
     def update_label(self, label, text, color):
         label.setText(text)
         label.set_color(color)
 
-    @pyqtSlot(str)
+    @Slot(str)
     def grade_process(self, file_path):
         try:
             logger.debug(file_path)
@@ -239,7 +238,7 @@ class AudioBus(AudioBusUI):
         except Exception as e:
             logger.error(e)
 
-    @pyqtSlot(str)
+    @Slot(str)
     def summary_process(self, file_path):
         try:
             if self.summary_file_path == file_path:
@@ -334,24 +333,11 @@ class AudioBus(AudioBusUI):
         self.mssql.start_query_thread(self.mssql.get_mssql_conn)
 
     def mousePressEvent(self, e):
+        super().mousePressEvent(e)
         if e.buttons() & Qt.RightButton:
-            self.audio_bus_config_window.showModal()
+            self.audio_bus_config_window.show_modal()
         if e.buttons() & Qt.MidButton:
             self.mssql_config_window.show_modal()
-        if e.buttons() & Qt.LeftButton:
-            self.m_flag = True
-            self.m_Position = e.globalPos() - self.pos()
-            e.accept()
-            self.setCursor((QCursor(Qt.OpenHandCursor)))
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if Qt.LeftButton and self.m_flag:
-            self.move(QMouseEvent.globalPos() - self.m_Position)
-            QMouseEvent.accept()
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.m_flag = False
-        self.setCursor(QCursor(Qt.ArrowCursor))
 
     def closeEvent(self, e):
         for nfc in self.nfc.values():

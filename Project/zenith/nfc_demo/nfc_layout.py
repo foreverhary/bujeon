@@ -3,7 +3,7 @@ from threading import Thread
 from PyQt5.QtCore import pyqtSignal, QTimer
 from PyQt5.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout
 
-from process_package.PyQtCustomComponent import Label, LineEdit, Button
+from process_package.Views.CustomComponent import Label, LineEdit, Button
 
 EDIT_WIDTH_SIZE = 650
 EDIT_HEIGHT_SIZE = 140

@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox
+from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox
 
-from process_package.PyQtCustomComponent import Button, ComboBox, LeftAlignLabel, Label, LineEdit
+from process_package.Views.CustomComponent import Button, ComboBox, LeftAlignLabel, Label, LineEdit
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import AUDIO_BUS_GRADE_EDIT_MIN_WIDTH
 

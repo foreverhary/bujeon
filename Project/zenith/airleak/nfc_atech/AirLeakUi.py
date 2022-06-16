@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QWidget
 
-from process_package.PyQtCustomComponent import Button, Label, ComboBox
+from process_package.Views.CustomComponent import Button, Label, ComboBox
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import AIR_LEAK_DM_UNIT_WIDTH_SIZE, AIR_LEAK_RESULT_SIZE, AIR_LEAK_UNIT_COUNT, \
     UNIT, RESULT, WRITE

@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox
+from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox
 
-from process_package.PyQtCustomComponent import Button, DateEdit, ComboBox, LineEdit, LeftAlignLabel
+from process_package.Views.CustomComponent import Button, DateEdit, ComboBox, LineEdit, LeftAlignLabel
 
 search_args_size = 380
 

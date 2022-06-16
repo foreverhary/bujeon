@@ -228,7 +228,7 @@ class HBoxSerial(QHBoxLayout):
         port = port or self.comport.currentText()
         self.serial = SerialPort(serial_name)
         self.serial.set_port_baudrate(port, baudrate)
-        if not self.serial.toggle():
+        if not self.serial.connect_toggle():
             logger.warn(f"{self.serial.port} cannot connect!!")
         self.check_connect()
 

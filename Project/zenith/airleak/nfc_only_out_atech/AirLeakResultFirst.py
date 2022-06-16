@@ -2,9 +2,9 @@ import sys
 from threading import Timer
 from winsound import Beep
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
-from PyQt5.QtGui import QIcon, QCursor
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtCore import Signal, Slot, Qt
+from PySide2.QtGui import QIcon, QCursor
+from PySide2.QtWidgets import QApplication
 
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
 from process_package.SplashScreen import SplashScreen
@@ -17,7 +17,7 @@ from process_package.mssql_dialog import MSSQLDialog
 
 
 class AirLeak(AirLeakUi):
-    status_signal = pyqtSignal(str, str)
+    status_signal = Signal(str, str)
 
     def __init__(self, app):
         super(AirLeak, self).__init__()
@@ -76,12 +76,12 @@ class AirLeak(AirLeakUi):
         self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
         self.serial_machine.signal.machine_serial_error.connect(self.receive_machine_serial_error)
 
-    @pyqtSlot(object)
+    @Slot(object)
     def receive_machine_serial_error(self, machine):
         self.check_serial_connection()
         make_error_popup(f"{self.serial_machine.port} Connect Fail!!")
 
-    @pyqtSlot(list)
+    @Slot(list)
     def receive_machine_result(self, result):
         self.dm_list = []
         logger.info(result)
@@ -95,7 +95,7 @@ class AirLeak(AirLeakUi):
         self.nfc.enable = True
         self.status_signal.emit("MACHINE RESULT RECEIVED ➡️ TAG NFC JIG", LIGHT_SKY_BLUE)
 
-    @pyqtSlot(object)
+    @Slot(object)
     def received_previous_process(self, nfc):
         nfc.check_dm = ''
         self.unit_list[len(self.dm_list)].set_background_color(LIGHT_BLUE)
@@ -128,7 +128,7 @@ class AirLeak(AirLeakUi):
         timer.daemon = True
         timer.start()
 
-    # @pyqtSlot(object)
+    # @Slot(object)
     def update_sql(self, nfc):
         Beep(FREQ, DUR)
         dm_label = self.unit_list[len(self.dm_list)]
@@ -146,28 +146,15 @@ class AirLeak(AirLeakUi):
             self.result_label.clean()
             self.status_signal.emit("UNIT WRITE DONE!!", LIGHT_SKY_BLUE)
 
-    @pyqtSlot(str, str)
+    @Slot(str, str)
     def status_update(self, msg, color):
         self.status_label.setText(msg)
         self.status_label.set_color(color)
 
     def mousePressEvent(self, e):
+        super().mousePressEvent(e)
         if e.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
-        if e.buttons() & Qt.LeftButton:
-            self.m_flag = True
-            self.m_Position = e.globalPos() - self.pos()
-            e.accept()
-            self.setCursor((QCursor(Qt.OpenHandCursor)))
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if Qt.LeftButton and self.m_flag:
-            self.move(QMouseEvent.globalPos() - self.m_Position)
-            QMouseEvent.accept()
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.m_flag = False
-        self.setCursor(QCursor(Qt.ArrowCursor))
 
     def mssql_reconnect(self):
         self.mssql.start_query_thread(self.mssql.get_mssql_conn)

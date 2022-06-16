@@ -1,14 +1,14 @@
 import sys
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QGridLayout, QGroupBox
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QApplication, QVBoxLayout, QGridLayout, QGroupBox
 
 from NFC import VirtualNFC
-from process_package.PyQtCustomComponent import LineEdit, Button
+from process_package.Views.CustomComponent import LineEdit, Button
 from process_package.defined_variable_function import style_sheet_setting, window_bottom_left
 
 SLOT = 3
-COMPORT = ('com6', 'com8', 'com11')
+COMPORT = ('com3', 'com5', 'com7')
 COLUMN_COUNT = 2
 
 

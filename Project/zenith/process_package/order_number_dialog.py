@@ -1,16 +1,16 @@
 import sys
 
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtCore import Signal, Qt
+from PySide2.QtWidgets import QApplication
 
-from process_package.Config import set_order_number
+from process_package.models.Config import set_order_number
 from process_package.defined_variable_function import style_sheet_setting
 from process_package.mssql_connect import select_order_number_with_date_material_model
 from process_package.order_number_dialog_ui import OrderNumberDialogUI
 
 
 class OderNumberDialog(OrderNumberDialogUI):
-    orderNumberSendSignal = pyqtSignal()
+    orderNumberSendSignal = Signal()
 
     def __init__(self):
         super(OderNumberDialog, self).__init__()

@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QGroupBox
 
-from process_package.PyQtCustomComponent import Label
+from process_package.Views.CustomComponent import Label
 
 RELEASE_FIXED_WIDTH = 700
 RELEASE_FIXED_DM_HEIGHT = 100

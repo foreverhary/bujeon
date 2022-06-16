@@ -1,8 +1,8 @@
 import serial.tools.list_ports
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QWidget
+from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QWidget
 
-from process_package.Config import get_config_value, set_config_value
-from process_package.PyQtCustomComponent import Button, Label, ComboBox
+from process_package.models.Config import get_config_value, set_config_value
+from process_package.Views.CustomComponent import Button, Label, ComboBox, Widget
 from process_package.SerialMachine import SerialMachine
 from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import AIR_LEAK_DM_UNIT_WIDTH_SIZE, AIR_LEAK_RESULT_SIZE, \
@@ -11,9 +11,9 @@ from process_package.defined_variable_function import AIR_LEAK_DM_UNIT_WIDTH_SIZ
     MACHINE_COMPORT_1, AIR_LEAK_ATECH, CONFIG_FILE_NAME, BLUE, RED, AIR_LEAK_DM_UNIT_HEIGHT_SIZE
 
 
-class AirLeakUi(QWidget):
+class AirLeakUi(Widget):
     def __init__(self, parent=None):
-        super(AirLeakUi, self).__init__(parent)
+        super(AirLeakUi, self).__init__()
 
         # comport
         self.machine_port_connect_button = Button('MACHINE')
@@ -70,9 +70,8 @@ class AirLeakUi(QWidget):
         self.parent().keyPressEvent(event)
 
     def fill_available_ports(self):
-        serial_ports = [s.device for s in serial.tools.list_ports.comports()]
         self.machine_comport.clear()
-        self.machine_comport.addItems(get_serial_available_list(serial_ports))
+        self.machine_comport.addItems(get_serial_available_list())
 
     def connect_machine_button(self, not_key=None):
         if not_key:

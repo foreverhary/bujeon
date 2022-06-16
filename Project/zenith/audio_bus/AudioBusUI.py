@@ -1,10 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox
+from PySide2.QtWidgets import QVBoxLayout, QGroupBox
 
-from process_package.PyQtCustomComponent import Label
+from process_package.Views.CustomComponent import Label, Widget
 from process_package.defined_variable_function import RED, PREVIOUS_PROCESS, GRADE, STATUS
 
 
-class AudioBusUI(QWidget):
+class AudioBusUI(Widget):
     def __init__(self):
         super(AudioBusUI, self).__init__()
 

@@ -7,9 +7,9 @@
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
-from PyQt5.QtCore import QRect, Qt, QSize, QMetaObject, QCoreApplication
-from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QFrame, QGridLayout, QLabel
+from PySide2.QtCore import QRect, Qt, QSize, QMetaObject, QCoreApplication
+from PySide2.QtGui import QFont
+from PySide2.QtWidgets import QWidget, QFrame, QGridLayout, QLabel
 
 
 class Ui_SplashScreen(object):

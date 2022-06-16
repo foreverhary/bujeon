@@ -1,24 +1,22 @@
+from PySide2.QtCore import Slot, Signal
+from PySide2.QtWidgets import QHBoxLayout, QVBoxLayout, QGroupBox
 from winsound import Beep
 
-import serial.tools.list_ports
-from PyQt5.QtCore import pyqtSlot, pyqtSignal
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox
-
-from process_package.Config import get_config_value, set_config_value
-from process_package.PyQtCustomComponent import Button, ComboBox, Label
 from process_package.SerialMachine import SerialMachine
+from process_package.Views.CustomComponent import Button, ComboBox, Label, Widget
 from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import SENSOR_ATECH, COMPORT_SECTION, \
     CONFIG_FILE_NAME, CON_OS, POGO_OS, LED, VBAT_ID, C_TEST, BATTERY, MIC, PROX_TEST, PCM, Hall_IC, \
     SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE, PREVIOUS_PROCESS, PREVIOUS_PROCESS_TEXT_SIZE, BLUE, RED, \
     SENSOR_PREVIOUS_PROCESS, SENSOR_PROCESS, OK, LIGHT_SKY_BLUE, get_time, SENSOR, FREQ, DUR, PROCESS_NAMES, LIGHT_BLUE
+from process_package.models.Config import get_config_value, set_config_value
 
 NFC_IN_COUNT = 1
 NFC_OUT_COUNT = 2
 MACHINE_SERIAL_COUNT = 2
 
 
-class SensorUI(QWidget):
+class SensorUI(Widget):
     def __init__(self):
         super(SensorUI, self).__init__()
         self.setLayout(layout := QVBoxLayout())
@@ -58,7 +56,7 @@ class CustomLabel(Label):
 
 
 class SensorChannelLayout(QGroupBox):
-    signal_update_sql = pyqtSignal(object)
+    signal_update_sql = Signal(object)
     error_number = {
         CON_OS: 1,
         POGO_OS: 2,
@@ -113,9 +111,8 @@ class SensorChannelLayout(QGroupBox):
         self.write_delay_count = 0
 
     def fill_available_ports(self):
-        serial_ports = [s.device for s in serial.tools.list_ports.comports()]
         self.serialComboBox.clear()
-        self.serialComboBox.addItems(get_serial_available_list(serial_ports))
+        self.serialComboBox.addItems(get_serial_available_list())
 
     def connect_machine_button(self, not_key=None):
         if not_key:
@@ -145,7 +142,7 @@ class SensorChannelLayout(QGroupBox):
             self.connectButton.set_clicked(RED)
             self.serialComboBox.setEnabled(True)
 
-    @pyqtSlot(list)
+    @Slot(list)
     def receive_machine_result(self, result):
         if len(result) < 2:
             return

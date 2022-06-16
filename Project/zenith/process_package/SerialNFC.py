@@ -1,7 +1,7 @@
 import re
 from threading import Thread
 
-from PyQt5.QtCore import pyqtSignal, QObject
+from PySide2.QtCore import Signal, QObject
 from serial import Serial, SerialException
 
 from process_package.check_string import check_nfc_uid, check_dm
@@ -10,13 +10,13 @@ from process_package.defined_variable_function import SENSOR_PREVIOUS_PROCESS, l
 
 
 class SerialNFCSignal(QObject):
-    previous_process_signal = pyqtSignal(object)
-    qr_write_done_signal = pyqtSignal()
-    nfc_write_done_signal = pyqtSignal(object)
-    serial_error_signal = pyqtSignal(str)
-    dm_read_done_signal = pyqtSignal(object)
-    same_dm_signal = pyqtSignal(object)
-    debug_nfc_signal = pyqtSignal(str)
+    previous_process_signal = Signal(object)
+    qr_write_done_signal = Signal()
+    nfc_write_done_signal = Signal(object)
+    serial_error_signal = Signal(str)
+    dm_read_done_signal = Signal(object)
+    same_dm_signal = Signal(object)
+    debug_nfc_signal = Signal(str)
 
 
 class SerialNFC(Serial):

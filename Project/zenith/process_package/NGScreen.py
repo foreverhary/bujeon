@@ -1,9 +1,7 @@
-from threading import Timer
+from PySide2.QtCore import QTimer, Qt
+from PySide2.QtWidgets import QDialog, QVBoxLayout
 
-from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout
-
-from process_package.PyQtCustomComponent import Label
+from process_package.Views.CustomComponent import Label
 from process_package.defined_variable_function import RED, PROCESS_OK_RESULTS, PROCESS_FULL_NAMES
 
 NG_FONT_SIZE = 70

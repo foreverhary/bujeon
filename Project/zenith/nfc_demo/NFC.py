@@ -1,13 +1,13 @@
 from random import randint
 from threading import Thread, Timer
 
-from PyQt5.QtCore import pyqtSignal, QObject
+from PySide2.QtCore import Signal, QObject
 from serial import Serial
 
 
 class Signal(QObject):
-    signal_dtr = pyqtSignal()
-    signal_read_msg = pyqtSignal(str)
+    signal_dtr = Signal()
+    signal_read_msg = Signal(str)
 
 
 class VirtualNFC(Serial):

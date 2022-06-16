@@ -1,50 +1,41 @@
 import serial.tools.list_ports
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QHBoxLayout, QComboBox
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QHBoxLayout, QComboBox
 
-from process_package.PyQtCustomComponent import Label, Button
+from process_package.Views.CustomComponent import Label, Button
+from process_package.Views.CustomComponent import Widget
+from process_package.Views.CustomMixComponent import GroupLabel, HBoxSerial
 from process_package.defined_serial_port import get_serial_available_list
+from process_package.defined_variable_function import TOUCH
+from process_package.resource.size import TOUCH_MACHINE_MINIMUM_WIDTH, TOUCH_DATA_MATRIX_FONT_SIZE, \
+    TOUCH_MACHINE_RESULT_FONT_SIZE, TOUCH_COMPORT_MAXIMUM_HEIGHT, TOUCH_ORDER_MAXIMUM_HEIGHT, \
+    TOUCH_DATA_MATRIX_MAXIMUM_HEIGHT, TOUCH_STATUS_MAXIMUM_HEIGHT
+from process_package.resource.string import STR_ORDER_NUMBER, STR_DATA_MATRIX, STR_MACHINE_RESULT, STR_STATUS, \
+    STR_MACHINE_COMPORT, STR_TOUCH_PROCESS
 
 
-class TouchUI(QWidget):
+class TouchUI(Widget):
     def __init__(self):
         super(TouchUI, self).__init__()
+        layout = QVBoxLayout(self)
+        layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
+        comport_box.setLayout(comport := HBoxSerial(TOUCH))
 
-        self.setLayout(layout := QVBoxLayout())
-        layout.addWidget(comport_box := QGroupBox("MACHINE COMPORT"))
-        comport_box.setLayout(comport_layout := QHBoxLayout())
-        comport_layout.addWidget(comport_combobox := QComboBox())
-        comport_layout.addWidget(comport_button := Button("CONNECT"))
+        layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
+        layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, font_size=TOUCH_DATA_MATRIX_FONT_SIZE))
+        layout.addWidget(machine := GroupLabel(title=STR_MACHINE_RESULT, font_size=TOUCH_MACHINE_RESULT_FONT_SIZE))
+        layout.addWidget(status := GroupLabel(STR_STATUS))
 
-        layout.addWidget(order_box := QGroupBox("ORDER NUMBER"))
-        order_box.setLayout(order_layout := QVBoxLayout())
-        order_layout.addWidget(order := Label(''))
+        comport_box.setMaximumHeight(TOUCH_COMPORT_MAXIMUM_HEIGHT)
+        order.setMaximumHeight(TOUCH_ORDER_MAXIMUM_HEIGHT)
+        data_matrix.setMaximumHeight(TOUCH_DATA_MATRIX_MAXIMUM_HEIGHT)
+        status.setMaximumHeight(TOUCH_STATUS_MAXIMUM_HEIGHT)
+        machine.label.setMinimumWidth(TOUCH_MACHINE_MINIMUM_WIDTH)
+        comport.serial_line_signal.connect(lambda x: print(x))
 
-        layout.addWidget(dm_box := QGroupBox("DATA MATRIX"))
-        dm_box.setLayout(dm_layout := QVBoxLayout())
-        dm_layout.addWidget(dm := Label(''))
+        self.comport = comport
+        self.order = order.label
+        self.data_matrix = data_matrix.label
+        self.machine = machine.label
+        self.status = status.label
 
-        layout.addWidget(machine_box := QGroupBox("MACHINE RESULT"))
-        machine_box.setLayout(machine_layout := QVBoxLayout())
-        machine_layout.addWidget(machine := Label(''))
-
-        layout.addWidget(status_box := QGroupBox("STATUS"))
-        status_box.setLayout(status_layout := QVBoxLayout())
-        status_layout.addWidget(status := Label(''))
-
-        self.comport_combobox = comport_combobox
-        self.fill_available_ports()
-        self.connect_button = comport_button
-        self.order_label = order
-        self.dm_label = dm
-        self.machine_label = machine
-        self.status_label = status
-        self.dm_label.setMinimumWidth(500)
-        self.dm_label.set_font_size(size=80)
-        self.machine_label.set_font_size(size=120)
-
-        self.setWindowTitle('Touch Process')
-
-    def fill_available_ports(self):
-        serial_ports = [s.device for s in serial.tools.list_ports.comports()]
-        self.comport_combobox.clear()
-        self.comport_combobox.addItems(get_serial_available_list(serial_ports))
+        self.setWindowTitle(STR_TOUCH_PROCESS)

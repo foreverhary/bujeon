@@ -2,21 +2,18 @@ import os
 from threading import Thread
 
 import pymssql
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer
-from pymssql import _mssql, _pymssql
-from pymssql._pymssql import OperationalError, ProgrammingError, InterfaceError, IntegrityError
-import uuid
-import decimal
+from PySide2.QtCore import QObject, Signal, QTimer
+from pymssql._pymssql import OperationalError, InterfaceError, IntegrityError
 
 # mssql server
-from process_package.Config import get_config_mssql
+from process_package.models.Config import get_config_mssql
 from process_package.db_update_from_file import UpdateDB
 from process_package.defined_variable_function import MSSQL_IP, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE, MSSQL_PORT, \
     logger, NULL, get_time, CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
 
 
 class Signal(QObject):
-    pre_process_result_signal = pyqtSignal(str)
+    pre_process_result_signal = Signal(str)
 
 
 class MSSQL:

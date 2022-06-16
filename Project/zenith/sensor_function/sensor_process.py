@@ -1,16 +1,15 @@
 import sys
-from threading import Timer
-from winsound import Beep
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
-from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtCore import Signal, Slot, Qt
+from PySide2.QtGui import QCursor
+from PySide2.QtWidgets import QApplication
+from winsound import Beep
 
 from process_package.NGScreen import NGScreen
 from process_package.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, NFC_IN, SENSOR_PREVIOUS_PROCESS, \
-    NFC, RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, OK, SENSOR_PROCESS, WHITE, window_center, make_error_popup, \
+    RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, WHITE, window_center, make_error_popup, \
     NFCIN1, NFC1, NFC2
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
@@ -18,9 +17,9 @@ from sensor_ui import SensorUI
 
 
 class SensorProcess(SensorUI):
-    status_update_signal = pyqtSignal(object, str, str)
-    machine_signal = pyqtSignal(str)
-    checker_signal = pyqtSignal(object)
+    status_update_signal = Signal(object, str, str)
+    machine_signal = Signal(str)
+    checker_signal = Signal(object)
 
     def __init__(self, app):
         super(SensorProcess, self).__init__()
@@ -40,7 +39,7 @@ class SensorProcess(SensorUI):
 
         self.connect_event()
 
-        self.load_window = SplashScreen("IR SENSOR")
+        self.load_window = SplashScreen("IR SENSOR", [])
         self.load_window.start_signal.connect(self.show_main_window)
 
         if not ports:
@@ -91,7 +90,7 @@ class SensorProcess(SensorUI):
         self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
         self.status_update_signal.connect(self.update_label)
 
-    @pyqtSlot(object)
+    @Slot(object)
     def received_previous_process(self, nfc):
         nfc.clean_check_dm()
         if self.ng_screen.isActiveWindow():
@@ -109,17 +108,17 @@ class SensorProcess(SensorUI):
         if nfc.dm:
             self.status_update_signal.emit(label, nfc.dm, WHITE)
 
-    @pyqtSlot(str)
+    @Slot(str)
     def receive_serial_error(self, msg):
         self.status_update_signal.emit(self.status_label, msg, RED)
 
-    @pyqtSlot(object)
+    @Slot(object)
     def receive_machine_serial_error(self, machine):
         frame = self.ch_frame[0] if '1' in machine.serial_name else self.ch_frame[1]
         frame.check_serial_connection()
         make_error_popup(f"{frame.serial_machine.port} Connect Fail!!")
 
-    @pyqtSlot(object, str, str)
+    @Slot(object, str, str)
     def update_label(self, label, text, color):
         label.setText(text)
         label.set_color(color)
@@ -134,24 +133,11 @@ class SensorProcess(SensorUI):
         self.mssql.start_query_thread(self.mssql.get_mssql_conn)
 
     def mousePressEvent(self, e):
+        super().mousePressEvent(e)
         if e.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
         if e.buttons() & Qt.MidButton:
             self.ng_screen.show_modal()
-        if e.buttons() & Qt.LeftButton:
-            self.m_flag = True
-            self.m_Position = e.globalPos() - self.pos()
-            e.accept()
-            self.setCursor((QCursor(Qt.OpenHandCursor)))
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if Qt.LeftButton and self.m_flag:
-            self.move(QMouseEvent.globalPos() - self.m_Position)
-            QMouseEvent.accept()
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.m_flag = False
-        self.setCursor(QCursor(Qt.ArrowCursor))
 
 
 if __name__ == '__main__':
