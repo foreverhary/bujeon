@@ -1,17 +1,4 @@
-import sys
-
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QGroupBox
-
-from packages.config.config import get_config_value
-from packages.resources.size import TOUCH_MACHINE_RESULT_FONT_SIZE, TOUCH_DATA_MATRIX_FONT_SIZE, \
-    TOUCH_COMPORT_MAXIMUM_HEIGHT, \
-    TOUCH_ORDER_MAXIMUM_HEIGHT, TOUCH_STATUS_MAXIMUM_HEIGHT, TOUCH_MACHINE_MINIMUM_WIDTH, \
-    TOUCH_DATA_MATRIX_MAXIMUM_HEIGHT
-from packages.resources.string import MACHINE_COMPORT, ORDER_NUMBER, DATA_MATRIX, MACHINE_RESULT, STATUS, TOUCH, \
-    CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1
-from packages.resources.variables import logger, BAUDRATE_115200
-from packages.views.CustomComponent import HBoxSerial, GroupLabel, style_sheet_setting, Widget
+from packages.views.CustomComponent import Widget
 
 
 class Touch(Widget):
@@ -66,11 +53,3 @@ class Touch(Widget):
             print("Right")
         if e.buttons() & Qt.MidButton:
             print("middle")
-
-
-if __name__ == '__main__':
-    logger.info("start touch process")
-    app = QApplication(sys.argv)
-    style_sheet_setting(app)
-    ex = Touch()
-    sys.exit(app.exec_())

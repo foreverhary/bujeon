@@ -3,9 +3,9 @@ import sys
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
-from packages.component.CustomComponent import Widget, style_sheet_setting, Label
-from packages.variable.size import MIC_PREVIOUS_CHECK_LABEL_FONT_SIZE, MIC_PREVIOUS_CHECK_LABEL_CLEAN_TIME
-from packages.variable.variables import logger
+from packages.views.CustomComponent import Widget, style_sheet_setting, Label
+from packages.resources.size import MIC_PREVIOUS_CHECK_LABEL_FONT_SIZE, MIC_PREVIOUS_CHECK_LABEL_CLEAN_TIME
+from packages.resources.variables import logger
 
 
 class PreviousCheck(Widget):

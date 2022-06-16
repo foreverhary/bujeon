@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout
 
-from packages.component.CustomComponent import HBoxSerial, Label
-from packages.variable.size import SENSOR_RESULT_FIXED_HEIGHT, SENSOR_RESULT_FONT_SIZE, SENSOR_CHANNEL_GROUP_MINIMUM_WIDTH
-from packages.variable.string import DM, RESULT
+from packages.views.CustomComponent import HBoxSerial, Label
+from packages.resources.size import SENSOR_RESULT_FIXED_HEIGHT, SENSOR_RESULT_FONT_SIZE, SENSOR_CHANNEL_GROUP_MINIMUM_WIDTH
+from packages.resources.string import DM, RESULT
 
 
 class ChannelGroup(QGroupBox):

@@ -2,10 +2,10 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
-from packages.component.CustomComponent import Widget, style_sheet_setting, GroupLabel
-from packages.variable.size import AUDIO_BUS_LABEL_MINIMUM_WIDTH
-from packages.variable.string import PREVIOUS_PROCESS, GRADE, DATA_MATRIX, STATUS
-from packages.variable.variables import logger
+from packages.views.CustomComponent import Widget, style_sheet_setting, GroupLabel
+from packages.resources.size import AUDIO_BUS_LABEL_MINIMUM_WIDTH
+from packages.resources.string import PREVIOUS_PROCESS, GRADE, DATA_MATRIX, STATUS
+from packages.resources.variables import logger
 
 
 class AudioBus(Widget):

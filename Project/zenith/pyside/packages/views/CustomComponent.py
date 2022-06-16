@@ -1,15 +1,14 @@
 import qdarkstyle as qdarkstyle
-import serial.tools.list_ports
-from PySide6.QtCore import QTimer, Qt, QDate
-from PySide6.QtGui import QFontDatabase, QFont, QCursor
-from PySide6.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QGroupBox, QVBoxLayout, QHBoxLayout, \
+from PySide2.QtCore import QTimer, Qt, QDate
+from PySide2.QtGui import QFontDatabase, QFont, QCursor
+from PySide2.QtSerialPort import QSerialPort
+from PySide2.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QGroupBox, QVBoxLayout, QHBoxLayout, \
     QWidget, QMessageBox
-from serial import SerialException
 
-from packages.component.style import STYLE
-from packages.serial.MachineSerial import SerialMachine
-from packages.variable.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW, BLUE
-from packages.variable.variables import logger, get_serial_available_list
+from packages.controllers.serial_port import SerialPort
+from packages.views.style import STYLE
+from packages.resources.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW, BLUE
+from packages.resources.variables import logger, get_serial_available_list
 
 DEFAULT_FONT_SIZE = 30
 
@@ -217,7 +216,7 @@ class HBoxSerial(QHBoxLayout):
         self.button.clicked.connect(self.clicked_button)
 
     def check_connect(self):
-        if self.serial.is_open:
+        if self.serial.isOpen():
             self.button.set_clicked(BLUE)
             self.comport.setDisabled(True)
         else:
@@ -227,10 +226,9 @@ class HBoxSerial(QHBoxLayout):
     def setup_serial(self, port, baudrate, serial_name):
         self.fill_available_ports()
         port = port or self.comport.currentText()
-        self.serial = SerialMachine(port=port, baudrate=baudrate, serial_name=serial_name)
-        try:
-            self.toggle_serial()
-        except SerialException:
+        self.serial = SerialPort(serial_name)
+        self.serial.set_port_baudrate(port, baudrate)
+        if not self.serial.toggle():
             logger.warn(f"{self.serial.port} cannot connect!!")
         self.check_connect()
 
@@ -239,7 +237,7 @@ class HBoxSerial(QHBoxLayout):
         self.comport.addItems(get_serial_available_list())
 
     def toggle_serial(self):
-        self.serial.close() if self.serial.is_open else self.serial.open()
+        return self.serial.close() if self.serial.isOpen() else self.serial.open()
 
     def set_port(self):
         self.serial.port = self.comport.currentText() or None

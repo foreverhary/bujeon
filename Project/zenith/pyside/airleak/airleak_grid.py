@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QGroupBox, QGridLayout
 
-from packages.component.CustomComponent import Label
-from packages.variable.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, AIR_LEAK_RESULT_MINIMUM_HEIGHT
-from packages.variable.string import RESULT
-from packages.variable.variables import MANUAL_AIR_LEAK_UNIT_COUNT
+from packages.views.CustomComponent import Label
+from packages.resources.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, AIR_LEAK_RESULT_MINIMUM_HEIGHT
+from packages.resources.string import RESULT
+from packages.resources.variables import MANUAL_AIR_LEAK_UNIT_COUNT
 
 
 class AirLeakGroup(QGroupBox):

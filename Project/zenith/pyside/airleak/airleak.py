@@ -3,8 +3,8 @@ import sys
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
 from airleak_grid import AirLeakGroup
-from packages.component.CustomComponent import Widget, style_sheet_setting, HBoxSerial, Label
-from packages.variable.variables import logger
+from packages.views.CustomComponent import Widget, style_sheet_setting, HBoxSerial, Label
+from packages.resources.variables import logger
 
 
 class AirLeak(Widget):

@@ -2,11 +2,11 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
-from packages.component.CustomComponent import style_sheet_setting, Widget, GroupLabel
-from packages.variable.size import RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_DATA_MATRIX_MINIMUM_HEIGHT, \
+from packages.views.CustomComponent import style_sheet_setting, Widget, GroupLabel
+from packages.resources.size import RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_DATA_MATRIX_MINIMUM_HEIGHT, \
     RELEASE_RESULT_FIXED_HEIGHT, RELEASE_STATUS_FONT_SIZE
-from packages.variable.string import DATA_MATRIX, RESULT, STATUS
-from packages.variable.variables import logger
+from packages.resources.string import DATA_MATRIX, RESULT, STATUS
+from packages.resources.variables import logger
 
 
 class ReleaseProcess(Widget):

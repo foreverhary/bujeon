@@ -2,10 +2,10 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout
 
-from packages.component.CustomComponent import style_sheet_setting, Widget, GroupLabel, Label
-from packages.variable.size import SENSOR_PREVIOUS_PROCESS_FONT_SIZE
-from packages.variable.string import PREVIOUS_PROCESS
-from packages.variable.variables import logger
+from packages.views.CustomComponent import style_sheet_setting, Widget, GroupLabel, Label
+from packages.resources.size import SENSOR_PREVIOUS_PROCESS_FONT_SIZE
+from packages.resources.string import PREVIOUS_PROCESS
+from packages.resources.variables import logger
 from channel_group import ChannelGroup
 
 
