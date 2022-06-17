@@ -6,8 +6,8 @@ from PySide2.QtWidgets import QApplication
 from winsound import Beep
 
 from process_package.check_string import check_dm
-from process_package.controllers.LineReadKeyboard import LineReadKeyboard
-from process_package.controllers.NFCCheck import NFCCheck
+from process_package.tools.LineReadKeyboard import LineReadKeyboard
+from process_package.tools.NFCCheck import NFCCheck
 from process_package.defined_variable_function import style_sheet_setting, window_center, logger, FREQ, DUR, \
     OK, PREVIOUS_PROCESS_OK, PREVIOUS_PROCESS_NG, TRY_NEXT_QR_SCAN, TAG_NFC_ZIG, \
     WRITE_DONE, TOUCH

@@ -4,7 +4,8 @@ from threading import Thread
 from PySide2.QtCore import Signal, QObject
 from serial import Serial, SerialException
 
-from process_package.defined_variable_function import logger, AIR_LEAK_ATECH, SENSOR_ATECH, AIR_LEAK_KSD, TOUCH, NG, OK
+from process_package.tools.CommonFunction import logger
+from process_package.resource.string import STR_AIR_LEAK, STR_AUTO_AIR_LEAK, STR_TOUCH, STR_SENSOR, STR_OK, STR_NG
 
 
 class SerialMachineSignal(QObject):
@@ -44,13 +45,13 @@ class SerialMachine(Serial):
 
     def start_machine_read(self):
         if not self.th.is_alive():
-            if self.serial_name == AIR_LEAK_ATECH:
+            if self.serial_name == STR_AIR_LEAK:
                 self.th = Thread(target=self.air_leak_read_thread, daemon=True)
-            elif self.serial_name == AIR_LEAK_KSD:
+            elif self.serial_name == STR_AUTO_AIR_LEAK:
                 self.th = Thread(target=self.kds_air_leak_read_thread, daemon=True)
-            elif self.serial_name == TOUCH:
+            elif self.serial_name == STR_TOUCH:
                 self.th = Thread(target=self.touch_read_thread, daemon=True)
-            elif SENSOR_ATECH in self.serial_name:
+            elif STR_SENSOR in self.serial_name:
                 self.th = Thread(target=self.ir_sensor_read_thread, daemon=True)
             self.th.start()
 
@@ -60,10 +61,10 @@ class SerialMachine(Serial):
             try:
                 if result := self.readline().decode():
                     if "TEST RESULT" in result:
-                        if OK in result:
-                            self.signal.machine_result_signal.emit([OK])
+                        if STR_OK in result:
+                            self.signal.machine_result_signal.emit([STR_OK])
                         else:
-                            self.signal.machine_result_signal.emit([NG])
+                            self.signal.machine_result_signal.emit([STR_NG])
             except SerialException:
                 self.is_open_close()
                 self.signal.machine_serial_error.emit(self)

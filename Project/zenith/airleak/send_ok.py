@@ -7,7 +7,7 @@ import serial
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QPushButton
 from serial import Serial
 
-from process_package.style.style import STYLE
+from process_package.resource.style import STYLE
 
 
 class SendOK(QWidget):

@@ -6,10 +6,12 @@ from PySide2.QtCore import QObject, Signal, QTimer
 from pymssql._pymssql import OperationalError, InterfaceError, IntegrityError
 
 # mssql server
+from process_package.Views.CustomComponent import get_time
+from process_package.tools.CommonFunction import logger
 from process_package.models.Config import get_config_mssql
 from process_package.db_update_from_file import UpdateDB
-from process_package.defined_variable_function import MSSQL_IP, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE, MSSQL_PORT, \
-    logger, NULL, get_time, CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
+from process_package.resource.number import CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
+from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 
 
 class Signal(QObject):
@@ -70,8 +72,8 @@ class MSSQL:
                 '{self.aplzl}', 
                 '{itime}', 
                 '{result}', 
-                '{pcode or NULL}', 
-                '{ecode or NULL}')
+                '{pcode or STR_NULL}', 
+                '{ecode or STR_NULL}')
             """
         self.cur.execute(sql)
         self.con.commit()

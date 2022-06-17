@@ -35,6 +35,7 @@ class LineReadKeyboard(QObject):
             print(type(e), e)
 
     def start_listen_keyboard(self):
+        self._line_data = ''
         self.thread = Thread(target=self.listen_keyboard, daemon=True)
         self.thread.start()
 

@@ -1,9 +1,10 @@
 import os
-from threading import Thread
+from threading import Thread, Lock
 
 from pymssql._pymssql import OperationalError
 
-from process_package.defined_variable_function import SAVE_DB_FILE_NAME, logger, SAVE_DB_RETRY_FILE_NAME, lock
+from process_package.tools.CommonFunction import logger
+from process_package.resource.string import SAVE_DB_RETRY_FILE_NAME, SAVE_DB_FILE_NAME
 
 
 class UpdateDB(Thread):
@@ -16,7 +17,7 @@ class UpdateDB(Thread):
     def run(self):
         self.read_file(SAVE_DB_RETRY_FILE_NAME)
         self.db_update()
-        with lock:
+        with Lock():
             self.read_file(SAVE_DB_FILE_NAME)
         self.db_update()
 

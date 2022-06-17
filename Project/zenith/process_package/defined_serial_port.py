@@ -16,15 +16,15 @@ def connect_serial(ser, port, button):
     try:
         if ser.isOpen():
             ser.close()
-            button.set_clicked('red')
+            button.set_background_color('red')
         else:
             ser.port = port
             ser.open()
-            button.set_clicked('blue')
+            button.set_background_color('blue')
             ser.flushInput()
             return True
     except SerialException:
-        button.set_clicked(color='red')
+        button.set_background_color(color='red')
     return False
 
 

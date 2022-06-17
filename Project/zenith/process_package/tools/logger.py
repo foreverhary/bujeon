@@ -3,7 +3,7 @@ import logging.handlers
 import os
 
 fileMaxByte = 1024 * 1024 * 10  # 10MB
-fileName = './log/log.log'
+fileName = '../log/log.log'
 consolLevel = logging.DEBUG
 fileLevel = logging.DEBUG
 
@@ -23,8 +23,8 @@ def get_logger(name="My Logger", filename=fileName):
     formatter = logging.Formatter(
         "%(asctime)s - [%(levelname)s|%(filename)s|%(funcName)s:%(threadName)s:%(lineno)s] > %(message)s")
 
-    if not os.path.isdir('./log'):
-        os.mkdir('log')
+    if not os.path.isdir('../log'):
+        os.mkdir('../log')
     # 4 handler instance 생성
     console = logging.StreamHandler()
     file_handler = logging.handlers.RotatingFileHandler(filename, maxBytes=fileMaxByte, backupCount=10)

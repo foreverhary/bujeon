@@ -8,7 +8,7 @@ from process_package.defined_serial_port import ports, get_serial_available_list
 from process_package.defined_variable_function import AIR_LEAK_DM_UNIT_WIDTH_SIZE, AIR_LEAK_RESULT_SIZE, \
     AIR_LEAK_UNIT_COUNT, \
     UNIT, RESULT, AIR_LEAK_RESULT_FONT_SIZE, AIR_LEAK_DM_UNIT_FONT_SIZE, COMPORT_SECTION, \
-    MACHINE_COMPORT_1, AIR_LEAK_ATECH, CONFIG_FILE_NAME, BLUE, RED, AIR_LEAK_DM_UNIT_HEIGHT_SIZE
+    MACHINE_COMPORT_1, STR_AIR_LEAK, CONFIG_FILE_NAME, BLUE, RED, AIR_LEAK_DM_UNIT_HEIGHT_SIZE
 
 
 class AirLeakUi(Widget):
@@ -63,7 +63,7 @@ class AirLeakUi(Widget):
         layout.addWidget(self.status_label)
         self.setLayout(layout)
 
-        self.serial_machine = SerialMachine(baudrate=9600, serial_name=AIR_LEAK_ATECH)
+        self.serial_machine = SerialMachine(baudrate=9600, serial_name=STR_AIR_LEAK)
         self.machine_port_connect_button.clicked.connect(self.connect_machine_button)
 
     def keyPressEvent(self, event):
@@ -98,8 +98,8 @@ class AirLeakUi(Widget):
 
     def check_serial_connection(self):
         if self.serial_machine.is_open:
-            self.machine_port_connect_button.set_clicked(BLUE)
+            self.machine_port_connect_button.set_background_color(BLUE)
             self.machine_comport.setDisabled(True)
         else:
-            self.machine_port_connect_button.set_clicked(RED)
+            self.machine_port_connect_button.set_background_color(RED)
             self.machine_comport.setEnabled(True)

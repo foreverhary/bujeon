@@ -118,8 +118,8 @@ class AirLeakAutomationUi(QWidget):
 
     def check_serial_connection(self):
         if self.serial_machine.is_open:
-            self.machine_port_connect_button.set_clicked(BLUE)
+            self.machine_port_connect_button.set_background_color(BLUE)
             self.machine_comport.setDisabled(True)
         else:
-            self.machine_port_connect_button.set_clicked(RED)
+            self.machine_port_connect_button.set_background_color(RED)
             self.machine_comport.setEnabled(True)

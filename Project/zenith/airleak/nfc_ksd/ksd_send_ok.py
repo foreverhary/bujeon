@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QPushButton
 from serial import Serial
 
 from process_package.defined_variable_function import OK, NG
-from process_package.style.style import STYLE
+from process_package.resource.style import STYLE
 
 NFC_COUNT = 4
 

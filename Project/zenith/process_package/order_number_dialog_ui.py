@@ -15,87 +15,57 @@ class OrderNumberDialogUI(QDialog):
         super(OrderNumberDialogUI, self).__init__()
         self.setWindowTitle('Order Setting')
 
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
 
-        # Search
-        search_box = QGroupBox("Search")
+        layout.addLayout(input_layout := QHBoxLayout())
 
-        # Search Label
-        calendar_label = LeftAlignLabel("Date")
-        order_keyword_label = LeftAlignLabel("Order Keyword")
-        material_keyword_label = LeftAlignLabel("Material Keyword")
-        model_keyword_label = LeftAlignLabel("Model Keyword")
+        input_layout.addWidget(search_box := QGroupBox("Search"))
+        search_box.setLayout(search_layout := QGridLayout())
+        search_layout.addWidget(LeftAlignLabel("Date"), 0, 0)
+        search_layout.addWidget(LeftAlignLabel("Order Keyword"), 1, 0)
+        search_layout.addWidget(LeftAlignLabel("Material Keyword"), 2, 0)
+        search_layout.addWidget(LeftAlignLabel("Model Keyword"), 3, 0)
+        search_layout.addWidget(calendar := DateEdit(), 0, 1)
+        search_layout.addWidget(order_keyword := LineEdit(), 1, 1)
+        search_layout.addWidget(material_keyword := LineEdit(), 2, 1)
+        search_layout.addWidget(model_keyword := LineEdit(), 3, 1)
+        search_layout.addWidget(search_button := Button('Search'), 4, 1)
 
-        # Search Value
-        self.calendar = DateEdit()
-        self.calendar.setMinimumWidth(search_args_size)
-        self.order_keyword = LineEdit()
-        self.order_keyword.setMinimumWidth(search_args_size)
-        self.material_keyword = LineEdit()
-        self.material_keyword.setMinimumWidth(search_args_size)
-        self.model_keyword = LineEdit()
-        self.model_keyword.setMinimumWidth(search_args_size)
+        input_layout.addWidget(result_box := QGroupBox("Result"))
+        result_box.setLayout(setting_layout := QGridLayout())
+        setting_layout.addWidget(LeftAlignLabel('Order Number'), 0, 0)
+        setting_layout.addWidget(LeftAlignLabel('Material Code'), 1, 0)
+        setting_layout.addWidget(LeftAlignLabel('Model Name'), 2, 0)
+        setting_layout.addWidget(LeftAlignLabel('Order Edit'), 3, 0)
+        setting_layout.addWidget(orderNumberComboBox := ComboBox(), 0, 1)
+        setting_layout.addWidget(material := LeftAlignLabel(''), 1, 1)
+        setting_layout.addWidget(model := LeftAlignLabel(''), 2, 1)
+        setting_layout.addWidget(orderNumberEdit := LineEdit(), 3, 1)
 
-        # Search Button
-        self.search_button = Button('Search')
+        layout.addLayout(button_layout := QHBoxLayout())
+        button_layout.addWidget(saveButton := Button('SAVE'))
+        button_layout.addWidget(cancelButton := Button('CANCEL'))
 
-        # Search Layout
-        search_layout = QGridLayout()
-        search_layout.addWidget(calendar_label, 0, 0)
-        search_layout.addWidget(order_keyword_label, 1, 0)
-        search_layout.addWidget(material_keyword_label, 2, 0)
-        search_layout.addWidget(model_keyword_label, 3, 0)
-        search_layout.addWidget(self.calendar, 0, 1)
-        search_layout.addWidget(self.order_keyword, 1, 1)
-        search_layout.addWidget(self.material_keyword, 2, 1)
-        search_layout.addWidget(self.model_keyword, 3, 1)
-        search_layout.addWidget(self.search_button, 4, 1)
+        calendar.setMinimumWidth(search_args_size)
+        order_keyword.setMinimumWidth(search_args_size)
+        material_keyword.setMinimumWidth(search_args_size)
+        model_keyword.setMinimumWidth(search_args_size)
 
-        search_box.setLayout(search_layout)
+        orderNumberComboBox.setMinimumWidth(search_args_size)
 
-        # Result
-        result_box = QGroupBox("Result")
+        saveButton.setMinimumWidth(150)
+        cancelButton.setMinimumWidth(150)
 
-        # Result Label
-        order_label = LeftAlignLabel('Order Number')
-        material_label = LeftAlignLabel('Material Code')
-        model_label = LeftAlignLabel('Model Name')
-        order_edit_label = LeftAlignLabel('Order Edit')
+        self.calendar = calendar
+        self.order_keyword = order_keyword
+        self.material_keyword = material_keyword
+        self.model_keyword = model_keyword
+        self.search_button = search_button
 
-        # Result Widget
-        self.orderNumberComboBox = ComboBox()
-        self.orderNumberComboBox.setMinimumWidth(search_args_size)
-        self.material = LeftAlignLabel('')
-        self.model = LeftAlignLabel('')
-        self.orderNumberEdit = LineEdit()
+        self.orderNumberComboBox = orderNumberComboBox
+        self.material = material
+        self.model = model
+        self.orderNumberEdit = orderNumberEdit
 
-        button_layout = QHBoxLayout()
-        self.saveButton = Button('SAVE')
-        self.saveButton.setMinimumWidth(150)
-        self.cancelButton = Button('CANCEL')
-        self.cancelButton.setMinimumWidth(150)
-        button_layout.addWidget(self.saveButton)
-        button_layout.addWidget(self.cancelButton)
-
-        # Result Layout
-        setting_layout = QGridLayout()
-        setting_layout.addWidget(order_label, 0, 0)
-        setting_layout.addWidget(material_label, 1, 0)
-        setting_layout.addWidget(model_label, 2, 0)
-        setting_layout.addWidget(order_edit_label, 3, 0)
-        setting_layout.addWidget(self.orderNumberComboBox, 0, 1)
-        setting_layout.addWidget(self.material, 1, 1)
-        setting_layout.addWidget(self.model, 2, 1)
-        setting_layout.addWidget(self.orderNumberEdit, 3, 1)
-        setting_layout.addLayout(button_layout, 4, 0, -1, 2)
-
-        result_box.setLayout(setting_layout)
-
-        input_layout = QHBoxLayout()
-        input_layout.addWidget(search_box)
-        input_layout.addWidget(result_box)
-
-        layout.addLayout(input_layout)
-        layout.addLayout(button_layout)
-
-        self.setLayout(layout)
+        self.saveButton = saveButton
+        self.cancelButton = cancelButton

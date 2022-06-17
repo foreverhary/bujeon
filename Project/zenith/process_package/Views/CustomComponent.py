@@ -1,9 +1,13 @@
-from PySide2.QtCore import Qt, QDate, QTimer
-from PySide2.QtGui import QCursor
-from PySide2.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QWidget
+import time
 
-from process_package.resource.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW
+import qdarkstyle
+from PySide2.QtCore import Qt, QDate, QTimer
+from PySide2.QtGui import QCursor, QFontDatabase, QFont
+from PySide2.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QWidget, QDesktopWidget, QMessageBox
+
+from process_package.resource.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW, BLUE
 from process_package.resource.size import DEFAULT_FONT_SIZE
+from process_package.resource.style import STYLE
 
 
 class Widget(QWidget):
@@ -47,7 +51,11 @@ class Button(QPushButton):
     def keyPressEvent(self, event):
         pass
 
-    def set_clicked(self, color):
+    def set_connect_color(self, connection):
+        self.background_color = BLUE if connection else RED
+        self.set_background_color(self.background_color)
+
+    def set_background_color(self, color):
         self.background_color = color
         self.setStyleSheet('font-weight: bold;'
                            f'font-size: {self.font_size}px;'
@@ -85,8 +93,62 @@ class ComboBox(QComboBox):
 
 
 class Label(QLabel):
-    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):
+    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE):
         super(Label, self).__init__(txt)
+        self.fontSize = font_size
+        self.color = WHITE
+        self.background_color = BACK_GROUND_COLOR
+
+        self.setAlignment(Qt.AlignCenter)
+        self.setStyleSheet('font-weight: bold;'
+                           f'font-size: {self.fontSize}px;')
+
+    def clean(self):
+        self.set_background_color()
+        self.set_color(WHITE)
+        self.clear()
+
+    def set_background_color(self, color=BACK_GROUND_COLOR):
+        self.background_color = color
+        self.set_style_sheet()
+
+    def keyPressEvent(self, event):
+        pass
+
+    def set_font_size(self, size=None):
+        self.fontSize = size or self.fontSize
+        self.set_style_sheet()
+
+    def set_color(self, color):
+        self.color = color
+        self.set_style_sheet()
+
+    def set_style_sheet(self):
+        self.setStyleSheet('font-weight: bold;'
+                           f'font-size: {self.fontSize}px;'
+                           f'color: {self.color};'
+                           f'background-color: {self.background_color}')
+
+
+class LabelTimerClean(Label):
+    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):
+        super(LabelTimerClean, self).__init__(txt, font_size=font_size)
+        self.is_clean = is_clean
+        self.clean_time = clean_time
+
+        self.timer_clean = QTimer(self)
+        self.timer_clean.timeout.connect(self.clean)
+        self.timer_clean.stop()
+
+    def setText(self, txt):
+        super().setText(txt)
+        self.timer_clean.stop()
+        if self.is_clean:
+            self.timer_clean.start(self.clean_time)
+
+class LabelTirClean(QLabel):
+    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):
+        super(LabelTimerClean, self).__init__(txt, font_size)
         self.fontSize = font_size
         self.is_clean = is_clean
         self.color = WHITE
@@ -154,6 +216,10 @@ class Label(QLabel):
 
 class LeftAlignLabel(Label):
     def __init__(self, text):
+        """
+
+        :rtype: object
+        """
         super(LeftAlignLabel, self).__init__(text)
         self.setMinimumHeight(50)
         self.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -182,3 +248,61 @@ class DateEdit(QDateEdit):
         self._today_button.clearFocus()
         today = QDate.currentDate()
         self.calendarWidget().setSelectedDate(today)
+
+
+def window_center(window):
+    qr = window.frameGeometry()
+    cp = QDesktopWidget().availableGeometry().center()
+    qr.moveCenter(cp)
+    window.move(qr.topLeft())
+
+
+def window_bottom_left(window):
+    qr = window.frameGeometry()
+    cp = QDesktopWidget().availableGeometry().bottomLeft()
+    qr.moveBottomLeft(cp)
+    window.move(qr.topLeft())
+
+
+def window_right(window):
+    qr = window.frameGeometry()
+    cp = QDesktopWidget().availableGeometry().bottomRight()
+    qr.moveBottomRight(cp)
+    window.move(qr.topLeft())
+
+
+def window_top_left(window):
+    qr = window.frameGeometry()
+    cp = QDesktopWidget().availableGeometry().topLeft()
+    qr.moveTopLeft(cp)
+    window.move(qr.topLeft())
+
+
+def style_sheet_setting(app):
+    app.setStyleSheet(STYLE)
+    a = qdarkstyle.load_stylesheet_pyqt5()
+    fontDB = QFontDatabase()
+    fontDB.addApplicationFont("./font/D2Coding-Ver1.3.2-20180524-all.ttc")
+    app.setFont(QFont('D2Coding-Ver1.3.2-20180524-all'))
+
+
+def get_time():
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+
+
+def make_error_popup(text):
+    msg = QMessageBox()
+    msg.setWindowTitle("ERROR")
+    msg.setText(text)
+    msg.setIcon(QMessageBox.Critical)
+    x = msg.exec_()
+
+# def trace(func):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         logger.debug(f'{func.__name__}({args!r}, {kwargs!r}')
+#         result = func(*args, **kwargs)
+#         logger.debug(f'{func.__name__} -> {result!r}')
+#         return result
+#
+#     return wrapper

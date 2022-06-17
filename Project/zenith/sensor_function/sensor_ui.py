@@ -136,10 +136,10 @@ class SensorChannelLayout(QGroupBox):
 
     def check_serial_connection(self):
         if self.serial_machine.is_open:
-            self.connectButton.set_clicked(BLUE)
+            self.connectButton.set_background_color(BLUE)
             self.serialComboBox.setDisabled(True)
         else:
-            self.connectButton.set_clicked(RED)
+            self.connectButton.set_background_color(RED)
             self.serialComboBox.setEnabled(True)
 
     @Slot(list)

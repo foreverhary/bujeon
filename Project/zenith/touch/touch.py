@@ -1,28 +1,35 @@
 import sys
-from threading import Thread
 
-from PySide2.QtCore import Qt, Signal, Slot
+from PySide2.QtCore import Qt, Signal, Slot, QObject
 from PySide2.QtSerialPort import QSerialPort
 from PySide2.QtWidgets import QApplication
 
 from process_package.SerialMachine import SerialMachine
+from process_package.Views.CustomComponent import get_time, style_sheet_setting, window_center
 from process_package.check_string import check_dm
-from process_package.controllers.LineReadKeyboard import LineReadKeyboard
-from process_package.defined_variable_function import style_sheet_setting, window_center, logger, WHITE, \
-    CONFIG_FILE_NAME, COMPORT_SECTION, LIGHT_SKY_BLUE, RED, NG, MACHINE_COMPORT_1, TOUCH, \
-    get_time, BLUE, make_error_popup
+from process_package.tools.CommonFunction import logger
+from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.models.Config import get_order_number, get_config_value, set_config_value
 from process_package.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from process_package.order_number_dialog import OderNumberDialog
-from touchUI import TouchUI
+from process_package.resource.color import WHITE, LIGHT_SKY_BLUE, RED
+from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_TOUCH, STR_NG, \
+    STR_WRITE_DONE_SCAN_NEXT_QR
+from TouchView import TouchView
+from TouchControl import TouchControl
+from TouchModel import TouchModel
 
 
-class Touch(TouchUI):
+class Touech(QObject):
     key_enter_input_signal = Signal(str)
 
     def __init__(self):
         super(Touch, self).__init__()
+
+        self.view = TouchView()
+        self.model = TouchModel()
+        self.control = TouchControl()
 
         self.comport.setup_serial(
             port=get_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1),
@@ -38,19 +45,21 @@ class Touch(TouchUI):
         self.order_config_window = OderNumberDialog()
         self.mssql_config_window = MSSQLDialog()
 
-        self.serial_machine = SerialMachine(baudrate=115200, serial_name=TOUCH)
+        self.serial_machine = SerialMachine(baudrate=115200, serial_name=STR_TOUCH)
         self.connect_event()
-        self.mssql = MSSQL(TOUCH)
+        self.mssql = MSSQL(STR_TOUCH)
         self.mssql.timer_for_db_connect(self)
 
         self.input_order_number()
 
     def connect_event(self):
+        self.comport.serial_open_signal.connect(
+            lambda x: set_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, x)
+        )
+        self.comport.serial_line_signal.connect(self.receive_machine_line_message)
         self.keyboard_listener.keyboard_input_signal.connect(self.key_enter_process)
         self.order_config_window.orderNumberSendSignal.connect(self.input_order_number)
         self.mssql_config_window.mssql_change_signal.connect(self.mssql_reconnect)
-        self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
-        self.serial_machine.signal.machine_serial_error.connect(self.receive_machine_serial_error)
 
     def key_enter_process(self, line_data):
         if dm := check_dm(line_data):
@@ -62,32 +71,19 @@ class Touch(TouchUI):
             self.machine.clean()
             self.update_status_msg("Wait for Machine Result", WHITE)
 
-    @Slot(object)
-    def receive_machine_serial_error(self, machine):
-        self.check_serial_connection()
-        make_error_popup(f"{self.serial_machine.port} Connect Fail!!")
-
     @Slot(list)
     def receive_machine_result(self, result):
         logger.info(result)
         self.result = result[0]
         self.machine.setText(self.result)
-        self.machine.set_background_color((LIGHT_SKY_BLUE, RED)[self.result == NG])
+        self.machine.set_background_color((LIGHT_SKY_BLUE, RED)[self.result == STR_NG])
         if self.order.text() and self.data_matrix.text():
             self.mssql.start_query_thread(self.mssql.insert_pprd,
                                           get_time(),
                                           self.data_matrix.text(),
                                           self.result)
-            self.update_status_msg("WRITE DONE SCAN NEXT QR", LIGHT_SKY_BLUE)
+            self.update_status_msg(STR_WRITE_DONE_SCAN_NEXT_QR, LIGHT_SKY_BLUE)
         self.data_matrix.clear()
-
-    def check_serial_connection(self):
-        if self.serial_machine.is_open:
-            self.connect_button.set_clicked(BLUE)
-            self.comport_combobox.setDisabled(True)
-        else:
-            self.connect_button.set_clicked(RED)
-            self.comport_combobox.setEnabled(True)
 
     def mousePressEvent(self, e):
         super().mousePressEvent(e)
@@ -122,9 +118,18 @@ class Touch(TouchUI):
             self.status.set_color(RED)
 
 
+class Touch(QApplication):
+    def __init__(self, sys_argv):
+        super(Touch, self).__init__(sys_argv)
+        style_sheet_setting(self)
+        self.model = TouchModel()
+        self.control = TouchControl(self.model)
+        self.view = TouchView(self.model, self.control)
+        self.model.begin_config_read()
+        self.control.begin()
+        self.view.show()
+
 if __name__ == '__main__':
     logger.info("start touch process")
-    app = QApplication(sys.argv)
-    style_sheet_setting(app)
-    ex = Touch()
+    app = Touch(sys.argv)
     sys.exit(app.exec_())
