@@ -1,7 +1,7 @@
 import serial.tools.list_ports
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QWidget
 
-from process_package.models.Config import get_config_value, set_config_value
+from process_package.tools.Config import get_config_value, set_config_value
 from process_package.Views.CustomComponent import Button, Label, ComboBox
 from process_package.SerialMachine import SerialMachine
 from process_package.check_string import check_dm

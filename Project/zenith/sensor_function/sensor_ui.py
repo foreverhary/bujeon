@@ -9,7 +9,7 @@ from process_package.defined_variable_function import SENSOR_ATECH, COMPORT_SECT
     CONFIG_FILE_NAME, CON_OS, POGO_OS, LED, VBAT_ID, C_TEST, BATTERY, MIC, PROX_TEST, PCM, Hall_IC, \
     SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE, PREVIOUS_PROCESS, PREVIOUS_PROCESS_TEXT_SIZE, BLUE, RED, \
     SENSOR_PREVIOUS_PROCESS, SENSOR_PROCESS, OK, LIGHT_SKY_BLUE, get_time, SENSOR, FREQ, DUR, PROCESS_NAMES, LIGHT_BLUE
-from process_package.models.Config import get_config_value, set_config_value
+from process_package.tools.Config import get_config_value, set_config_value
 
 NFC_IN_COUNT = 1
 NFC_OUT_COUNT = 2

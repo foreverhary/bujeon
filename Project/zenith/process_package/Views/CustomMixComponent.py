@@ -1,16 +1,26 @@
 from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QComboBox
 
-from process_package.Views.CustomComponent import Label, Button
+from process_package.Views.CustomComponent import Label, Button, LabelTimerClean, LabelBlink, LabelNFC
 from process_package.resource.size import DEFAULT_FONT_SIZE
 
 
 class GroupLabel(QGroupBox):
-    def __init__(self, title='', font_size=DEFAULT_FONT_SIZE):
+    def __init__(self, title='', font_size=DEFAULT_FONT_SIZE, blink_time=0, is_clean=False, clean_time=2000, is_nfc=False):
         super(GroupLabel, self).__init__()
         self.setTitle(title)
         layout = QVBoxLayout(self)
-        layout.addWidget(label := Label(font_size=font_size))
+        if is_clean:
+            layout.addWidget(label := LabelTimerClean(font_size=font_size,
+                                                      is_clean=is_clean,
+                                                      clean_time=clean_time))
+        elif blink_time:
+            layout.addWidget(label := LabelBlink(font_size=font_size,
+                                                 blink_time=blink_time))
+        elif is_nfc:
+            layout.addWidget(label := LabelNFC(font_size=font_size))
+        else:
+            layout.addWidget(label := Label(font_size=font_size))
 
         self.label = label
 

@@ -26,7 +26,7 @@ class SerialPort(QSerialPort):
     def receive(self):
         while self.canReadLine():
             self.line_out_signal.emit(
-                self.readLine().data().decode().rstrip('\n').rstrip('\n')
+                self.readLine().data().decode().replace('\r', '').replace('\n', '')
             )
 
     def write(self, text):
@@ -41,4 +41,3 @@ class SerialPort(QSerialPort):
 
     def connect_toggle(self):
         return self.close() if self.isOpen() else self.open()
-

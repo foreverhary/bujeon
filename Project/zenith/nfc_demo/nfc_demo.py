@@ -4,8 +4,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QWidget, QApplication, QVBoxLayout, QGridLayout, QGroupBox
 
 from NFC import VirtualNFC
-from process_package.Views.CustomComponent import LineEdit, Button
-from process_package.defined_variable_function import style_sheet_setting, window_bottom_left
+from process_package.Views.CustomComponent import LineEdit, Button, style_sheet_setting, window_bottom_left
 
 SLOT = 3
 COMPORT = ('com3', 'com5', 'com7')

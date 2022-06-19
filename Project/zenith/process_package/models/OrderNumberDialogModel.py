@@ -1,14 +1,14 @@
 from PySide2.QtCore import QObject, Signal
 
-from process_package.models.Config import get_order_number, set_order_number
-from process_package.mssql_connect import select_order_number_with_date_material_model
+from process_package.tools.Config import get_order_number, set_order_number
 
 
 class OrderNumberDialogModel(QObject):
-    get_order_list = Signal(list)
+    order_number_list_changed = Signal(list)
     material_code_changed = Signal(str)
     model_name_changed = Signal(str)
     order_number_changed = Signal(str)
+    connection_changed = Signal(bool)
 
     @property
     def date(self):
@@ -49,7 +49,7 @@ class OrderNumberDialogModel(QObject):
     @order_number_list.setter
     def order_number_list(self, value):
         self._order_number_list = value
-        self.get_order_list.emit([data[0] for data in value])
+        self.order_number_list_changed.emit([data[0] for data in value])
 
     @property
     def order_number_index(self):
@@ -88,6 +88,15 @@ class OrderNumberDialogModel(QObject):
         self._order_number = value
         self.order_number_changed.emit(value)
 
+    @property
+    def connection(self):
+        return self._connection
+
+    @connection.setter
+    def connection(self, value):
+        self._connection = value
+        self.connection_changed.emit(value)
+
     def read_order_number(self):
         self.order_number = get_order_number()
 
@@ -99,3 +108,4 @@ class OrderNumberDialogModel(QObject):
         self.order_keyword = ''
         self.material_keyword = ''
         self.model_keyword = ''
+        self.connection = False

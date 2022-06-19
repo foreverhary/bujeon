@@ -8,24 +8,33 @@ from pymssql._pymssql import OperationalError, InterfaceError, IntegrityError
 # mssql server
 from process_package.Views.CustomComponent import get_time
 from process_package.tools.CommonFunction import logger
-from process_package.models.Config import get_config_mssql
+from process_package.tools.Config import get_config_mssql
 from process_package.db_update_from_file import UpdateDB
 from process_package.resource.number import CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 
 
-class Signal(QObject):
+class MSSQL(QObject):
+    connection_status_changed = Signal(bool)
     pre_process_result_signal = Signal(str)
+    order_list_changed = Signal(list)
 
-
-class MSSQL:
     def __init__(self, keyword=''):
         super(MSSQL, self).__init__()
         self.keyword = keyword
-        self.signal = Signal()
-        self.con, self.cur = None, None
+        self._con, self.cur = None, None
         self.aufnr = ''
         self.aplzl = ''
+
+    @property
+    def con(self):
+        return self._con
+
+    @con.setter
+    def con(self, value):
+        self._con = value
+        self.connection_status_changed.emit(bool(self._con))
+
 
     def set_aplzl(self):
         if self.aufnr and self.keyword:
@@ -112,21 +121,19 @@ class MSSQL:
         """
         self.cur.execute(sql)
         if fetch := self.cur.fetchone():
-            self.signal.pre_process_result_signal.emit(fetch[0])
+            self.pre_process_result_signal.emit(fetch[0])
         else:
-            self.signal.pre_process_result_signal.emit('')
+            self.pre_process_result_signal.emit('')
 
-    def get_mssql_conn(self):
+    def get_mssql_conn(self):  # sourcery skip: use-fstring-for-concatenation
         logger.debug("get_mssql_conn start")
-        self.con = pymssql.connect(
-            server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
-            user=get_config_mssql(MSSQL_ID),
-            password=get_config_mssql(MSSQL_PASSWORD),
-            database=get_config_mssql(MSSQL_DATABASE),
-            autocommit=True,
-            login_timeout=3,
-            timeout=3,
-        )
+        self.con = pymssql.connect(server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
+                                   user=get_config_mssql(MSSQL_ID),
+                                   password=get_config_mssql(MSSQL_PASSWORD),
+                                   database=get_config_mssql(MSSQL_DATABASE),
+                                   autocommit=True,
+                                   login_timeout=3,
+                                   timeout=3)
         logger.debug("get_mssql_conn end")
         self.cur = self.con.cursor()
 
@@ -149,12 +156,12 @@ class MSSQL:
     def update_db(self):
         self.update_instance = UpdateDB(self)
 
-    def timer_for_db_connect(self, obj):
-        self.db_connect_timer = QTimer(obj)
+    def timer_for_db_connect(self):
+        self.db_connect_timer = QTimer(self)
         self.db_connect_timer.start(CHECK_DB_TIME)
         self.db_connect_timer.timeout.connect(self.check_connect_db)
 
-        self.db_update_timer = QTimer(obj)
+        self.db_update_timer = QTimer(self)
         self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
         self.db_update_timer.timeout.connect(self.update_db)
 
@@ -188,6 +195,27 @@ class MSSQL:
         with open("./log/save_db.log", 'a') as f:
             merge_args = [table] + list(args) + ['0\n']
             f.write("\t".join(merge_args))
+
+    def select_order_number_with_date_material_model(self,
+                                                     date,
+                                                     order_keyword='',
+                                                     material_keyword='',
+                                                     model_keyword=''):
+
+        sql = f"""
+            select A.AUFNR as order_number,
+                    C.MATNR as material_code, C.MAKTX as model_name 
+            from AFKO as A 
+            left join MATE as C on A.MATNR = C.MATNR
+            where A.GSTRP = '{date}'
+            and A.AUFNR like '%{order_keyword}%'
+            and C.MATNR like '%{material_keyword}%' 
+            and C.MAKTX like '%{model_keyword}%' 
+            order by A.AUFNR
+        """
+
+        self.cur.execute(sql)
+        self.order_list_changed.emit(self.cur.fetchall())
 
 
 def get_mssql_conn():

@@ -1,8 +1,7 @@
 from PySide2.QtCore import QObject, Signal
 
-from process_package.models.Config import get_config_value, get_config_mssql, set_config_mssql
-from process_package.mssql_connect import select_order_number_with_date_material_model
-from process_package.resource.string import CONFIG_FILE_NAME, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, \
+from process_package.tools.Config import get_config_mssql, set_config_mssql
+from process_package.resource.string import MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, \
     MSSQL_DATABASE
 
 

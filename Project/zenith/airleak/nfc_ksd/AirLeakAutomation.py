@@ -6,10 +6,10 @@ from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtWidgets import QApplication
 
 from airleak.nfc_ksd.AirLeakAutomationUi import AirLeakAutomationUi, AIR_LEAK_NFC_COUNT
-from process_package.SplashScreen import SplashScreen
+from process_package.screen.SplashScreen import SplashScreen
 from process_package.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, RED, logger, \
     AIR_LEAK_PREVIOUS_PROCESS, get_time, make_error_popup
-from process_package.mssql_connect import MSSQL
+from process_package.tools.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
 

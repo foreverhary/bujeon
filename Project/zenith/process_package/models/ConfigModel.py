@@ -1,6 +1,6 @@
 from PySide2.QtCore import QObject
 
-from process_package.models.Config import set_config_mssql, get_config_mssql
+from process_package.tools.Config import set_config_mssql, get_config_mssql
 from process_package.resource.string import MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 
 

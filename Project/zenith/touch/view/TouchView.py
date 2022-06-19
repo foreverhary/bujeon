@@ -13,10 +13,9 @@ from process_package.resource.string import STR_ORDER_NUMBER, STR_DATA_MATRIX, S
 
 
 class TouchView(Widget):
-    def __init__(self, model, control):
-        super(TouchView, self).__init__()
-        self._model = model
-        self._control = control
+    def __init__(self, *args):
+        super(TouchView, self).__init__(*args)
+        self._model, self._control = args
 
         # ui
         layout = QVBoxLayout(self)
@@ -26,7 +25,7 @@ class TouchView(Widget):
         layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, font_size=TOUCH_DATA_MATRIX_FONT_SIZE))
         layout.addWidget(machine := GroupLabel(title=STR_MACHINE_RESULT, font_size=TOUCH_MACHINE_RESULT_FONT_SIZE))
-        layout.addWidget(status := GroupLabel(STR_STATUS))
+        layout.addWidget(status := GroupLabel(title=STR_STATUS, blink_time=100))
 
         comport_box.setMaximumHeight(TOUCH_COMPORT_MAXIMUM_HEIGHT)
         order.setMaximumHeight(TOUCH_ORDER_MAXIMUM_HEIGHT)
@@ -48,11 +47,14 @@ class TouchView(Widget):
 
         # listen for model event signals
         self._model.comport_changed.connect(self.comport.comport.setCurrentText)
+        self._model.comport_open_changed.connect(self.comport.serial_connection)
+        self._model.available_comport_changed.connect(self.comport.fill_combobox)
+
         self._model.order_number_changed.connect(self.order.setText)
         self._model.data_matrix_changed.connect(self.change_data_matrix)
         self._model.machine_result_changed.connect(self.change_machine_result)
-        self._model.comport_open_changed.connect(self.comport.serial_connection)
-        self._model.available_comport_changed.connect(self.comport.fill_combobox)
+        self._model.status_changed.connect(self.status.setText)
+        self._model.status_color_changed.connect(self.status.set_color)
 
     @Slot(str)
     def change_data_matrix(self, value):
@@ -65,10 +67,3 @@ class TouchView(Widget):
         self.data_matrix.clean()
         self.machine.setText(value)
         self.machine.set_background_color((LIGHT_SKY_BLUE, RED)[value == STR_NG])
-
-    def mousePressEvent(self, e):
-        super().mousePressEvent(e)
-        if e.buttons() & Qt.RightButton:
-            self._control.open_order_number_dialog()
-        if e.buttons() & Qt.MidButton:
-            self._control.open_mssql_dialog()

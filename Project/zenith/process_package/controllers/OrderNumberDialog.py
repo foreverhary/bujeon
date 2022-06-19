@@ -10,22 +10,26 @@ from process_package.models.OrderNumberDialogModel import OrderNumberDialogModel
 
 
 class OrderNumberDialog(QObject):
-    close_signal = Signal()
-
-    def __init__(self):
+    def __init__(self, parent_model):
         super(OrderNumberDialog, self).__init__()
+        self._parent_model = parent_model
         self._model = OrderNumberDialogModel()
         self._control = OrderNumberDialogControl(self._model)
         self._view = OrderNumberDialogView(self._model, self._control)
         self._model.read_order_number()
+
+        self._view.close_signal.connect(self.close_receive)
         self._view.showModal()
 
-        self._view.close_signal.connect(self.test)
+    @Slot(str)
+    def close_receive(self, value):
+        self._parent_model.order_number = value
 
-    @Slot()
-    def test(self):
-        print('test')
-        self.close_signal.emit()
+    def close(self):
+        self._view.close()
+
+    def showModal(self):
+        self._view.showModal()
 
 
 if __name__ == '__main__':

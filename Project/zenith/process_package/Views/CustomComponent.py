@@ -1,22 +1,31 @@
 import time
+from threading import Timer
 
 import qdarkstyle
-from PySide2.QtCore import Qt, QDate, QTimer
+from PySide2.QtCore import Qt, QDate, QTimer, Signal, Slot
 from PySide2.QtGui import QCursor, QFontDatabase, QFont
 from PySide2.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QWidget, QDesktopWidget, QMessageBox
 
-from process_package.resource.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW, BLUE
+from process_package.resource.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW, BLUE, LIGHT_SKY_BLUE
 from process_package.resource.size import DEFAULT_FONT_SIZE
 from process_package.resource.style import STYLE
 
 
 class Widget(QWidget):
-    def __init__(self):
+    right_clicked = Signal()
+    mid_clicked = Signal()
+
+    def __init__(self, *args):
         super(Widget, self).__init__()
+        self._model, self._control = args
         self.m_Position = None
         self.m_flag = False
 
     def mousePressEvent(self, e):
+        if e.buttons() & Qt.RightButton:
+            self._control.right_clicked()
+        if e.buttons() & Qt.MidButton:
+            self._control.mid_clicked()
         if e.buttons() & Qt.LeftButton:
             self.m_flag = True
             self.m_Position = e.globalPos() - self.pos()
@@ -145,6 +154,41 @@ class LabelTimerClean(Label):
         self.timer_clean.stop()
         if self.is_clean:
             self.timer_clean.start(self.clean_time)
+
+
+class LabelBlink(Label):
+    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, blink_time=100):
+        super(LabelBlink, self).__init__(txt, font_size)
+
+        self.timer_color = QTimer(self)
+        self.timer_color.start(blink_time)
+        self.timer_color.timeout.connect(self.change_color_in_msec)
+
+    def change_color_in_msec(self):
+        if self.color in (RED, LIGHT_YELLOW):
+            self.color = RED if self.color == LIGHT_YELLOW else LIGHT_YELLOW
+            self.set_style_sheet()
+
+
+class LabelNFC(Label):
+    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE):
+        super(LabelNFC, self).__init__(txt, font_size)
+
+        self.timer_nfc_tag = QTimer(self)
+        self.timer_nfc_tag.start(200)
+        self.timer_nfc_tag.timeout.connect(self.blink_background)
+
+    def blink_background(self):
+        if self.background_color == LIGHT_SKY_BLUE:
+            self.set_background_color()
+
+    def blink_text(self):
+        tmp_text = self.text()
+        self.clear()
+        timer = Timer(0.1, self.setText, args=(tmp_text,))
+        timer.daemon = True
+        timer.start()
+
 
 class LabelTirClean(QLabel):
     def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):

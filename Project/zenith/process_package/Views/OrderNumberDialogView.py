@@ -6,7 +6,7 @@ from process_package.resource.size import ORDER_SEARCH_BOX_MINIMUM_WIDTH
 
 
 class OrderNumberDialogView(QDialog):
-    close_signal = Signal()
+    close_signal = Signal(str)
 
     def __init__(self, model, control):
         super(OrderNumberDialogView, self).__init__()
@@ -86,14 +86,15 @@ class OrderNumberDialogView(QDialog):
         self.cancelButton.clicked.connect(self.close)
 
         # listen for model event signals
-        self._model.get_order_list.connect(self.order_number_combo.addItems)
+        self._model.order_number_list_changed.connect(self.order_number_combo.addItems)
         self._model.material_code_changed.connect(self.material.setText)
         self._model.model_name_changed.connect(self.model_name.setText)
         self._model.order_number_changed.connect(self.order_number_edit.setText)
+        self._model.connection_changed.connect(self.search_button.setEnabled)
 
     def save(self):
         self._model.save()
-        self.close_signal.emit()
+        self.close_signal.emit(self._model.order_number)
         self.close()
 
     def showModal(self):

@@ -1,17 +1,16 @@
 import sys
 
 from PySide2.QtCore import Signal, Slot, Qt
-from PySide2.QtGui import QCursor
 from PySide2.QtWidgets import QApplication
 from winsound import Beep
 
-from process_package.NGScreen import NGScreen
-from process_package.SplashScreen import SplashScreen
+from process_package.screen.NGScreen import NGScreen
+from process_package.screen.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, NFC_IN, SENSOR_PREVIOUS_PROCESS, \
     RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, WHITE, window_center, make_error_popup, \
     NFCIN1, NFC1, NFC2
-from process_package.mssql_connect import MSSQL
+from process_package.tools.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from sensor_ui import SensorUI
 

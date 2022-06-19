@@ -3,16 +3,16 @@ from threading import Timer
 from winsound import Beep
 
 from PySide2.QtCore import Signal, Slot, Qt
-from PySide2.QtGui import QIcon, QCursor
+from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QApplication
 
 from airleak.nfc_only_out_atech.AirLeakResultFirstUi import AirLeakUi
-from process_package.SplashScreen import SplashScreen
+from process_package.screen.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, window_center, LIGHT_SKY_BLUE, \
     RED, AIR_LEAK_UNIT_COUNT, AIR_LEAK_PROCESS, logger, NG, AIR_LEAK_PREVIOUS_PROCESS, FREQ, DUR, get_time, AIR_LEAK, \
     make_error_popup, WHITE, OK, LIGHT_BLUE
-from process_package.mssql_connect import MSSQL
+from process_package.tools.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
 

@@ -1,6 +1,8 @@
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QGroupBox
+import sys
 
-from process_package.Views.CustomComponent import Label
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QApplication
+
+from process_package.Views.CustomComponent import Label, style_sheet_setting, LabelTimerClean
 
 RELEASE_FIXED_WIDTH = 700
 RELEASE_FIXED_DM_HEIGHT = 100
@@ -24,7 +26,7 @@ class ReleaseProcessUI(QWidget):
         self.setLayout(layout := QVBoxLayout())
         layout.addWidget(dm_groupbox := QGroupBox('DM'))
         dm_groupbox.setLayout(dm_layout := QVBoxLayout())
-        dm_layout.addWidget(dm_input_label := Label(
+        dm_layout.addWidget(dm_input_label := LabelTimerClean(
             font_size=RELEASE_FIXED_DM_FONT_SIZE,
             is_clean=True,
             clean_time=2000
@@ -33,7 +35,7 @@ class ReleaseProcessUI(QWidget):
                                       RELEASE_FIXED_DM_HEIGHT)
         layout.addWidget(result_groupbox := QGroupBox('RESULT'))
         result_groupbox.setLayout(result_layout := QVBoxLayout())
-        result_layout.addWidget(result_input_label := Label(
+        result_layout.addWidget(result_input_label := LabelTimerClean(
             font_size=RELEASE_FIXED_RESULT_FONT_SIZE,
             is_clean=True,
             clean_time=1500))
@@ -41,9 +43,18 @@ class ReleaseProcessUI(QWidget):
                                           RELEASE_FIXED_RESULT_HEIGHT)
         layout.addWidget(status_groupbox := QGroupBox('STATUS'))
         status_groupbox.setLayout(status_layout := QVBoxLayout())
-        status_layout.addWidget(status_label := CustomLabel(RELEASE_FIXED_WIDTH,
-                                                            RELEASE_FIXED_DM_HEIGHT,
-                                                            RELEASE_FIXED_STATUS_FONT_SIZE))
+        status_layout.addWidget(status_label := Label(font_size=RELEASE_FIXED_STATUS_FONT_SIZE))
+        status_label.setMinimumSize(RELEASE_FIXED_WIDTH, RELEASE_FIXED_DM_HEIGHT)
+        # status_layout.addWidget(status_label := CustomLabel(RELEASE_FIXED_WIDTH,
+        #                                                     RELEASE_FIXED_DM_HEIGHT,
+        #                                                     RELEASE_FIXED_STATUS_FONT_SIZE))
         self.dm_input_label = dm_input_label
         self.result_input_label = result_input_label
         self.status_label = status_label
+
+
+app = QApplication([])
+style_sheet_setting(app)
+ex = ReleaseProcessUI()
+ex.show()
+sys.exit(app.exec_())

@@ -1,3 +1,4 @@
+import time
 from random import randint
 from threading import Thread, Timer
 
@@ -29,6 +30,7 @@ class VirtualNFC(Serial):
             send_msg = ','.join([self.uid, msg]) if msg else self.uid
             send_msg += '\r\n'
             self.write(send_msg.encode())
+            time.sleep(0.2)
 
     def action_dtr(self):
         if self.dtr:

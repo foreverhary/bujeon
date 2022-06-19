@@ -4,7 +4,7 @@ from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QApplication, QFileDialog
 
 from AudioBusConfigUI import AudioBusConfigUI
-from process_package.models.Config import Config, get_config_audio_bus, set_config_audio_bus
+from process_package.tools.Config import Config, get_config_audio_bus, set_config_audio_bus
 from process_package.defined_variable_function import *
 from process_package.resource.style import STYLE
 

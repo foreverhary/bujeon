@@ -9,12 +9,12 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from serial import Serial, SerialException
 
-from process_package.models.Config import Config
+from process_package.tools.Config import Config
 from process_package.check_string import check_nfc_uid, check_dm
 from process_package.defined_serial_port import connect_serial, serial_flush
 from process_package.defined_variable_function import *
 from process_package.tools.logger import get_logger
-from process_package.mssql_connect import insert_air_leaks
+from process_package.tools.mssql_connect import insert_air_leaks
 
 from AirLeakUi import AirLeakUi
 from process_package.mssql_dialog import MSSQLDialog

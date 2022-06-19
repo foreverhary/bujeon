@@ -9,10 +9,10 @@ from winsound import Beep
 from xlrd import open_workbook
 
 from AudioBusUI import AudioBusUI
-from FileObserver import Target
+from audio_bus.observer.FileObserver import Target
 from audio_bus.AudioBusConfig import AudioBusConfig
-from process_package.NGScreen import NGScreen
-from process_package.SplashScreen import SplashScreen
+from process_package.screen.NGScreen import NGScreen
+from process_package.screen.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
 from process_package.defined_variable_function import style_sheet_setting, window_right, logger, \
     FUNCTION_PREVIOUS_PROCESS, \
@@ -20,8 +20,8 @@ from process_package.defined_variable_function import style_sheet_setting, windo
     C_GRADE_MAX, B_GRADE_MAX, A_GRADE_MAX, NG, \
     FUNCTION_PROCESS, SPL, THD, IMP, MIC_FRF, RUB_BUZ, POLARITY, FUNCTION, HOHD, AUD, FREQ, DUR, get_time, YELLOW, \
     GREEN, NFCIN1, NFC1, LIGHT_BLUE, PROCESS_NAMES
-from process_package.models.Config import get_config_audio_bus
-from process_package.mssql_connect import MSSQL
+from process_package.tools.Config import get_config_audio_bus
+from process_package.tools.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 
 NFC_IN_COUNT = 1

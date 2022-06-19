@@ -4,7 +4,7 @@ from PySide2.QtCore import Qt, Signal
 from PySide2.QtWidgets import QApplication
 
 from process_package.Views.CustomComponent import style_sheet_setting
-from process_package.models.Config import set_config_mssql, get_config_mssql
+from process_package.tools.Config import set_config_mssql, get_config_mssql
 from process_package.mssql_dialog_ui import MSSQLDialogUI
 from process_package.resource.string import MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 

@@ -4,11 +4,12 @@ from threading import Thread
 from PySide2.QtCore import Qt, QTimer, Signal
 from PySide2.QtGui import QColor
 from PySide2.QtWidgets import QMainWindow, QGraphicsDropShadowEffect, QApplication, QDesktopWidget
+from serial import Serial
 
-from process_package.SerialNFC import SerialNFC
-from process_package.defined_serial_port import ports, get_serial_available_list
-from process_package.defined_variable_function import logger
-from process_package.ui_splash_screen import Ui_SplashScreen
+from process_package.defined_serial_port import get_serial_available_list
+from process_package.resource.string import STR_NFC
+from process_package.tools.CommonFunction import logger
+from process_package.screen.ui_splash_screen import Ui_SplashScreen
 
 # GLOBALS
 counter = 0
@@ -18,15 +19,17 @@ jumper = 10
 class SplashScreen(QMainWindow):
     serial_check_signal = Signal()
     start_signal_old = Signal(dict)
-    start_signal = Signal(list)
+    start_signal = Signal(dict)
 
-    def __init__(self, app_name, ser_list):
+    def __init__(self, app_name):
         QMainWindow.__init__(self)
         self.ui = Ui_SplashScreen()
         self.ui.setupUi(self, app_name)
 
+        self.ports = get_serial_available_list()
+
         self.ser_list_old = {}
-        self.ser_list = ser_list
+        self.ser_list = {}
 
         self.counter = 0
         self.jumper = 0
@@ -71,7 +74,7 @@ class SplashScreen(QMainWindow):
         Thread(target=self.setting_serial_automation, daemon=True).start()
 
     def start_progress(self):
-        self.jumper += 1 / ports.__len__() * 100
+        self.jumper += 1 / self.ports.__len__() * 100
         self.timer = QTimer()
         self.timer.timeout.connect(self.progress)
         self.timer.start(1)
@@ -140,18 +143,18 @@ class SplashScreen(QMainWindow):
         self.ui.circularProgress.setStyleSheet(newStylesheet)
 
     def serial_nfc_check(self, port, ser_list):
-        logger.debug(port)
-        ser = SerialNFC(port, 115200, timeout=2)
-        if ser.is_nfc():
-            ser_list.append(ser)
+        ser = Serial(port, 115200, timeout=2)
+        if data := ser.readline().decode().replace('\r', '').replace('\n', '').replace(' ', ''):
+            if STR_NFC in data:
+                ser_list[port] = data
+        ser.close()
         self.serial_check_signal.emit()
-        logger.debug(f"{port} Done")
 
     def setting_serial_automation(self):
         logger.debug("setting_serial_automation")
         th = []
-        ser_list = []
-        for port in get_serial_available_list():
+        ser_list = {}
+        for port in self.ports:
             if 'COM' in port:
                 t = Thread(target=self.serial_nfc_check, args=(port, ser_list), daemon=True)
                 t.start()
@@ -159,8 +162,6 @@ class SplashScreen(QMainWindow):
         for t in th:
             t.join()
         self.serial_check_signal.emit()
-        for ser in ser_list:
-            logger.info(ser.serial_name)
         self.ser_list = ser_list
 
 

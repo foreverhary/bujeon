@@ -1,7 +1,6 @@
-import serial.tools.list_ports
-from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QWidget
+from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox
 
-from process_package.models.Config import get_config_value, set_config_value
+from process_package.tools.Config import get_config_value, set_config_value
 from process_package.Views.CustomComponent import Button, Label, ComboBox, Widget
 from process_package.SerialMachine import SerialMachine
 from process_package.defined_serial_port import ports, get_serial_available_list
