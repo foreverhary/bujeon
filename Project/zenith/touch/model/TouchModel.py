@@ -12,19 +12,20 @@ from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, M
 
 
 class TouchModel(ConfigModel):
-    comport_changed = Signal(str)
-    comport_open_changed = Signal(bool)
-    available_comport_changed = Signal(list)
-    data_matrix_changed = Signal(str)
     order_number_changed = Signal(str)
+    data_matrix_changed = Signal(str)
+    data_matrix_waiting_changed = Signal(str)
     machine_result_changed = Signal(str)
     status_changed = Signal(str)
     status_color_changed = Signal(str)
 
     def __init__(self):
         super(TouchModel, self).__init__()
-        self.serial = SerialConnectModel()
         self.data_matrix = ''
+        self.data_matrix_waiting = ''
+        self.name = STR_TOUCH
+        self.baudrate = 115200
+        self.comport = get_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1)
 
     @property
     def order_number(self):
@@ -43,35 +44,11 @@ class TouchModel(ConfigModel):
 
     @comport.setter
     def comport(self, value):
-        if isinstance(value, int):
-            self._comrpot = self._available_comport[value]
-        else:
-            self._comport = value
-        self.comport_changed.emit(self.comport)
-
-    @property
-    def comport_open(self):
-        return self._comport_open
-
-    @comport_open.setter
-    def comport_open(self, value):
-        self._comport_open = bool(value)
-        self.comport_open_changed.emit(self._comport_open)
-        if self._comport_open:
-            set_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, self.comport)
-
-    @property
-    def available_comport(self):
-        return self._available_comport
-
-    @available_comport.setter
-    def available_comport(self, value):
-        port_numbers = [int(port[3:]) for port in value]
-        port_numbers.sort()
-        ports = [f"COM{port}" for port in port_numbers]
-        self._available_comport = ports
-        self.comport = self._available_comport[0]
-        self.available_comport_changed.emit(ports)
+        self._comport = value
+        set_config_value(CONFIG_FILE_NAME,
+                         COMPORT_SECTION,
+                         MACHINE_COMPORT_1,
+                         value)
 
     @property
     def data_matrix(self):
@@ -83,6 +60,15 @@ class TouchModel(ConfigModel):
             self.status = STR_WAIT_FOR_MACHINE_RESULT
         self._data_matrix = value
         self.data_matrix_changed.emit(self._data_matrix)
+        
+    @property
+    def data_matrix_waiting(self):
+        return self._data_matrix_waiting
+
+    @data_matrix_waiting.setter
+    def data_matrix_waiting(self, value):
+        self._data_matrix_waiting = value
+        self.data_matrix_waiting_changed.emit(value)
 
     @property
     def machine_result(self):
@@ -94,6 +80,8 @@ class TouchModel(ConfigModel):
             self.status = STR_WRITE_DONE_SCAN_NEXT_QR
         self._machine_result = value
         self.machine_result_changed.emit(value)
+        self.data_matrix = self.data_matrix_waiting
+        self.data_matrix_waiting = ''
 
     @property
     def status(self):
@@ -119,10 +107,8 @@ class TouchModel(ConfigModel):
         self._status_color = value
         self.status_color_changed.emit(value)
 
-    def begin_config_read(self):
+    def begin(self):
         self.get_order_number()
-        self.available_comport = get_serial_available_list()
-        self.comport = get_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1)
 
     def get_order_number(self):
         self.order_number = get_order_number()

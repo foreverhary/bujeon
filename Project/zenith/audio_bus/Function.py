@@ -7,7 +7,7 @@ from audio_bus.model.FunctionModel import FunctionModel
 from audio_bus.view.FunctionView import FunctionView
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.Views.CustomComponent import style_sheet_setting, window_center
-from process_package.resource.string import STR_AIR_LEAK
+from process_package.resource.string import STR_AIR_LEAK, STR_FUNCTION
 
 
 class Function(QApplication):
@@ -17,7 +17,7 @@ class Function(QApplication):
         self._control = FunctionControl(self._model)
         self._view = FunctionView(self._model, self._control)
         self._model.begin_config_read()
-        self.load_nfc_window = SplashScreen(STR_AIR_LEAK)
+        self.load_nfc_window = SplashScreen(STR_FUNCTION)
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
     def show_main_window(self, nfcs):

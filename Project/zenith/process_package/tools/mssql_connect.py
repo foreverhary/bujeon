@@ -4,7 +4,9 @@ from threading import Thread
 import pymssql
 from PySide2.QtCore import QObject, Signal, QTimer
 from pymssql._pymssql import OperationalError, InterfaceError, IntegrityError
-
+from pymssql import _mssql, _pymssql
+import uuid
+import decimal
 # mssql server
 from process_package.Views.CustomComponent import get_time
 from process_package.tools.CommonFunction import logger
@@ -126,7 +128,6 @@ class MSSQL(QObject):
             self.pre_process_result_signal.emit('')
 
     def get_mssql_conn(self):  # sourcery skip: use-fstring-for-concatenation
-        logger.debug("get_mssql_conn start")
         self.con = pymssql.connect(server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
                                    user=get_config_mssql(MSSQL_ID),
                                    password=get_config_mssql(MSSQL_PASSWORD),
@@ -134,7 +135,6 @@ class MSSQL(QObject):
                                    autocommit=True,
                                    login_timeout=3,
                                    timeout=3)
-        logger.debug("get_mssql_conn end")
         self.cur = self.con.cursor()
 
     def get_time(self):

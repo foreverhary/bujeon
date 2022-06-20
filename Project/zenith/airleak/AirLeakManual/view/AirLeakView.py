@@ -2,6 +2,7 @@ from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout
 
 from process_package.Views.CustomComponent import Widget, Label, LabelBlink, LabelNFC
 from process_package.Views.CustomMixComponent import GroupLabel, HBoxComboButton
+from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, \
@@ -19,7 +20,7 @@ class AirLeakView(Widget):
         layout = QVBoxLayout(self)
         layout.addWidget(nfc1 := GroupLabel(STR_NFC1))
         layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
-        comport_box.setLayout(comport := HBoxComboButton(STR_AIR_LEAK))
+        comport_box.setLayout(comport := SerialComboHBoxLayout(self._model))
         layout.addLayout(unit_layout := QHBoxLayout())
         unit_layout.addWidget(out_group := QGroupBox("OUT"))
         out_group.setLayout(out_grid := QGridLayout())
@@ -49,15 +50,11 @@ class AirLeakView(Widget):
         self.setWindowTitle(STR_AIR_LEAK)
 
         # connect widgets to controller
-        self.comport.comport.currentIndexChanged.connect(self._control.change_comport)
-        self.comport.button.clicked.connect(self._control.comport_clicked)
+        self.comport.comport_save.connect(self._control.comport_save)
+        self.comport.serial_output_data.connect(self._control.input_serial_data)
 
         # listen for model event signals
-        self._model.comport_changed.connect(self.comport.comport.setCurrentText)
-        self._model.comport_open_changed.connect(self.comport.serial_connection)
-        self._model.available_comport_changed.connect(self.comport.fill_combobox)
-
-        self._model.nfc_changed.connect(self._control.nfc.setPortName)
+        self._model.nfc_changed.connect(self._control.nfc.set_port)
         self._model.nfc_changed.connect(self.nfc1_connection.setText)
         self._model.nfc_connection_changed.connect(self.nfc1_connection.set_background_color)
 

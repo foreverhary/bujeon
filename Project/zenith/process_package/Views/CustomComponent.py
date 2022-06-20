@@ -60,10 +60,6 @@ class Button(QPushButton):
     def keyPressEvent(self, event):
         pass
 
-    def set_connect_color(self, connection):
-        self.background_color = BLUE if connection else RED
-        self.set_background_color(self.background_color)
-
     def set_background_color(self, color):
         self.background_color = color
         self.setStyleSheet('font-weight: bold;'

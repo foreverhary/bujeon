@@ -37,9 +37,10 @@ class UpdateDB(Thread):
             except OperationalError as e:
                 logger.debug(type(e))
                 with open(SAVE_DB_RETRY_FILE_NAME, 'a') as f:
-                    for lines in self.query_lines[index:]:
-                        lines[-1] = str(int(lines[-1]) + 1)
-                        f.write('\t'.join(lines) + '\n')
+                    for line in self.query_lines[index:]:
+                        line_split = line.split('\t')
+                        line_split[-1] = str(int(line_split[-1]) + 1)
+                        f.write('\t'.join(line_split) + '\n')
                 break
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")

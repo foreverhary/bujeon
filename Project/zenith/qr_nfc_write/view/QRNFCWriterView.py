@@ -39,7 +39,7 @@ class QRNFCWriterView(Widget):
         # connect widgets to controller
 
         # listen for model event signals
-        self._model.nfc_changed.connect(self._control.nfc.setPortName)
+        self._model.nfc_changed.connect(self._control.nfc.set_port)
         self._model.nfc_changed.connect(self.nfc1_connection.setText)
         self._model.nfc_connection_changed.connect(self.nfc1_connection.set_background_color)
 

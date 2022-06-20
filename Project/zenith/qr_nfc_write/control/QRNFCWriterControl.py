@@ -19,7 +19,7 @@ class QRNFCWriterControl(QObject):
         super(QRNFCWriterControl, self).__init__()
         self._model = model
 
-        self.nfc = NFCSerialPort(STR_NFC)
+        self.nfc = NFCSerialPort()
         self.keyboard_listener = LineReadKeyboard()
         self._mssql = MSSQL(STR_MATCHING)
         self._mssql.pre_process_result_signal.connect(self.previous_result)
@@ -46,16 +46,21 @@ class QRNFCWriterControl(QObject):
             return
 
         if self._model.data_matrix and self._model.data_matrix == value.get(STR_DATA_MATRIX):
+            logger.debug("DONE!!!")
             write_beep()
             self._model.previous_process = ''
             self._model.status = f"{self._model.data_matrix} is WRITTEN DONE"
             self._model.data_matrix = ''
         else:
+            logger.debug("WRITE!!")
             self.nfc.write(self._model.data_matrix)
             self.delay_write_count = 2
 
     def input_keyboard_line(self, value):
         self._model.data_matrix = data_matrix if (data_matrix := check_dm(value)) else ''
+
+        if not self._model.data_matrix:
+            return
 
         if self._mssql.con:
             self._mssql.start_query_thread(self._mssql.select_result_with_dm_keyword,

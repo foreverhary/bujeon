@@ -16,7 +16,6 @@ class AirLeak(QApplication):
         self._model = AirLeakModel()
         self._control = AirLeakControl(self._model)
         self._view = AirLeakView(self._model, self._control)
-        self._model.begin_config_read()
         self.load_nfc_window = SplashScreen(STR_AIR_LEAK)
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 

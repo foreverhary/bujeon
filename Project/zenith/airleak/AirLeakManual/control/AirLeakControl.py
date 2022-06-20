@@ -17,27 +17,18 @@ class AirLeakControl(QObject):
         super(AirLeakControl, self).__init__()
         self._model = model
 
-        self.serial = SerialPort(STR_AIR_LEAK)
-        self.nfc = NFCSerialPort(STR_NFC)
+        self.nfc = NFCSerialPort()
         self._mssql = MSSQL(STR_AIR_LEAK)
 
         # controller event connect
-        self.serial.line_out_signal.connect(self.input_serial_data)
         self.nfc.nfc_out_signal.connect(self.receive_nfc_data)
         self.nfc.connection_signal.connect(self.receive_nfc_connection)
 
         self.delay_write_count = 0
 
-    @Slot(int)
-    def change_comport(self, comport):
+    @Slot(str)
+    def comport_save(self, comport):
         self._model.comport = comport
-
-    @Slot()
-    def comport_clicked(self):
-        logger.debug(self._model.comport)
-        self.serial.set_port_baudrate(self._model.comport, QSerialPort.Baud9600)
-        self._model.comport_open = self.serial.close() if self.serial.isOpen() else self.serial.open()
-        logger.debug(self._model.comport_open)
 
     @Slot(bool)
     def receive_nfc_connection(self, connection):
@@ -45,7 +36,8 @@ class AirLeakControl(QObject):
 
     @Slot(str)
     def input_serial_data(self, value):
-        self._model.result = STR_OK if STR_OK in value else STR_NG
+        if value:
+            self._model.result = STR_OK if STR_OK in value else STR_NG
 
     @Slot(dict)
     def receive_nfc_data(self, value):
@@ -87,7 +79,6 @@ class AirLeakControl(QObject):
             self._model.previous_process = STR_PREVIOUS_PROCESS_OK
 
     def begin(self):
-        self.comport_clicked()
         self._mssql.timer_for_db_connect()
 
     def right_clicked(self):

@@ -4,16 +4,12 @@ from process_package.defined_serial_port import get_serial_available_list
 from process_package.models.ConfigModel import ConfigModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED, BACK_GROUND_COLOR, WHITE
 from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_OK, STR_NFC1, \
-    NUMERAL, STR_WRITE_DONE
+    NUMERAL, STR_WRITE_DONE, STR_AIR_LEAK
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import set_config_value, get_config_value
 
 
 class AirLeakModel(ConfigModel):
-    comport_changed = Signal(str)
-    comport_open_changed = Signal(bool)
-    available_comport_changed = Signal(list)
-
     nfc_connection_changed = Signal(str)
     nfc_changed = Signal(str)
 
@@ -29,7 +25,20 @@ class AirLeakModel(ConfigModel):
     def __init__(self):
         super(AirLeakModel, self).__init__()
         self.units = []
+        self.result = ''
         self.data_matrix = ''
+        self.name = STR_AIR_LEAK
+        self.baudrate = 9600
+        self.comport = get_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1)
+
+    @property
+    def comport(self):
+        return self._comport
+
+    @comport.setter
+    def comport(self, value):
+        self._comport = value
+        set_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, value)
 
     @property
     def result(self):
@@ -107,42 +116,6 @@ class AirLeakModel(ConfigModel):
         self.status_color_changed.emit(value)
 
     @property
-    def comport(self):
-        return self._comport
-
-    @comport.setter
-    def comport(self, value):
-        if isinstance(value, int):
-            self._comport = self._available_comport[value]
-        else:
-            self._comport = value
-        self.comport_changed.emit(self.comport)
-
-    @property
-    def comport_open(self):
-        return self._comport_open
-
-    @comport_open.setter
-    def comport_open(self, value):
-        self._comport_open = bool(value)
-        self.comport_open_changed.emit(self._comport_open)
-        if self._comport_open:
-            set_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, self.comport)
-
-    @property
-    def available_comport(self):
-        return self._available_comport
-
-    @available_comport.setter
-    def available_comport(self, value):
-        port_numbers = [int(port[3:]) for port in value]
-        port_numbers.sort()
-        ports = [f"COM{port}" for port in port_numbers]
-        self._available_comport = ports
-        self.comport = self._available_comport[0]
-        self.available_comport_changed.emit(ports)
-
-    @property
     def nfc_connection(self):
         return self._nfc_connection
 
@@ -165,7 +138,3 @@ class AirLeakModel(ConfigModel):
                 self._nfc = port
                 self.nfc_changed.emit(port)
                 break
-
-    def begin_config_read(self):
-        self.available_comport = get_serial_available_list()
-        self.comport = get_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1)
