@@ -1,38 +1,28 @@
-from PySide2.QtCore import QObject, Slot
-from PySide2.QtSerialPort import QSerialPort
+from PySide2.QtCore import QObject, Slot, Signal
 
 from process_package.Views.CustomComponent import get_time
-from process_package.check_string import check_dm
 from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.resource.string import STR_NFC, STR_TOUCH, STR_PREVIOUS_PROCESS_OK, \
-    STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, STR_OK, STR_NG
-from process_package.tools.CommonFunction import logger, write_beep
-from process_package.tools.NFCSerialPort import NFCSerialPort
-from process_package.tools.SerialPort import SerialPort
+from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, STR_OK, STR_NG
+from process_package.tools.CommonFunction import write_beep
 from process_package.tools.mssql_connect import MSSQL
 
 
 class AirLeakControl(QObject):
+    nfc_write = Signal(str)
+
     def __init__(self, model):
         super(AirLeakControl, self).__init__()
         self._model = model
 
-        self.nfc = NFCSerialPort()
         self._mssql = MSSQL(STR_AIR_LEAK)
 
         # controller event connect
-        self.nfc.nfc_out_signal.connect(self.receive_nfc_data)
-        self.nfc.connection_signal.connect(self.receive_nfc_connection)
 
         self.delay_write_count = 0
 
     @Slot(str)
     def comport_save(self, comport):
         self._model.comport = comport
-
-    @Slot(bool)
-    def receive_nfc_connection(self, connection):
-        self._model.nfc_connection = connection
 
     @Slot(str)
     def input_serial_data(self, value):
@@ -57,7 +47,7 @@ class AirLeakControl(QObject):
         if self._model.data_matrix != value.get(STR_DATA_MATRIX) \
                 or self._model.result != value.get(STR_AIR):
             self._model.data_matrix = value.get(STR_DATA_MATRIX)
-            self.nfc.write(f"{self._model.data_matrix},{STR_AIR}:{self._model.result}")
+            self.nfc_write.emit(f"{self._model.data_matrix},{STR_AIR}:{self._model.result}")
             self.delay_write_count = 2
         else:
             write_beep()
@@ -68,20 +58,11 @@ class AirLeakControl(QObject):
                                            self._model.result)
             self._model.data_matrix = ''
 
-    def input_keyboard_line(self, value):
-        self._model.data_matrix = data_matrix if (data_matrix := check_dm(value)) else ''
-
-        if self._mssql.con:
-            self._mssql.start_query_thread(self._mssql.select_result_with_dm_keyword,
-                                           self._model.data_matrix,
-                                           STR_TOUCH)
-        else:  # Fake
-            self._model.previous_process = STR_PREVIOUS_PROCESS_OK
-
     def begin(self):
         self._mssql.timer_for_db_connect()
 
-    def right_clicked(self):
+    @staticmethod
+    def right_clicked():
         MSSqlDialog()
 
     def mid_clicked(self):

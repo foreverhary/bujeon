@@ -5,15 +5,14 @@ from PySide2.QtWidgets import QApplication, QVBoxLayout
 
 from process_package.Views.CustomComponent import style_sheet_setting, Widget
 from process_package.Views.CustomMixComponent import GroupLabel
-from process_package.resource.color import LIGHT_SKY_BLUE, RED
-from process_package.resource.string import STR_NFC, STR_DATA_MATRIX, STR_AIR, STR_OK, STR_MIC, STR_AIR_LEAK
+from process_package.component.NFCComponent import NFCComponent
+from process_package.resource.color import LIGHT_SKY_BLUE
+from process_package.resource.string import STR_DATA_MATRIX, STR_AIR, STR_OK, STR_MIC, STR_AIR_LEAK, STR_NFCIN
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import write_beep, logger
-from process_package.tools.NFCSerialPort import NFCSerialPort
 
 
 class MICWriteOKModel(QObject):
-    nfc_connection_changed = Signal(str)
     data_matrix_changed = Signal(str)
     data_matrix_background_changed = Signal(str)
     nfc_changed = Signal(str)
@@ -21,14 +20,6 @@ class MICWriteOKModel(QObject):
     def __init__(self):
         super(MICWriteOKModel, self).__init__()
         self.data_matrix = ''
-
-    @property
-    def nfc_connection(self):
-        return self._nfc_connection
-
-    @nfc_connection.setter
-    def nfc_connection(self, value):
-        self.nfc_connection_changed.emit(LIGHT_SKY_BLUE if value else RED)
 
     @property
     def data_matrix(self):
@@ -59,26 +50,20 @@ class MICWriteOKModel(QObject):
         self._nfc = None
         for port, nfc in value.items():
             logger.debug(f"{port}:{nfc}")
-            if STR_NFC in nfc:
+            if STR_NFCIN in nfc:
                 self._nfc = port
                 self.nfc_changed.emit(port)
                 break
 
 
 class MICWriteOKControl(QObject):
+    nfc_write = Signal(str)
+
     def __init__(self, model):
         super(MICWriteOKControl, self).__init__()
         self._model = model
 
-        self.nfc = NFCSerialPort()
-
-        self.nfc.nfc_out_signal.connect(self.receive_nfc_data)
-        self.nfc.connection_signal.connect(self.receive_nfc_connection)
         self.delay_write_count = 0
-
-    @Slot(bool)
-    def receive_nfc_connection(self, connection):
-        self._model.nfc_connection = connection
 
     @Slot(dict)
     def receive_nfc_data(self, value):
@@ -92,30 +77,34 @@ class MICWriteOKControl(QObject):
 
         if value.get(STR_AIR) and STR_OK == value.get(STR_MIC):
             write_beep()
-            self._model.data_matrix = f"{value.get(STR_DATA_MATRIX)}\n{STR_AIR_LEAK}:{value.get(STR_AIR)}\n{STR_MIC}:{value.get(STR_MIC)}"
+            self._model.data_matrix = f"{value.get(STR_DATA_MATRIX)}\n" \
+                                      f"{STR_AIR_LEAK}:{value.get(STR_AIR)}\n" \
+                                      f"{STR_MIC}:{value.get(STR_MIC)}"
         else:
             self._model.tmp_data_matrix = value.get(STR_DATA_MATRIX)
-            self.nfc.write(f"{value.get(STR_DATA_MATRIX)},{STR_AIR}:{value.get(STR_AIR) or STR_OK},{STR_MIC}:{STR_OK}")
+            self.nfc_write.emit(
+                f"{value.get(STR_DATA_MATRIX)},{STR_AIR}:{value.get(STR_AIR) or STR_OK},{STR_MIC}:{STR_OK}")
             self.delay_write_count = 2
 
 
 class MICWriteOKView(Widget):
     def __init__(self, *args):
         super(MICWriteOKView, self).__init__(*args)
-        self._model, self._config = args
+        self._model, self._control = args
         layout = QVBoxLayout(self)
-        layout.addWidget(nfc := GroupLabel(STR_NFC))
-        layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, font_size=50, is_nfc=True, is_clean=True, clean_time=2000))
+        layout.addWidget(nfc := NFCComponent())
+        layout.addWidget(
+            data_matrix := GroupLabel(title=STR_DATA_MATRIX, font_size=50, is_nfc=True, is_clean=True, clean_time=2000))
 
         nfc.setFixedHeight(70)
         data_matrix.setMinimumSize(420, 230)
 
-        self.nfc_connection = nfc.label
         self.data_matrix = data_matrix.label
 
-        self._model.nfc_changed.connect(self._control.nfc.set_port)
-        self._model.nfc_changed.connect(self.nfc_connection.setText)
-        self._model.nfc_connection_changed.connect(self.nfc_connection.set_background_color)
+        nfc.nfc_data_out.connect(self._control.receive_nfc_data)
+        self._control.nfc_write.connect(nfc.write)
+
+        self._model.nfc_changed.connect(nfc.set_port)
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
         self._model.data_matrix_background_changed.connect(self.data_matrix.set_background_color)
 
@@ -133,6 +122,7 @@ class MICWriteOK(QApplication):
         style_sheet_setting(self)
         self._model.nfc = nfcs
         self._view.show()
+        self.load_nfc_window.close()
 
 
 if __name__ == '__main__':

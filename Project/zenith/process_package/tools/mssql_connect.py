@@ -4,14 +4,11 @@ from threading import Thread
 import pymssql
 from PySide2.QtCore import QObject, Signal, QTimer
 from pymssql._pymssql import OperationalError, InterfaceError, IntegrityError
-from pymssql import _mssql, _pymssql
-import uuid
-import decimal
 # mssql server
 from process_package.Views.CustomComponent import get_time
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_mssql
-from process_package.db_update_from_file import UpdateDB
+from process_package.tools.db_update_from_file import UpdateDB
 from process_package.resource.number import CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 

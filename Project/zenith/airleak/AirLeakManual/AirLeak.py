@@ -25,6 +25,7 @@ class AirLeak(QApplication):
         self._view.show()
         self._control.begin()
         window_center(self._view)
+        self.load_nfc_window.close()
 
 
 if __name__ == '__main__':

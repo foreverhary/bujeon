@@ -1,4 +1,4 @@
-from PySide2.QtCore import Slot
+from PySide2.QtCore import Slot, Qt
 from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGroupBox, QGridLayout
 
 from process_package.Views.CustomComponent import LeftAlignLabel, Label, Button, LineEdit
@@ -89,6 +89,8 @@ class FunctionConfigView(QDialog):
         self._model.b_max_changed.connect(self.grade_b_max.setText)
         self._model.c_min_changed.connect(self.grade_c_min.setText)
         self._model.c_max_changed.connect(self.grade_c_max.setText)
+
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
     @Slot()
     def save(self):

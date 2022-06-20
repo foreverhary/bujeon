@@ -17,6 +17,9 @@ from process_package.tools.mssql_connect import MSSQL
 
 
 class FunctionControl(QObject):
+    nfc_in_write = Signal(str)
+    nfc1_write = Signal(str)
+    nfc2_write = Signal(str)
     grade_signal = Signal(str)
     summary_signal = Signal(str)
 
@@ -24,18 +27,9 @@ class FunctionControl(QObject):
         super(FunctionControl, self).__init__()
         self._model = model
 
-        self.nfc_in = NFCSerialPort(STR_NFC)
-        self.nfc1 = NFCSerialPort(STR_NFC)
-        self.nfc2 = NFCSerialPort(STR_NFC)
         self._mssql = MSSQL(STR_AIR_LEAK)
 
         # controller event connect
-        self.nfc_in.nfc_out_signal.connect(self.receive_nfc_data)
-        self.nfc_in.connection_signal.connect(self.receive_nfc_connection)
-        self.nfc1.nfc_out_signal.connect(self.receive_nfc_data)
-        self.nfc1.connection_signal.connect(self.receive_nfc_connection)
-        self.nfc2.nfc_out_signal.connect(self.receive_nfc_data)
-        self.nfc2.connection_signal.connect(self.receive_nfc_connection)
 
         self.delay_write_count = 0
 
@@ -46,14 +40,9 @@ class FunctionControl(QObject):
         self.grade_signal.connect(self.grade_process)
         self.summary_signal.connect(self.summary_process)
 
-    @Slot(bool)
-    def receive_nfc_connection(self, connection):
-        if self.sender() == self.nfc1:
-            self._model.nfc1.nfc_connection = connection
-        elif self.sender() == self.nfc2:
-            self._model.nfc2.nfc_connection = connection
-        else:
-            self._model.nfc_in.nfc_connection = connection
+    @Slot(dict)
+    def check_previous(self, value):
+        pass
 
     @Slot(dict)
     def receive_nfc_data(self, value):

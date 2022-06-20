@@ -15,8 +15,9 @@ class QRNFCWriter(QApplication):
         self._model = QRNFCWriterModel()
         self._control = QRNFCWriterControl(self._model)
         self._view = QRNFCWriterView(self._model, self._control)
+        self._model.begin()
         self._control.begin()
-        self.load_nfc_window = SplashScreen("QR RESISTOR")
+        self.load_nfc_window = SplashScreen("QR MATCHING")
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
     def show_main_window(self, nfcs):
@@ -24,6 +25,7 @@ class QRNFCWriter(QApplication):
         self._model.nfc = nfcs
         self._view.show()
         window_center(self._view)
+        self.load_nfc_window.close()
 
 
 if __name__ == '__main__':

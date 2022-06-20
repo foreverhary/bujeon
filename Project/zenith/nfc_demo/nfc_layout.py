@@ -1,7 +1,7 @@
 from threading import Thread
 
-from PyQt5.QtCore import pyqtSignal, QTimer
-from PyQt5.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout
+from PySide2.QtCore import Signal, QTimer
+from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout
 
 from process_package.Views.CustomComponent import Label, LineEdit, Button
 
@@ -12,18 +12,20 @@ TEXT_EDIT_FONT_SIZE = 15
 
 INPUT_FONT_SIZE = 15
 
+
 class NFCLayout(QVBoxLayout):
-    input_signal = pyqtSignal(str)
-    checker_signal = pyqtSignal(object)
+    input_signal = Signal(str)
+    checker_signal = Signal(object)
 
     def __init__(self, nfc):
         super(NFCLayout, self).__init__()
         self.nfc = nfc
-        nfc.signal.debug_nfc_signal.connect(self.input_text)
+        # nfc.signal.debug_nfc_signal.connect(self.input_text)
 
         self.addWidget(id_group_box := QGroupBox("NFC ID"))
         id_group_box.setLayout(id_layout := QVBoxLayout())
-        id_layout.addWidget(serial := Label(f"{nfc.serial_name}({nfc.port})"))
+        # id_layout.addWidget(serial := Label(f"{nfc.serial_name}({nfc.port})"))
+        id_layout.addWidget(serial := Label(f"{nfc}({nfc})"))
         serial.set_font_size(TITLE_FONT_SIZE)
         self.addWidget(input_group_box := QGroupBox('OUT'))
         input_group_box.setLayout(output_layout := QHBoxLayout())

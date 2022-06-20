@@ -1,50 +1,32 @@
 from PySide2.QtCore import QObject, Signal
 
-from process_package.resource.color import LIGHT_SKY_BLUE, RED, WHITE
-from process_package.resource.string import STR_PREVIOUS_PROCESS_OK, STR_NFC1, STR_TAG_NFC_JIG, STR_DONE
+from process_package.resource.color import LIGHT_SKY_BLUE, WHITE
+from process_package.resource.string import STR_NFC1, STR_TAG_NFC_JIG, STR_DONE
 from process_package.tools.CommonFunction import logger
+from process_package.tools.Config import set_order_number, get_order_number
 
 
 class QRNFCWriterModel(QObject):
-    nfc_connection_changed = Signal(str)
-    previous_process_changed = Signal(str)
-    previous_process_color_changed = Signal(str)
+    nfc_changed = Signal(str)
+    order_changed = Signal(str)
     data_matrix_changed = Signal(str)
     data_matrix_background_changed = Signal(str)
     status_changed = Signal(str)
     status_color_changed = Signal(str)
-    nfc_changed = Signal(str)
 
     def __init__(self):
         super(QRNFCWriterModel, self).__init__()
         self.data_matrix = ''
 
     @property
-    def nfc_connection(self):
-        return self._nfc_connection
+    def order_number(self):
+        return self._order
 
-    @nfc_connection.setter
-    def nfc_connection(self, value):
-        self.nfc_connection_changed.emit(LIGHT_SKY_BLUE if value else RED)
-
-    @property
-    def previous_process(self):
-        return self._previous_process
-
-    @previous_process.setter
-    def previous_process(self, value):
-        self.previous_process_color = LIGHT_SKY_BLUE if value == STR_PREVIOUS_PROCESS_OK else RED
-        self._previous_process = value
-        self.previous_process_changed.emit(value)
-
-    @property
-    def previous_process_color(self):
-        return self._previous_process_color
-
-    @previous_process_color.setter
-    def previous_process_color(self, value):
-        self._previous_process_color = value
-        self.previous_process_color_changed.emit(value)
+    @order_number.setter
+    def order_number(self, value):
+        self._order = value
+        self.order_changed.emit(value)
+        set_order_number(value)
 
     @property
     def data_matrix(self):
@@ -101,3 +83,6 @@ class QRNFCWriterModel(QObject):
                 self._nfc = port
                 self.nfc_changed.emit(port)
                 break
+
+    def begin(self):
+        self.order_number = get_order_number()

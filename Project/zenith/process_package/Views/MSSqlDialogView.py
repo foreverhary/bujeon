@@ -1,3 +1,4 @@
+from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QHBoxLayout
 
 from process_package.Views.CustomComponent import LeftAlignLabel, LineEdit, Button
@@ -61,6 +62,8 @@ class MSSqlDialogView(QDialog):
         self._model.change_id.connect(self.id_line_edit.setText)
         self._model.change_password.connect(self.password_line_edit.setText)
         self._model.change_database.connect(self.database_line_edit.setText)
+
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
     def save(self):
         self._model.save()

@@ -60,7 +60,7 @@ class NFCCheckerDialog(QDialog):
 
 class NFCChecker(Widget):
     def __init__(self, app):
-        super(NFCChecker, self).__init__()
+        super(NFCChecker, self).__init__(1,2)
         self.app = app
         self.setLayout(layout := QGridLayout())
         self.grid_layout = layout
@@ -72,7 +72,7 @@ class NFCChecker(Widget):
     def show_main_window(self, nfc_list):
         self.load_nfc_window.close()
 
-        for index, nfc in enumerate(nfc_list):
+        for index, (port, nfc) in enumerate(nfc_list.items()):
             self.grid_layout.addLayout(nfc_layout := NFCLayout(nfc), index // 2, index % 2)
             self.nfc_layout.append(nfc_layout)
         if not nfc_list:

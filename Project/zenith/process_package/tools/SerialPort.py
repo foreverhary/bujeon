@@ -15,6 +15,7 @@ class SerialPort(QObject):
         super(SerialPort, self).__init__()
         self._serial = Serial()
         self.thread = Thread(target=self.read_line_data(), daemon=True)
+        self.out = ''
 
     @property
     def is_open(self):
@@ -37,8 +38,9 @@ class SerialPort(QObject):
     def read_line_data(self):
         while True:
             try:
-                logger.debug(out := self._serial.readline().decode().replace('\r', '').replace('\n', ''))
-                self.line_out_signal.emit(out)
+                self.out = self._serial.readline().decode().replace('\r', '').replace('\n', '')
+                logger.debug(self.out)
+                self.line_out_signal.emit(self.out)
             except Exception as e:
                 logger.error(f"{type(e)} : {e}")
                 self.is_open_close()

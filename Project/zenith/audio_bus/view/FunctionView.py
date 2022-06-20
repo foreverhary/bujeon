@@ -1,7 +1,9 @@
+from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout
 
 from process_package.Views.CustomComponent import Widget, Label, LabelBlink, LabelNFC
 from process_package.Views.CustomMixComponent import GroupLabel, HBoxComboButton
+from process_package.component.NFCComponent import NFCComponent
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, \
@@ -20,9 +22,9 @@ class FunctionView(Widget):
         # UI
         layout = QVBoxLayout(self)
         layout.addLayout(nfc_layout := QHBoxLayout())
-        nfc_layout.addWidget(nfc_in := GroupLabel(STR_NFCIN))
-        nfc_layout.addWidget(nfc1 := GroupLabel(STR_NFC1))
-        nfc_layout.addWidget(nfc2 := GroupLabel(STR_NFC2))
+        nfc_layout.addWidget(nfc_in := NFCComponent())
+        nfc_layout.addWidget(nfc1 := NFCComponent())
+        nfc_layout.addWidget(nfc2 := NFCComponent())
         layout.addWidget(previous_process := GroupLabel(STR_PREVIOUS_PROCESS, is_clean=True))
         layout.addWidget(grade := GroupLabel(STR_GRADE))
         layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS))
@@ -38,9 +40,6 @@ class FunctionView(Widget):
         previous_process.setFixedHeight(AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT)
         status.setFixedHeight(AIR_LEAK_STATUS_FIXED_HEIGHT)
 
-        self.nfc_in_connection = nfc_in.label
-        self.nfc1_connection = nfc1.label
-        self.nfc2_connection = nfc2.label
         self.previous_process = previous_process.label
         self.grade = grade.label
         self.nfc = nfc.label
@@ -50,18 +49,20 @@ class FunctionView(Widget):
 
         # connect widgets to controller
 
+        # listen for component event signals
+        nfc_in.nfc_data_out.connect(self._control.check_previous)
+        nfc1.nfc_data_out.connect(self._control.receive_nfc_data)
+        nfc2.nfc_data_out.connect(self._control.receive_nfc_data)
+
+        # listen for control event signals
+        self._control.nfc_in_write.connect(nfc_in.write)
+        self._control.nfc1_write.connect(nfc1.write)
+        self._control.nfc2_write.connect(nfc2.write)
+
         # listen for model event signals
-        self._model.nfc_in.nfc_changed.connect(self._control.nfc_in.setPortName)
-        self._model.nfc_in.nfc_changed.connect(self.nfc_in_connection.setText)
-        self._model.nfc_in.nfc_connection_changed.connect(self.nfc_in_connection.set_background_color)
-
-        self._model.nfc1.nfc_changed.connect(self._control.nfc1.setPortName)
-        self._model.nfc1.nfc_changed.connect(self.nfc1_connection.setText)
-        self._model.nfc1.nfc_connection_changed.connect(self.nfc1_connection.set_background_color)
-
-        self._model.nfc2.nfc_changed.connect(self._control.nfc2.setPortName)
-        self._model.nfc2.nfc_changed.connect(self.nfc2_connection.setText)
-        self._model.nfc2.nfc_connection_changed.connect(self.nfc2_connection.set_background_color)
+        self._model.nfc_in.nfc_changed.connect(nfc_in.set_port)
+        self._model.nfc1.nfc_changed.connect(nfc1.set_port)
+        self._model.nfc2.nfc_changed.connect(nfc2.set_port)
 
         self._model.grade_changed.connect(self.grade.setText)
         self._model.grade_color_changed.connect(self.grade.set_color)
@@ -71,3 +72,5 @@ class FunctionView(Widget):
 
         self._model.status_changed.connect(self.status.setText)
         self._model.status_color_changed.connect(self.status.set_color)
+
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)

@@ -26,7 +26,7 @@ class VirtualNFC(Serial):
         self.read_forever.start()
 
     def send_msg(self, msg):
-        for _ in range(2):
+        for _ in range(1):
             send_msg = ','.join([self.uid, msg]) if msg else self.uid
             send_msg += '\r\n'
             self.write(send_msg.encode())

@@ -10,7 +10,6 @@ from process_package.tools.Config import set_config_value, get_config_value
 
 
 class AirLeakModel(ConfigModel):
-    nfc_connection_changed = Signal(str)
     nfc_changed = Signal(str)
 
     result_changed = Signal(str)
@@ -114,14 +113,6 @@ class AirLeakModel(ConfigModel):
     def status_color(self, value):
         self._status_color = value
         self.status_color_changed.emit(value)
-
-    @property
-    def nfc_connection(self):
-        return self._nfc_connection
-
-    @nfc_connection.setter
-    def nfc_connection(self, value):
-        self.nfc_connection_changed.emit(LIGHT_SKY_BLUE if value else RED)
 
     @property
     def nfc(self):

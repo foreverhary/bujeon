@@ -1,4 +1,4 @@
-from PySide2.QtCore import Signal
+from PySide2.QtCore import Signal, Qt
 from PySide2.QtWidgets import QDialog, QHBoxLayout, QGroupBox, QGridLayout, QVBoxLayout
 
 from process_package.Views.CustomComponent import LeftAlignLabel, DateEdit, LineEdit, Button, ComboBox
@@ -91,6 +91,8 @@ class OrderNumberDialogView(QDialog):
         self._model.model_name_changed.connect(self.model_name.setText)
         self._model.order_number_changed.connect(self.order_number_edit.setText)
         self._model.connection_changed.connect(self.search_button.setEnabled)
+
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
     def save(self):
         self._model.save()

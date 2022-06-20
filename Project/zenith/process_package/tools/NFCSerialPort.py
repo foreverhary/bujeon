@@ -57,6 +57,8 @@ class NFCSerialPort(SerialPort):
                 split_data[STR_SEN] = split.split(':')[1]
         if split_data:
             self.nfc_out_signal.emit(split_data)
+            logger.debug(split_data)
+
 
 
 class NFCSerwialPort(SerialPort):

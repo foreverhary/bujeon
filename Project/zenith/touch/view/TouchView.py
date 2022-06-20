@@ -39,7 +39,6 @@ class TouchView(Widget):
         status.setMaximumHeight(TOUCH_STATUS_MAXIMUM_HEIGHT)
         machine.label.setMinimumWidth(TOUCH_MACHINE_MINIMUM_WIDTH)
 
-        self.comport = comport
         self.order = order.label
         self.data_matrix = data_matrix.label
         self.data_matrix_waiting = data_matrix_waiting.label
@@ -49,8 +48,8 @@ class TouchView(Widget):
         self.setWindowTitle(STR_TOUCH_PROCESS)
 
         # connect widgets to controller
-        self.comport.comport_save.connect(self._control.comport_save)
-        self.comport.serial_output_data.connect(self._control.input_serial_data)
+        comport.comport_save.connect(self._control.comport_save)
+        comport.serial_output_data.connect(self._control.input_serial_data)
 
         # listen for model event signals
         self._model.order_number_changed.connect(self.order.setText)

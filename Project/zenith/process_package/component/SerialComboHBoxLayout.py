@@ -121,7 +121,7 @@ class SerialComboHBoxLayoutModel(QObject):
         self._available_comport = ports
         backup_comport = self.comport
         self.available_comport_changed.emit(ports)
-        if backup_comport:
+        if backup_comport and backup_comport in ports:
             self.comport_index = ports.index(backup_comport)
 
     def begin(self):
