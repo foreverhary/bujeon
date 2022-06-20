@@ -53,6 +53,9 @@ class TouchControl(QObject):
                                                self._model.data_matrix,
                                                self._model.machine_result)
 
+                self._model.data_matrix = self._model.data_matrix_waiting
+                self._model.data_matrix_waiting = ''
+
     def begin(self):
         self._mssql.timer_for_db_connect()
 

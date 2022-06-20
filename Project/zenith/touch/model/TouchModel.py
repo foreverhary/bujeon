@@ -1,14 +1,10 @@
 from PySide2.QtCore import Signal
 
-from process_package.check_string import check_dm
-from process_package.defined_serial_port import get_serial_available_list
-from process_package.models.SerialConnectModel import SerialConnectModel
-from process_package.resource.color import RED, LIGHT_SKY_BLUE, WHITE
-from process_package.tools.mssql_connect import MSSQL
-from process_package.tools.Config import get_order_number, get_config_value, set_config_value, set_order_number
 from process_package.models.ConfigModel import ConfigModel
-from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_OK, \
-    STR_NG, STR_TOUCH, STR_INSERT_ORDER_NUMBER, STR_READY, STR_WRITE_DONE_SCAN_NEXT_QR, STR_WAIT_FOR_MACHINE_RESULT
+from process_package.resource.color import RED, LIGHT_SKY_BLUE, WHITE
+from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_TOUCH, \
+    STR_INSERT_ORDER_NUMBER, STR_READY, STR_WRITE_DONE_SCAN_NEXT_QR, STR_WAIT_FOR_MACHINE_RESULT
+from process_package.tools.Config import get_order_number, get_config_value, set_config_value, set_order_number
 
 
 class TouchModel(ConfigModel):
@@ -80,8 +76,6 @@ class TouchModel(ConfigModel):
             self.status = STR_WRITE_DONE_SCAN_NEXT_QR
         self._machine_result = value
         self.machine_result_changed.emit(value)
-        self.data_matrix = self.data_matrix_waiting
-        self.data_matrix_waiting = ''
 
     @property
     def status(self):

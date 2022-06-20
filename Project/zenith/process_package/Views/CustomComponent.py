@@ -166,9 +166,9 @@ class LabelBlink(Label):
             self.set_style_sheet()
 
 
-class LabelNFC(Label):
-    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE):
-        super(LabelNFC, self).__init__(txt, font_size)
+class LabelNFC(LabelTimerClean):
+    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):
+        super(LabelNFC, self).__init__(txt, font_size, is_clean, clean_time)
 
         self.timer_nfc_tag = QTimer(self)
         self.timer_nfc_tag.start(200)

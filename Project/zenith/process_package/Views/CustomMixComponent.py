@@ -10,15 +10,17 @@ class GroupLabel(QGroupBox):
         super(GroupLabel, self).__init__()
         self.setTitle(title)
         layout = QVBoxLayout(self)
-        if is_clean:
+        if is_nfc:
+            layout.addWidget(label := LabelNFC(font_size=font_size,
+                                               is_clean=is_clean,
+                                               clean_time=clean_time))
+        elif is_clean:
             layout.addWidget(label := LabelTimerClean(font_size=font_size,
                                                       is_clean=is_clean,
                                                       clean_time=clean_time))
         elif blink_time:
             layout.addWidget(label := LabelBlink(font_size=font_size,
                                                  blink_time=blink_time))
-        elif is_nfc:
-            layout.addWidget(label := LabelNFC(font_size=font_size))
         else:
             layout.addWidget(label := Label(font_size=font_size))
 

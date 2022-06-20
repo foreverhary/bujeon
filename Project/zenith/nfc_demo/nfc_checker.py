@@ -1,19 +1,18 @@
 import sys
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QWidget, QApplication, QGridLayout, QDialog
+from PySide2.QtCore import Signal, Qt
+from PySide2.QtGui import QCursor
+from PySide2.QtWidgets import QDialog, QGridLayout, QApplication
 
 from nfc_layout import NFCLayout
-from process_package.Views.CustomComponent import Label
+from process_package.Views.CustomComponent import Label, Widget, style_sheet_setting, window_center
+from process_package.resource.color import RED
 from process_package.screen.SplashScreen import SplashScreen
-from process_package.defined_variable_function import style_sheet_setting, window_center, RED
-
 LOCATION = 'AA'
 
 
 class NFCCheckerDialog(QDialog):
-    checker_close_signal = pyqtSignal()
+    checker_close_signal = Signal()
 
     def __init__(self, nfc_list):
         super(NFCCheckerDialog, self).__init__()
@@ -59,7 +58,7 @@ class NFCCheckerDialog(QDialog):
         return super().exec_()
 
 
-class NFCChecker(QWidget):
+class NFCChecker(Widget):
     def __init__(self, app):
         super(NFCChecker, self).__init__()
         self.app = app
@@ -84,21 +83,6 @@ class NFCChecker(QWidget):
         self.show()
         window_center(self)
 
-    def mousePressEvent(self, e):
-        if e.buttons() & Qt.LeftButton:
-            self.m_flag = True
-            self.m_Position = e.globalPos() - self.pos()
-            e.accept()
-            self.setCursor((QCursor(Qt.OpenHandCursor)))
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if Qt.LeftButton and self.m_flag:
-            self.move(QMouseEvent.globalPos() - self.m_Position)
-            QMouseEvent.accept()
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.m_flag = False
-        self.setCursor(QCursor(Qt.ArrowCursor))
 
 
 if __name__ == '__main__':

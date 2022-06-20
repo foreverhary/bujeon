@@ -60,6 +60,7 @@ class MSSQL(QObject):
             if fetch[0] != self.aufnr:
                 self.aufnr = fetch[0]
             return True
+        logger.debug(fetch)
 
     def insert_pprd(self, itime, dm=None, result=None, pcode='', ecode=''):
         if not self.set_aufnr_with_dm(dm):

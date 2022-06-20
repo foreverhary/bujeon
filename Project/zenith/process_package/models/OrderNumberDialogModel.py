@@ -1,5 +1,6 @@
 from PySide2.QtCore import QObject, Signal
 
+from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_order_number, set_order_number
 
 
@@ -57,9 +58,9 @@ class OrderNumberDialogModel(QObject):
 
     @order_number_index.setter
     def order_number_index(self, value):
+        logger.debug(self.order_number_list)
         self._order_number_index = value
-        print(value)
-        self.order_number = self.material_code, self.model_name = self.order_number_list[value]
+        self.order_number, self.material_code, self.model_name = self.order_number_list[value]
 
     @property
     def material_code(self):
