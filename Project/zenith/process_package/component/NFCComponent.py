@@ -9,24 +9,26 @@ from process_package.tools.NFCSerialPort import NFCSerialPort
 class NFCComponent(GroupLabel):
     nfc_data_out = Signal(dict)
 
-    def __init__(self):
-        super(NFCComponent, self).__init__()
+    def __init__(self, title=''):
+        super(NFCComponent, self).__init__(title)
         self._model = NFCComponentModel()
         self._control = NFCComponentControl(self._model)
 
-        self._control.nfc_data_out.connect(self.data_out)
+        self._control.nfc_data_out.connect(self.nfc_data_out.emit)
 
+        self._model.nfc_name = title
         self._model.nfc_changed.connect(self._control.nfc.set_port)
         self._model.nfc_changed.connect(self.label.setText)
         self._model.nfc_connection_changed.connect(self.label.set_background_color)
 
-    @Slot(dict)
-    def data_out(self, value):
-        logger.debug(value)
-        self.nfc_data_out.emit(value)
-
     def set_port(self, port):
         self._model.port = port
+
+    def get_port(self):
+        return self._model.port
+
+    def get_nfc_name(self):
+        return self._model.nfc_name
 
     def write(self, value):
         self._control.nfc.write(value)
@@ -41,13 +43,8 @@ class NFCComponentControl(QObject):
 
         self.nfc = NFCSerialPort()
 
-        self.nfc.nfc_out_signal.connect(self.data_out)
+        self.nfc.nfc_out_signal.connect(self.nfc_data_out.emit)
         self.nfc.connection_signal.connect(self.receive_nfc_connection)
-
-    @Slot(dict)
-    def data_out(self, value):
-        logger.debug(value)
-        self.nfc_data_out.emit(value)
 
     @Slot(bool)
     def receive_nfc_connection(self, connection):
@@ -77,3 +74,11 @@ class NFCComponentModel(QObject):
     def port(self, value):
         self._port = value
         self.nfc_changed.emit(value)
+
+    @property
+    def nfc_name(self):
+        return self._nfc_name
+
+    @nfc_name.setter
+    def nfc_name(self, value):
+        self._nfc_name = value

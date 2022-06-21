@@ -7,6 +7,7 @@ from xlrd import open_workbook
 from audio_bus.FunctionConfig import FunctionConfig
 from audio_bus.observer.FileObserver import Target
 from process_package.Views.CustomComponent import get_time
+from process_package.component.nfc_checker import NFCCheckerDialog
 from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.resource.string import STR_NFC, STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, STR_NG, GRADE_FILE_PATH, \
     SUMMARY_FILE_PATH
@@ -40,12 +41,18 @@ class FunctionControl(QObject):
         self.grade_signal.connect(self.grade_process)
         self.summary_signal.connect(self.summary_process)
 
+        self.checker_on = True
+
     @Slot(dict)
     def check_previous(self, value):
-        pass
+        if self.checker_on:
+            return
 
     @Slot(dict)
     def receive_nfc_data(self, value):
+        if self.checker_on:
+            return
+
         if not self._model.result:
             return
 
@@ -147,6 +154,10 @@ class FunctionControl(QObject):
             self.summary_file_observer.start()
             return True
         return False
+
+    def open_checker(self, nfc):
+        self.checker_on = True
+        NFCCheckerDialog(self, nfc)
 
     def begin(self):
         self._mssql.timer_for_db_connect()

@@ -12,6 +12,7 @@ from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT
     AUDIO_BUS_NFC_FIXED_HEIGHT, AUDIO_BUS_NFC_FONT_SIZE
 from process_package.resource.string import STR_NFC1, STR_MACHINE_COMPORT, STR_RESULT, STR_UNIT, STR_AIR_LEAK, \
     STR_NFCIN, STR_NFC2, STR_PREVIOUS_PROCESS, STR_GRADE, STR_STATUS, STR_WRITE_STATUS, STR_FUNCTION
+from process_package.tools.clickable import clickable
 
 
 class FunctionView(Widget):
@@ -22,9 +23,9 @@ class FunctionView(Widget):
         # UI
         layout = QVBoxLayout(self)
         layout.addLayout(nfc_layout := QHBoxLayout())
-        nfc_layout.addWidget(nfc_in := NFCComponent())
-        nfc_layout.addWidget(nfc1 := NFCComponent())
-        nfc_layout.addWidget(nfc2 := NFCComponent())
+        nfc_layout.addWidget(nfc_in := NFCComponent(STR_NFCIN))
+        nfc_layout.addWidget(nfc1 := NFCComponent(STR_NFC1))
+        nfc_layout.addWidget(nfc2 := NFCComponent(STR_NFC2))
         layout.addWidget(previous_process := GroupLabel(STR_PREVIOUS_PROCESS, is_clean=True))
         layout.addWidget(grade := GroupLabel(STR_GRADE))
         layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS))
@@ -46,6 +47,11 @@ class FunctionView(Widget):
         self.status = status.label
 
         self.setWindowTitle(STR_FUNCTION)
+
+        # nfc checker
+        clickable(nfc_in).connect(lambda: self._control.open_checker(nfc_in))
+        clickable(nfc1).connect(lambda: self._control.open_checker(nfc1))
+        clickable(nfc2).connect(lambda: self._control.open_checker(nfc2))
 
         # connect widgets to controller
 

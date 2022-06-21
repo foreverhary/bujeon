@@ -34,8 +34,8 @@ class MSSQL(QObject):
         self._con = value
         self.connection_status_changed.emit(bool(self._con))
 
-
     def set_aplzl(self):
+        cur = self.con.cursor()
         if self.aufnr and self.keyword:
             sql = f"""
                     SELECT 
@@ -46,14 +46,16 @@ class MSSQL(QObject):
                         AUFNR = {self.aufnr} and 
                         LTXA1 LIKE '%{self.keyword}%'
                 """
-            self.cur.execute(sql)
-            if fetch := self.cur.fetchone():
+            cur.execute(sql)
+            logger.debug(sql)
+            if fetch := cur.fetchone():
                 self.aplzl = fetch[0]
 
     def set_aufnr_with_dm(self, dm):
+        cur = self.con.cursor()
         sql = f"SELECT AUFNR FROM PPRH WHERE DM = '{dm}'"
-        self.cur.execute(sql)
-        if fetch := self.cur.fetchone():
+        cur.execute(sql)
+        if fetch := cur.fetchone():
             if fetch[0] != self.aufnr:
                 self.aufnr = fetch[0]
             return True
@@ -63,6 +65,7 @@ class MSSQL(QObject):
         if not self.set_aufnr_with_dm(dm):
             raise TypeError
         self.set_aplzl()
+        cur = self.con.cursor()
         sql = f"""
             INSERT INTO PPRD 
             (
@@ -84,12 +87,13 @@ class MSSQL(QObject):
                 '{pcode or STR_NULL}', 
                 '{ecode or STR_NULL}')
             """
-        self.cur.execute(sql)
+        logger.debug(sql)
+        cur.execute(sql)
         self.con.commit()
         return True
 
     def insert_pprh(self, itime, order, dm):
-        self.cur.execute(f"""
+        sql = f"""
             IF EXISTS(
                 SELECT DM from PPRH
                 where DM = '{dm}'
@@ -102,13 +106,18 @@ class MSSQL(QObject):
                 INSERT INTO PPRH (DM, AUFNR, ITIME)
                 VALUES ('{dm}', '{order}', '{itime}')
                 END
-            """)
+            """
+        logger.debug(sql)
+        cur = self.con.cursor()
+        cur.execute(sql)
         self.con.commit()
         return True
 
     def select_aplzl_with_order_keyword(self):
         sql = f"select APLZL from AUFK where AUFNR = '{self.aufnr}' and LTXA1 like '%{self.keyword}%'"
-        self.cur.execute(sql)
+        logger.debug(sql)
+        cur = self.con.cursor()
+        cur.execute(sql)
         if fetch := self.cur.fetchone():
             return fetch[0]
 
@@ -119,8 +128,10 @@ class MSSQL(QObject):
             left join PPRD as C on A.DM = C.DM and B.APLZL = C.APLZL
             where A.DM = '{dm}' and B.LTXA1 like '%{keyword}%' order by C.ITIME desc
         """
-        self.cur.execute(sql)
-        if fetch := self.cur.fetchone():
+        logger.debug(sql)
+        cur = self.con.cursor()
+        cur.execute(sql)
+        if fetch := cur.fetchone():
             self.pre_process_result_signal.emit(fetch[0])
         else:
             self.pre_process_result_signal.emit('')
@@ -175,8 +186,6 @@ class MSSQL(QObject):
             if "insert" in func.__name__:
                 logger.error(f"{func.__name__} Need to Save!!")
                 self.save_query_db_fail(func, *args)
-            if e == OperationalError:
-                self.con = None
             return False
         except Exception as e:
             logger.error(f"{type(e)} : {e}")

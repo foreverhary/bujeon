@@ -8,7 +8,8 @@ from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, \
     AIR_LEAK_RESULT_MINIMUM_HEIGHT, AIR_LEAK_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, COMPORT_FIXED_HEIGHT, \
     AIR_LEAK_STATUS_FIXED_HEIGHT
-from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESULT, STR_UNIT, STR_AIR_LEAK
+from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESULT, STR_UNIT, STR_AIR_LEAK, STR_NFC1
+from process_package.tools.clickable import clickable
 
 
 class AirLeakView(Widget):
@@ -18,7 +19,7 @@ class AirLeakView(Widget):
 
         # UI
         layout = QVBoxLayout(self)
-        layout.addWidget(nfc := NFCComponent())
+        layout.addWidget(nfc := NFCComponent(STR_NFC1))
         layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
         comport_box.setLayout(comport := SerialComboHBoxLayout(self._model))
         layout.addLayout(unit_layout := QHBoxLayout())
@@ -46,6 +47,9 @@ class AirLeakView(Widget):
         self.status = status
 
         self.setWindowTitle(STR_AIR_LEAK)
+
+        # nfc checker
+        clickable(nfc).connect(lambda: self._control.open_checker(nfc))
 
         # connect widgets to controller
         comport.comport_save.connect(self._control.comport_save)

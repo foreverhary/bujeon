@@ -1,7 +1,7 @@
 from PySide2.QtCore import QObject, Signal
 
 from process_package.resource.color import LIGHT_SKY_BLUE, WHITE
-from process_package.resource.string import STR_NFC1, STR_TAG_NFC_JIG, STR_DONE
+from process_package.resource.string import STR_NFC1, STR_TAG_NFC_JIG, STR_DONE, STR_READY, STR_INSERT_ORDER_NUMBER
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import set_order_number, get_order_number
 
@@ -24,6 +24,7 @@ class QRNFCWriterModel(QObject):
 
     @order_number.setter
     def order_number(self, value):
+        self.status = STR_READY if value else STR_INSERT_ORDER_NUMBER
         self._order = value
         self.order_changed.emit(value)
         set_order_number(value)

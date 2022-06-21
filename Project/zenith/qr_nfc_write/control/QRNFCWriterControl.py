@@ -2,6 +2,7 @@ from PySide2.QtCore import QObject, Signal
 
 from process_package.Views.CustomComponent import get_time
 from process_package.check_string import check_dm
+from process_package.component.nfc_checker import NFCCheckerDialog
 from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.controllers.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.color import LIGHT_SKY_BLUE
@@ -26,10 +27,14 @@ class QRNFCWriterControl(QObject):
 
         self.delay_write_count = 0
 
+        self.checker_on = False
+
     def receive_nfc_data(self, value):
+        if self.checker_on:
+            return
+
         if not value:
             return
-        logger.debug(value)
         self._model.data_matrix_background = LIGHT_SKY_BLUE
         if self.delay_write_count:
             self.delay_write_count -= 1
@@ -41,8 +46,11 @@ class QRNFCWriterControl(QObject):
         if self._model.data_matrix and self._model.data_matrix == value.get(STR_DATA_MATRIX):
             logger.debug("DONE!!!")
             write_beep()
-            self._model.order_number = ''
-            self._model.status = f"{self._model.data_matrix} is WRITTEN DONE"
+            self._mssql.start_query_thread(self._mssql.insert_pprd,
+                                           get_time(),
+                                           self._model.data_matrix,
+                                           STR_OK)
+            self._model.status = f"{self._model.data_matrix} IS WRITTEN DONE"
             self._model.data_matrix = ''
         else:
             logger.debug("WRITE!!")
@@ -60,10 +68,10 @@ class QRNFCWriterControl(QObject):
                                            get_time(),
                                            self._model.order_number,
                                            self._model.data_matrix)
-            self._mssql.start_query_thread(self._mssql.insert_pprd,
-                                           get_time(),
-                                           self._model.data_matrix,
-                                           STR_OK)
+
+    def open_checker(self, nfc):
+        self.checker_on = True
+        NFCCheckerDialog(self, nfc)
 
     def begin(self):
         self._mssql.timer_for_db_connect()
