@@ -7,9 +7,9 @@ from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_AIR, S
 
 
 class NFCCheckerDialog(QDialog):
-    def __init__(self, control, nfc):
+    def __init__(self, nfc):
         super(NFCCheckerDialog, self).__init__()
-        self._parent_control = control
+        self.nfc = nfc
         layout = QGridLayout(self)
         layout.addWidget(nfc_box := NFCBox(nfc))
 
@@ -17,7 +17,7 @@ class NFCCheckerDialog(QDialog):
         self.showModel()
 
     def closeEvent(self, e):
-        self._parent_control.checker_on = False
+        self.nfc.checker_on = False
 
     def showModel(self):
         super().exec_()
@@ -52,7 +52,7 @@ class NFCBox(QGroupBox):
         self.remove_timer.start(300)
         self.remove_timer.timeout.connect(self.in_label.clear)
 
-        nfc.nfc_data_out.connect(self.input_text)
+        nfc.nfc_data_out_to_checker.connect(self.input_text)
 
     @Slot(dict)
     def input_text(self, input_msg):

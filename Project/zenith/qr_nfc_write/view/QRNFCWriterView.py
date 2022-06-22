@@ -8,12 +8,11 @@ from process_package.resource.size import MATCHING_PREVIOUS_PROCESS_FONT_SIZE, M
     MATCHING_STATUS_MAXIMUM_HEIGHT, NFC_FIXED_HEIGHT
 from process_package.resource.string import STR_DATA_MATRIX, STR_STATUS, STR_QR_MATCHING, \
     STR_ORDER_NUMBER, STR_NFC1
-from process_package.tools.clickable import clickable
 
 
 class QRNFCWriterView(Widget):
     def __init__(self, *args):
-        super(QRNFCWriterView, self).__init__(*args)
+        super(QRNFCWriterView, self).__init__()
         self._model, self._control = args
 
         # UI
@@ -37,9 +36,6 @@ class QRNFCWriterView(Widget):
         self.status = status.label
 
         self.setWindowTitle(STR_QR_MATCHING)
-
-        # nfc checker
-        clickable(self.nfc).connect(lambda: self._control.open_checker(self.nfc))
 
         # connect widgets to controller
         self._control.nfc_write.connect(self.nfc.write)

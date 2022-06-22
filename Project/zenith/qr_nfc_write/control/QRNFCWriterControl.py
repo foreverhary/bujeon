@@ -2,7 +2,6 @@ from PySide2.QtCore import QObject, Signal
 
 from process_package.Views.CustomComponent import get_time
 from process_package.check_string import check_dm
-from process_package.component.nfc_checker import NFCCheckerDialog
 from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.controllers.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.color import LIGHT_SKY_BLUE
@@ -27,12 +26,7 @@ class QRNFCWriterControl(QObject):
 
         self.delay_write_count = 0
 
-        self.checker_on = False
-
     def receive_nfc_data(self, value):
-        if self.checker_on:
-            return
-
         if not value:
             return
         self._model.data_matrix_background = LIGHT_SKY_BLUE
@@ -68,10 +62,6 @@ class QRNFCWriterControl(QObject):
                                            get_time(),
                                            self._model.order_number,
                                            self._model.data_matrix)
-
-    def open_checker(self, nfc):
-        self.checker_on = True
-        NFCCheckerDialog(self, nfc)
 
     def begin(self):
         self._mssql.timer_for_db_connect()

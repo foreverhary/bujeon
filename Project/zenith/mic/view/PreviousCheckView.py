@@ -11,7 +11,7 @@ from process_package.resource.string import STR_PREVIOUS_PROCESS, STR_DATA_MATRI
 
 class PreviousCheckView(Widget):
     def __init__(self, *args):
-        super(PreviousCheckView, self).__init__(*args)
+        super(PreviousCheckView, self).__init__()
         self._model, self._control = args
 
         # UI

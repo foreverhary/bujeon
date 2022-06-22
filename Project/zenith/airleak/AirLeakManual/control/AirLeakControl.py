@@ -21,8 +21,6 @@ class AirLeakControl(QObject):
 
         self.delay_write_count = 0
 
-        self.checker_on = False
-
     @Slot(str)
     def comport_save(self, comport):
         self._model.comport = comport
@@ -34,9 +32,6 @@ class AirLeakControl(QObject):
 
     @Slot(dict)
     def receive_nfc_data(self, value):
-        if self.checker_on:
-            return
-
         if not self._model.result:
             return
 
@@ -63,10 +58,6 @@ class AirLeakControl(QObject):
                                            self._model.data_matrix,
                                            self._model.result)
             self._model.data_matrix = ''
-
-    def open_checker(self, nfc):
-        self.checker_on = True
-        NFCCheckerDialog(self, nfc)
 
     def begin(self):
         self._mssql.timer_for_db_connect()

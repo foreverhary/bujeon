@@ -17,7 +17,6 @@ class Widget(QWidget):
 
     def __init__(self, *args):
         super(Widget, self).__init__()
-        self._model, self._control = args
         self.m_Position = None
         self.m_flag = False
 

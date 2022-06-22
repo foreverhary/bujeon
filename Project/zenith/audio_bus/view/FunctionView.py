@@ -1,23 +1,19 @@
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout
+from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout
 
-from process_package.Views.CustomComponent import Widget, Label, LabelBlink, LabelNFC
-from process_package.Views.CustomMixComponent import GroupLabel, HBoxComboButton
+from process_package.Views.CustomComponent import Widget
+from process_package.Views.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
-from process_package.resource.color import LIGHT_SKY_BLUE
-from process_package.resource.number import AIR_LEAK_UNIT_COUNT
-from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, \
-    AIR_LEAK_RESULT_MINIMUM_HEIGHT, AIR_LEAK_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, COMPORT_FIXED_HEIGHT, \
-    AIR_LEAK_STATUS_FIXED_HEIGHT, AUDIO_BUS_LABEL_MINIMUM_WIDTH, AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT, \
+from process_package.resource.size import AIR_LEAK_STATUS_FIXED_HEIGHT, AUDIO_BUS_LABEL_MINIMUM_WIDTH, \
+    AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT, \
     AUDIO_BUS_NFC_FIXED_HEIGHT, AUDIO_BUS_NFC_FONT_SIZE
-from process_package.resource.string import STR_NFC1, STR_MACHINE_COMPORT, STR_RESULT, STR_UNIT, STR_AIR_LEAK, \
-    STR_NFCIN, STR_NFC2, STR_PREVIOUS_PROCESS, STR_GRADE, STR_STATUS, STR_WRITE_STATUS, STR_FUNCTION
-from process_package.tools.clickable import clickable
+from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_PREVIOUS_PROCESS, STR_GRADE, STR_STATUS, \
+    STR_WRITE_STATUS, STR_FUNCTION
 
 
 class FunctionView(Widget):
     def __init__(self, *args):
-        super(FunctionView, self).__init__(*args)
+        super(FunctionView, self).__init__()
         self._model, self._control = args
 
         # UI
@@ -47,11 +43,6 @@ class FunctionView(Widget):
         self.status = status.label
 
         self.setWindowTitle(STR_FUNCTION)
-
-        # nfc checker
-        clickable(nfc_in).connect(lambda: self._control.open_checker(nfc_in))
-        clickable(nfc1).connect(lambda: self._control.open_checker(nfc1))
-        clickable(nfc2).connect(lambda: self._control.open_checker(nfc2))
 
         # connect widgets to controller
 

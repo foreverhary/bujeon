@@ -85,6 +85,9 @@ POP_SECTION = 'pop'
 MSSQL_SECTION = 'mssql'
 COMPORT_SECTION = 'com_port'
 AUDIO_BUS_SECTION = 'audio_bus'
+MIC_SECTION = 'mic'
+
+FILE_PATH = 'file_path'
 
 MSSQL_IP = 'ip'
 MSSQL_PORT = 'port'
@@ -108,6 +111,7 @@ B_GRADE_MAX = 'b_max'
 C_GRADE_MIN = 'c_min'
 C_GRADE_MAX = 'c_max'
 
+# checking string
 PROCESS_NAMES = (STR_AIR, STR_MIC, STR_FUN, STR_SEN)
 PROCESS_OK_RESULTS = (STR_OK, STR_A, STR_B, STR_C)
 PROCESS_FULL_NAMES = {

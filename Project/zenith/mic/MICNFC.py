@@ -1,15 +1,21 @@
+import csv
+import os
 import sys
 
 from PySide2.QtCore import QObject, Slot, Signal
-from PySide2.QtWidgets import QApplication, QVBoxLayout
+from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout
 
+from audio_bus.observer.FileObserver import Target
+from mic.MICNFCWriter import MICNFCWriter
 from process_package.Views.CustomComponent import style_sheet_setting, Widget
 from process_package.Views.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.resource.color import LIGHT_SKY_BLUE
-from process_package.resource.string import STR_DATA_MATRIX, STR_AIR, STR_OK, STR_MIC, STR_AIR_LEAK, STR_NFCIN
+from process_package.resource.string import STR_DATA_MATRIX, STR_AIR, STR_OK, STR_MIC, STR_AIR_LEAK, STR_NFCIN, \
+    STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import write_beep, logger
+from process_package.tools.Config import get_config_value
 
 
 class MICWriteOKModel(QObject):
@@ -109,22 +115,93 @@ class MICWriteOKView(Widget):
         self._model.data_matrix_background_changed.connect(self.data_matrix.set_background_color)
 
 
-class MICWriteOK(QApplication):
+class MICNFC(QApplication):
     def __init__(self, sys_argv):
-        super(MICWriteOK, self).__init__(sys_argv)
-        self._model = MICWriteOKModel()
-        self._control = MICWriteOKControl(self._model)
-        self._view = MICWriteOKView(self._model, self._control)
+        super(MICNFC, self).__init__(sys_argv)
+        self._model = MICNFCModel()
+        self._control = MICNFCControl(self._model)
+        self._view = MICNFCView(self._model, self._control)
         self.load_nfc_window = SplashScreen("MIC Writer")
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
     def show_main_window(self, nfcs):
         style_sheet_setting(self)
-        self._model.nfc = nfcs
+        self._view.set_nfcs(nfcs)
         self._view.show()
         self.load_nfc_window.close()
 
 
+class MICNFCControl(QObject):
+    file_path_signal = Signal(str)
+
+    def __init__(self, model):
+        super(MICNFCControl, self).__init__()
+        self._model = model
+
+        self.result_file_observer = Target(signal=self.file_path_signal)
+
+        self.file_path_signal.connect(self.receive_file_name)
+
+    def start_file_observe(self):
+        if not os.path.isdir(path := get_config_value(MIC_SECTION, FILE_PATH)):
+            return False
+
+        if self.result_file_observer.is_alive():
+            self.result_file_observer.observer.stop()
+        self.result_file_observer = Target(path, self.file_path_signal)
+        self.result_file_observer.start()
+        return True
+
+    def receive_file_name(self, value):
+        csv_lines = list(csv.reader(open(value)))
+        lines = [iter(csv_lines[i]) for i in range(-2, 0)]
+        for line in lines:
+            while line.__length_hint__():
+                item = next(line)
+                if 'CH' in item:
+                    side = 'L' if next(line) in (1, 2) else 'R'
+                    continue
+                if 'Pass/Fail' in next(line):
+                    result = next(line)
+                    continue
+                if 'FRF' in next(line):
+                    next(line)
+                    next(line)
+                    next(line)
+                    frf = next(line)
+                    continue
+                if 'SENS' in next(line):
+                    next(line)
+                    next(line)
+                    next(line)
+                    sens = next(line)
+                    continue
+
+
+
+class MICNFCView(Widget):
+    def __init__(self, *args):
+        super(MICNFCView, self).__init__()
+        self._model, self._control = args
+        layout = QHBoxLayout(self)
+        layout.addWidget(nfc1 := MICNFCWriter(STR_NFC1))
+        layout.addWidget(nfc2 := MICNFCWriter(STR_NFC2))
+        self.nfc1 = nfc1
+        self.nfc2 = nfc2
+
+    def set_nfcs(self, nfcs):
+        for port, nfc_name in nfcs.items():
+            if nfc_name == STR_NFC1:
+                self.nfc1.set_port(port)
+            elif nfc_name == STR_NFC2:
+                self.nfc2.set_port(port)
+
+
+class MICNFCModel(QObject):
+    def __init__(self):
+        super(MICNFCModel, self).__init__()
+
+
 if __name__ == '__main__':
-    app = MICWriteOK(sys.argv)
+    app = MICNFC(sys.argv)
     sys.exit(app.exec_())

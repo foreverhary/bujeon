@@ -15,7 +15,7 @@ from process_package.resource.string import STR_ORDER_NUMBER, STR_DATA_MATRIX, S
 
 class TouchView(Widget):
     def __init__(self, *args):
-        super(TouchView, self).__init__(*args)
+        super(TouchView, self).__init__()
         self._model, self._control = args
 
         # ui

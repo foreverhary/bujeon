@@ -14,7 +14,7 @@ from process_package.tools.clickable import clickable
 
 class AirLeakView(Widget):
     def __init__(self, *args):
-        super(AirLeakView, self).__init__(*args)
+        super(AirLeakView, self).__init__()
         self._model, self._control = args
 
         # UI
@@ -47,9 +47,6 @@ class AirLeakView(Widget):
         self.status = status
 
         self.setWindowTitle(STR_AIR_LEAK)
-
-        # nfc checker
-        clickable(nfc).connect(lambda: self._control.open_checker(nfc))
 
         # connect widgets to controller
         comport.comport_save.connect(self._control.comport_save)
