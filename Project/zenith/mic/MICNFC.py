@@ -12,7 +12,7 @@ from process_package.Views.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.string import STR_DATA_MATRIX, STR_AIR, STR_OK, STR_MIC, STR_AIR_LEAK, STR_NFCIN, \
-    STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH
+    STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH, STR_PASS, STR_NG
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import write_beep, logger
 from process_package.tools.Config import get_config_value
@@ -141,9 +141,11 @@ class MICNFCControl(QObject):
         self.result_file_observer = Target(signal=self.file_path_signal)
 
         self.file_path_signal.connect(self.receive_file_name)
+        self.start_file_observe()
 
     def start_file_observe(self):
-        if not os.path.isdir(path := get_config_value(MIC_SECTION, FILE_PATH)):
+        if not os.path.isdir(path := 'c:/Users/hongk/work/001.company/001.bujeon/python_idle'):
+        # if not os.path.isdir(path := get_config_value(MIC_SECTION, FILE_PATH)):
             return False
 
         if self.result_file_observer.is_alive():
@@ -152,31 +154,27 @@ class MICNFCControl(QObject):
         self.result_file_observer.start()
         return True
 
-    def receive_file_name(self, value):
+    def receive_file_name(self, value):  # sourcery no-metrics
         csv_lines = list(csv.reader(open(value)))
         lines = [iter(csv_lines[i]) for i in range(-2, 0)]
-        for line in lines:
-            while line.__length_hint__():
-                item = next(line)
-                if 'CH' in item:
-                    side = 'L' if next(line) in (1, 2) else 'R'
-                    continue
-                if 'Pass/Fail' in next(line):
-                    result = next(line)
-                    continue
-                if 'FRF' in next(line):
-                    next(line)
-                    next(line)
-                    next(line)
-                    frf = next(line)
-                    continue
-                if 'SENS' in next(line):
-                    next(line)
-                    next(line)
-                    next(line)
-                    sens = next(line)
-                    continue
-
+        error = {}
+        for first, second in zip(*lines):
+            if first == second:
+                if 'CH' in first:
+                    side = "L" if ('1', '2') == tuple(map(next, lines)) else 'R'
+                if 'FRF' in first or 'SENS' in first or 'CURRENT' in first:
+                    [tuple(map(next, lines)) for _ in range(3)]
+                    error_result_set = set(map(next, lines))
+                    error[first] = len(error_result_set) == 1 and error_result_set.pop() == STR_OK
+                if 'Pass/Fail' in first:
+                    result_set = set(map(next, lines))
+                    if len(result_set) == 1 and result_set.pop() == STR_PASS:
+                        result = STR_OK
+                    else:
+                        result = STR_NG
+        logger.debug(side)
+        logger.debug(error)
+        logger.debug(result)
 
 
 class MICNFCView(Widget):

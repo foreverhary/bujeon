@@ -41,7 +41,7 @@ class SerialPort(QObject):
                 logger.debug(self.out)
                 self.line_out_signal.emit(self.out)
             except Exception as e:
-                logger.error(f"{type(e)} : {e}")
+                logger.error(f"{self._serial.port}, {type(e)} : {e}")
                 self.is_open_close()
                 break
 
