@@ -210,8 +210,8 @@ class SensorChannelLayout(QGroupBox):
 
     def update_sql(self):
         self.mssql.start_query_thread(self.mssql.insert_pprd,
-                                      get_time(),
                                       self.nfc.dm,
+                                      get_time(),
                                       self.resultInput.text(),
                                       SENSOR,
                                       self.get_ecode()

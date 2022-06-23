@@ -37,12 +37,12 @@ class QRNFCWriterControl(QObject):
         if not self._model.data_matrix:
             return
 
-        if self._model.data_matrix and self._model.data_matrix == value.get(STR_DATA_MATRIX):
+        if self._model.data_matrix == value.get(STR_DATA_MATRIX):
             logger.debug("DONE!!!")
             write_beep()
             self._mssql.start_query_thread(self._mssql.insert_pprd,
-                                           get_time(),
                                            self._model.data_matrix,
+                                           get_time(),
                                            STR_OK)
             self._model.status = f"{self._model.data_matrix} IS WRITTEN DONE"
             self._model.data_matrix = ''
@@ -59,9 +59,9 @@ class QRNFCWriterControl(QObject):
 
         if self._model.order_number:
             self._mssql.start_query_thread(self._mssql.insert_pprh,
-                                           get_time(),
+                                           self._model.data_matrix,
                                            self._model.order_number,
-                                           self._model.data_matrix)
+                                           get_time())
 
     def begin(self):
         self._mssql.timer_for_db_connect()

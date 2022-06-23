@@ -110,8 +110,8 @@ class AirLeak(AirLeakUi):
         logger.info(msg)
         if ','.join(nfc_msg) == ','.join(msg):
             self.mssql.start_query_thread(self.mssql.insert_pprd,
-                                          get_time(),
                                           nfc.dm,
+                                          get_time(),
                                           self.result_label.text())
             self.update_sql(nfc)
         else:

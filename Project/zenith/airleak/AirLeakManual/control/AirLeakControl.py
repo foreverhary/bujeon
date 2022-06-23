@@ -54,8 +54,8 @@ class AirLeakControl(QObject):
             write_beep()
             self._model.unit_input = self._model.data_matrix
             self._mssql.start_query_thread(self._mssql.insert_pprd,
-                                           get_time(),
                                            self._model.data_matrix,
+                                           get_time(),
                                            self._model.result)
             self._model.data_matrix = ''
 

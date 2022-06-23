@@ -44,9 +44,9 @@ class FunctionConfigControl(QObject):
 
     @Slot()
     def open_set_directory_grade_path(self):
-        if path := str(QFileDialog.getExistingDirectory(directory=self.grade)):
+        if path := str(QFileDialog.getExistingDirectory(directory=self._model.grade_path)):
             self._model.grade_path = path
 
     def open_set_directory_summary_path(self):
-        if path := str(QFileDialog.getExistingDirectory(directory=self.grade)):
+        if path := str(QFileDialog.getExistingDirectory(directory=self._model.summary_path)):
             self._model.summary_path = path

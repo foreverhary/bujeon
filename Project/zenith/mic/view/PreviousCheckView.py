@@ -1,12 +1,7 @@
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout
 
-from process_package.Views.CustomComponent import Widget, Label, LabelTimerClean
-from process_package.Views.CustomMixComponent import GroupLabel
-from process_package.resource.size import MATCHING_PREVIOUS_PROCESS_FONT_SIZE, MATCHING_PREVIOUS_PROCESS_MINIMUM_HEIGHT, \
-    MATCHING_DATA_MATRIX_FONT_SIZE, MATCHING_DATA_MATRIX_MINIMUM_WIDTH, MATCHING_STATUS_FONT_SIZE, \
-    MATCHING_STATUS_MAXIMUM_HEIGHT
-from process_package.resource.string import STR_PREVIOUS_PROCESS, STR_DATA_MATRIX, STR_STATUS, STR_QR_MATCHING
+from process_package.Views.CustomComponent import Widget, LabelTimerClean
 
 
 class PreviousCheckView(Widget):

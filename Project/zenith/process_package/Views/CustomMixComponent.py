@@ -1,8 +1,9 @@
-from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QComboBox
 
 from process_package.Views.CustomComponent import Label, Button, LabelTimerClean, LabelBlink, LabelNFC
+from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.size import DEFAULT_FONT_SIZE
+from process_package.resource.string import STR_NG
 
 
 class GroupLabelNumber(QGroupBox):
@@ -10,16 +11,25 @@ class GroupLabelNumber(QGroupBox):
         super(GroupLabelNumber, self).__init__()
         self.setTitle(title)
         layout = QHBoxLayout(self)
-        self.labels = [GroupLabel(font_size=font_size) for _ in range(count)]
+        self.labels = [Label(font_size=font_size) for _ in range(count)]
         for label in self.labels:
             layout.addWidget(label)
+
+    def clean(self):
+        for label in self.labels:
+            label.clean()
 
     def setText(self, value):
         if not value:
             for label in self.labels:
-                label.clear()
+                label.clean()
+        color = RED if len(value) < len(self.labels) else LIGHT_SKY_BLUE
         for text, label in zip(value, self.labels):
+            if STR_NG in text:
+                color = RED
             label.setText(text)
+        [label.set_background_color(color) for label in self.labels]
+        self.setStyleSheet(f'background-color: {color}')
 
 
 class GroupLabel(QGroupBox):
@@ -44,8 +54,20 @@ class GroupLabel(QGroupBox):
 
         self.label = label
 
+    def set_font_size(self, value):
+        self.label.set_font_size(value)
+
+    def set_background_color(self, value):
+        self.label.set_background_color(value)
+
     def setText(self, value):
         self.label.setText(value)
+
+    def clean(self):
+        self.label.clean()
+
+    def clear(self):
+        self.label.clear()
 
 
 class HBoxComboButton(QHBoxLayout):

@@ -38,17 +38,18 @@ class TouchControl(QObject):
             self._model.data_matrix = data_matrix
         if data_matrix and self._model.order_number:
             self._mssql.start_query_thread(self._mssql.insert_pprh,
-                                           get_time(),
+                                           data_matrix,
                                            self._model.order_number,
-                                           data_matrix)
+                                           get_time(),
+                                           )
 
     def input_serial_data(self, value):
         if "TEST RESULT" in value and self._model.data_matrix:
             self._model.machine_result = STR_OK if STR_OK in value else STR_NG
             if self._model.order_number:
                 self._mssql.start_query_thread(self._mssql.insert_pprd,
-                                               get_time(),
                                                self._model.data_matrix,
+                                               get_time(),
                                                self._model.machine_result)
 
                 self._model.data_matrix = self._model.data_matrix_waiting

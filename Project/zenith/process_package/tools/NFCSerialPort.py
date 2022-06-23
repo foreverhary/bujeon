@@ -1,8 +1,7 @@
 from PySide2.QtCore import QTimer, Signal, Slot
 
 from process_package.check_string import check_nfc_uid, check_dm
-from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_AIR, STR_MIC, STR_FUN, STR_SEN, STR_NFC, \
-    STR_DISCONNECT, STR_RECONNECT
+from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_DISCONNECT, PROCESS_RESULTS
 from process_package.tools.SerialPort import SerialPort
 
 
@@ -33,27 +32,28 @@ class NFCSerialPort(SerialPort):
 
     @Slot(str)
     def line_out(self, value):
-        if STR_NFC in value or STR_RECONNECT in value.upper():
-            self.nfc_connection = True
-            return
         if STR_DISCONNECT in value.upper():
             self.nfc_connection = False
             return
 
+        if value:
+            self.nfc_connection = True
+
         split_data = {}
-        for split in value.split(','):
+        splits = value.split(',')
+        while splits:
+            split = splits.pop(0)
             if check_nfc_uid(split):
                 split_data[STR_UID] = split
-            if check_dm(split):
+            elif check_dm(split):
                 split_data[STR_DATA_MATRIX] = split
-            if STR_AIR in split:
-                split_data[STR_AIR] = split.split(':')[1]
-            if STR_MIC in split:
-                split_data[STR_MIC] = split.split(':')[1]
-            if STR_FUN in split:
-                split_data[STR_FUN] = split.split(':')[1]
-            if STR_SEN in split:
-                split_data[STR_SEN] = split.split(':')[1]
+            else:
+                result = split.split(':')
+                if len(result) != 2:
+                    continue
+                if result[1] not in PROCESS_RESULTS:
+                    continue
+                split_data[result[0]] = result[1]
         if split_data:
             self.nfc_out_signal.emit(split_data)
 

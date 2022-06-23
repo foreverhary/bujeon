@@ -145,8 +145,8 @@ class AirLeakAutomation(AirLeakAutomationUi):
 
     def update_sql(self, slot):
         self.mssql.start_query_thread(self.mssql.insert_pprd,
-                                      get_time(),
                                       self.slots[slot].dm,
+                                      get_time(),
                                       self.slots[slot].result)
 
     def mssql_reconnect(self):

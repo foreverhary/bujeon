@@ -124,8 +124,8 @@ class AudioBus(AudioBusUI):
     @Slot(object)
     def update_sql(self, nfc):
         self.mssql.start_query_thread(self.mssql.insert_pprd,
-                                      get_time(),
                                       nfc.dm,
+                                      get_time(),
                                       self.grade,
                                       FUNCTION,
                                       self.get_ecode())

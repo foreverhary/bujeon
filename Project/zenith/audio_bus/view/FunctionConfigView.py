@@ -94,7 +94,7 @@ class FunctionConfigView(QDialog):
 
     @Slot()
     def save(self):
-        self._control.save
+        self._model.save()
         self.close()
 
     def showModal(self):
