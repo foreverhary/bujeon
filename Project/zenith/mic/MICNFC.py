@@ -12,7 +12,7 @@ from mic.MICNFConfig import MICNFCConfig
 from process_package.Views.CustomComponent import style_sheet_setting, Widget
 from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.resource.string import STR_OK, STR_MIC, STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH, STR_PASS, \
-    STR_NG, CONFIG_FILE_NAME, STR_NFCIN
+    STR_NG, CONFIG_FILE_NAME, STR_NFCIN, STR_NFCIN1
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_value
@@ -127,6 +127,8 @@ class MICNFCView(Widget):
         self._control.nfc2_result_changed.connect(nfc2.set_result)
         self._control.nfc2_error_result_changed.connect(nfc2.set_error_code)
 
+        self.setWindowTitle(STR_MIC)
+
         self.setWindowFlags(Qt.WindowStaysOnTopHint)  # | Qt.FramelessWindowHint)
 
     def set_nfcs(self, nfcs):
@@ -135,7 +137,7 @@ class MICNFCView(Widget):
                 self.nfc1.set_port(port)
             elif nfc_name == STR_NFC2:
                 self.nfc2.set_port(port)
-            elif nfc_name == STR_NFCIN:
+            elif nfc_name == STR_NFCIN1:
                 self.nfcin.set_port(port)
 
     def mousePressEvent(self, e):
