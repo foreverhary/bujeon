@@ -8,8 +8,9 @@ from audio_bus.FunctionConfig import FunctionConfig
 from audio_bus.observer.FileObserver import Target
 from process_package.Views.CustomComponent import get_time
 from process_package.controllers.MSSqlDialog import MSSqlDialog
+from process_package.resource.color import WHITE, RED, LIGHT_SKY_BLUE
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, STR_NG, GRADE_FILE_PATH, \
-    SUMMARY_FILE_PATH
+    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.mssql_connect import MSSQL
@@ -39,44 +40,53 @@ class FunctionControl(QObject):
         self.grade_signal.connect(self.grade_process)
         self.summary_signal.connect(self.summary_process)
 
-        self.checker_on = True
+        self.data_matrix = None
 
     @Slot(dict)
     def check_previous(self, value):
-        if self.checker_on:
-            return
+        pass
 
     @Slot(dict)
     def receive_nfc_data(self, value):
-        if self.checker_on:
-            return
-
+        self._model.nfc_color = LIGHT_SKY_BLUE
         if not self._model.result:
-            return
-
-        if value.get(STR_DATA_MATRIX) in self._model.units:
-            self._model.unit_blink = self._model.units.index(value[STR_DATA_MATRIX])
             return
 
         if self.delay_write_count:
             self.delay_write_count -= 1
             return
 
-        self._model.unit_color = len(self._model.units)
+        if not (data_matrix := value.get(STR_DATA_MATRIX)):
+            return
 
-        if self._model.data_matrix != value.get(STR_DATA_MATRIX) \
-                or self._model.result != value.get(STR_AIR):
-            self._model.data_matrix = value.get(STR_DATA_MATRIX)
-            self.nfc.write(f"{self._model.data_matrix},{STR_AIR}:{self._model.result}")
+        if self.data_matrix != data_matrix or self._model.result != value.get(STR_FUN):
+            self.data_matrix = value.get(STR_DATA_MATRIX)
+            self.nfc1_write.emit(f"{self.data_matrix},{STR_FUN}:{self._model.result}")
+            self.nfc2_write.emit(f"{self.data_matrix},{STR_FUN}:{self._model.result}")
             self.delay_write_count = 2
         else:
             write_beep()
-            self._model.unit_input = self._model.data_matrix
-            self._mssql.start_query_thread(self._mssql.insert_pprd,
-                                           get_time(),
-                                           self._model.data_matrix,
-                                           self._model.result)
-            self._model.data_matrix = ''
+            self._model.status = f"{data_matrix} is {STR_WRITE_DONE}"
+        #
+        # if value.get(STR_DATA_MATRIX) in self._model.units:
+        #     self._model.unit_blink = self._model.units.index(value[STR_DATA_MATRIX])
+        #     return
+        #
+        # self._model.unit_color = len(self._model.units)
+        #
+        # if self.data_matrix != value.get(STR_DATA_MATRIX) \
+        #         or self._model.result != value.get(STR_AIR):
+        #     self.data_matrix = value.get(STR_DATA_MATRIX)
+        #     self.nfc.write(f"{self._model.data_matrix},{STR_FUN}:{self._model.result}")
+        #     self.delay_write_count = 2
+        # else:
+        #     write_beep()
+        #     self._model.unit_input = self._model.data_matrix
+        #     self._mssql.start_query_thread(self._mssql.insert_pprd,
+        #                                    get_time(),
+        #                                    self._model.data_matrix,
+        #                                    self._model.result)
+        #     self._model.data_matrix = ''
 
     @Slot(str)
     def grade_process(self, file_path):
@@ -122,18 +132,20 @@ class FunctionControl(QObject):
                 data = next(row_iter)
                 name = item[0].split('Summary:')[1].strip().upper()
                 result[name] = (data[1], data[2])
-        self._model.init_result_true()
+        self._model.init_result()
         for name, result_value in result.items():
-            for key in self.result:
+            for key in self._model.error_code_result:
                 if key in name and 'Failed' in result_value:
                     self._model.error_code_result[key] = False
-        self._model.result = STR_NG if False in self._model.error_code_result.values() else self._model.grade
+        self._model.result = self._model.grade
+        # self._model.result = STR_NG if False in self._model.error_code_result.values() else self._model.grade
 
     def start_file_observe(self):
         if self.start_grade_file_observe() and self.start_summary_file_observe():
-            self.status_update_signal.emit(self.status_label, 'Wait Result...', WHITE)
+            self._model.status = 'Wait Result...'
         else:
-            self.status_update_signal.emit(self.status_label, 'Click Right and Set File Path!!', RED)
+            self._model.status = 'Click Right and Set File Path!!'
+            self._model.status_color = RED
 
     def start_grade_file_observe(self):
         if os.path.isdir(grade_path := get_config_audio_bus(GRADE_FILE_PATH)):
@@ -154,6 +166,7 @@ class FunctionControl(QObject):
         return False
 
     def begin(self):
+        self.start_file_observe()
         self._mssql.timer_for_db_connect()
 
     def right_clicked(self):

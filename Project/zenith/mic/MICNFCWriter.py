@@ -111,12 +111,10 @@ class MICNFCWriterControl(QObject):
             self.nfc_write.emit(writer)
             self._model.data_matrix = data_matrix
             self.delay_write_count = 2
-            logger.debug(self._model.data_matrix)
         else:
             self._model.nfc_status = value
             self.sql_update(data_matrix)
             self._model.result = ''
-            logger.debug(self._model.data_matrix)
 
     def sql_update(self, data_matrix):
         self._mssql.start_query_thread(self._mssql.insert_pprd,

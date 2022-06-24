@@ -24,7 +24,7 @@ class FunctionView(Widget):
         nfc_layout.addWidget(nfc2 := NFCComponent(STR_NFC2))
         layout.addWidget(previous_process := GroupLabel(STR_PREVIOUS_PROCESS, is_clean=True))
         layout.addWidget(grade := GroupLabel(STR_GRADE))
-        layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS))
+        layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS, is_nfc=True))
         layout.addWidget(status := GroupLabel(STR_STATUS))
 
         status.label.setMinimumWidth(AUDIO_BUS_LABEL_MINIMUM_WIDTH)
@@ -47,7 +47,7 @@ class FunctionView(Widget):
         # connect widgets to controller
 
         # listen for component event signals
-        nfc_in.nfc_data_out.connect(self._control.check_previous)
+        nfc_in.nfc_data_out.connect(self._control.receive_nfc_data)
         nfc1.nfc_data_out.connect(self._control.receive_nfc_data)
         nfc2.nfc_data_out.connect(self._control.receive_nfc_data)
 

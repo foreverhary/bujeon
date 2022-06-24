@@ -88,9 +88,6 @@ class MICNFCControl(QObject):
                     else:
                         result = STR_NG
 
-        # logger.debug(side)
-        # logger.debug(error)
-        # logger.debug(result)
         if side == 'L':
             self.nfc1_result_changed.emit(result)
             self.nfc1_error_result_changed.emit(error)

@@ -1,3 +1,6 @@
+import os
+import time
+from datetime import datetime
 from threading import Thread
 
 from watchdog.events import FileSystemEventHandler
@@ -35,7 +38,11 @@ class Handler(FileSystemEventHandler):
         pass
 
     def on_modified(self, event):
-        self.signal.emit(event.src_path)
+        file_path = event.src_path
+        file_time = os.path.getmtime(file_path)
+        real_time = time.time()
+        if datetime.fromtimestamp(file_time).strftime('%Y%m%d %H:%M:%S') == datetime.fromtimestamp(real_time).strftime('%Y%m%d %H:%M:%S'):
+            self.signal.emit(event.src_path)
         # self.observer.stop()
 
 

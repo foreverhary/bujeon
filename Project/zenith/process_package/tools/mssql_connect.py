@@ -11,6 +11,7 @@ from process_package.tools.Config import get_config_mssql
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.resource.number import CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
+from process_package.tools.sqlite3_connect import sqlite_init, insert, up
 
 
 class MSSQL(QObject):
@@ -24,6 +25,7 @@ class MSSQL(QObject):
         self._con, self.cur = None, None
         self.aufnr = ''
         self.aplzl = ''
+        sqlite_init()
 
     @property
     def con(self):
@@ -154,6 +156,8 @@ class MSSQL(QObject):
         Thread(target=self.start_sql_func, args=(*args,), daemon=True).start()
 
     def start_sql_func(self, *args):
+        if "insert" in args[0].__name__:
+            insert(*args)
         self(*args)
 
     def check_connect_db(self):
@@ -176,20 +180,22 @@ class MSSQL(QObject):
 
     def __call__(self, func, *args, **kwargs):
         try:
-            return func(*args, **kwargs)
+            return_value = func(*args, **kwargs)
         except (OperationalError,
                 IntegrityError,
                 InterfaceError,
                 TypeError,
                 AttributeError) as e:
             logger.error(f"{type(e)} : {e}")
-            if "insert" in func.__name__:
-                logger.error(f"{func.__name__} Need to Save!!")
-                self.save_query_db_fail(func, *args)
-            return False
+            # if "insert" in func.__name__:
+            #     logger.error(f"{func.__name__} Need to Save!!")
+            #     self.save_query_db_fail(func, *args)
+            # return False
         except Exception as e:
             logger.error(f"{type(e)} : {e}")
             logger.error(f"{func.__name__} To Do error proces")
+        else:
+            up(func, *args)
 
     def save_query_db_fail(self, func, *args):
         if "pprh" in func.__name__:
