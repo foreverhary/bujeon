@@ -52,11 +52,12 @@ class AirLeakControl(QObject):
             self.delay_write_count = 2
         else:
             write_beep()
-            self._model.unit_input = self._model.data_matrix
             self._mssql.start_query_thread(self._mssql.insert_pprd,
                                            self._model.data_matrix,
                                            get_time(),
-                                           self._model.result)
+                                           self._model.result,
+                                           STR_AIR)
+            self._model.unit_input = self._model.data_matrix
             self._model.data_matrix = ''
 
     def begin(self):

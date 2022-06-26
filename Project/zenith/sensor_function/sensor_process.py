@@ -4,12 +4,12 @@ from PySide2.QtCore import Signal, Slot, Qt
 from PySide2.QtWidgets import QApplication
 from winsound import Beep
 
-from process_package.screen.NGScreen import NGScreen
+from process_package.Views.CustomComponent import style_sheet_setting, window_center
+from process_package.resource.color import LIGHT_SKY_BLUE, RED, WHITE
+from process_package.resource.string import STR_SENSOR, STR_NFCIN1, STR_NFC1, STR_NFC2, STR_NFCIN
+
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.defined_serial_port import ports
-from process_package.defined_variable_function import style_sheet_setting, NFC_IN, SENSOR_PREVIOUS_PROCESS, \
-    RED, LIGHT_SKY_BLUE, FREQ, DUR, SENSOR, WHITE, window_center, make_error_popup, \
-    NFCIN1, NFC1, NFC2
 from process_package.tools.mssql_connect import MSSQL
 from process_package.mssql_dialog import MSSQLDialog
 from sensor_ui import SensorUI
@@ -24,8 +24,8 @@ class SensorProcess(SensorUI):
         super(SensorProcess, self).__init__()
         self.app = app
 
-        self.mssql = MSSQL(SENSOR)
-        self.mssql.timer_for_db_connect(self)
+        self.mssql = MSSQL(STR_SENSOR)
+        self.mssql.timer_for_db_connect()
 
         for frame in self.ch_frame:
             frame.mssql = self.mssql
@@ -34,11 +34,11 @@ class SensorProcess(SensorUI):
         self.nfc = {}
 
         self.mssql_config_window = MSSQLDialog()
-        self.ng_screen = NGScreen()
+        # self.ng_screen = NGScreen()
 
         self.connect_event()
 
-        self.load_window = SplashScreen("IR SENSOR", [])
+        self.load_window = SplashScreen("IR SENSOR")
         self.load_window.start_signal.connect(self.show_main_window)
 
         if not ports:
@@ -53,21 +53,21 @@ class SensorProcess(SensorUI):
         window_center(self)
 
     def nfc_check(self, nfc_list):
-        for nfc in nfc_list:
-            self.nfc[nfc.serial_name] = nfc
-            nfc.signal.serial_error_signal.connect(self.receive_serial_error)
-            nfc.start_previous_process_check_thread()
-            if nfc.serial_name == NFCIN1:
-                nfc.signal.previous_process_signal.connect(self.received_previous_process)
-            else:
-                self.ch_frame[int(nfc.serial_name[-1]) - 1].nfc = nfc
-                nfc.signal.previous_process_signal.connect(
-                    self.ch_frame[int(nfc.serial_name[-1]) - 1].received_previous_process
-                )
-        check_nfc_set = {NFCIN1, NFC1, NFC2}
-        connected_nfc_set = {nfc.serial_name for nfc in self.nfc.values()}
-        if not check_nfc_set - connected_nfc_set:
-            return all(nfc.is_open for nfc in self.nfc.values())
+        # for nfc in nfc_list:
+        #     self.nfc[nfc.serial_name] = nfc
+        #     nfc.signal.serial_error_signal.connect(self.receive_serial_error)
+        #     nfc.start_previous_process_check_thread()
+        #     if nfc.serial_name == STR_NFCIN1:
+        #         nfc.signal.previous_process_signal.connect(self.received_previous_process)
+        #     else:
+        #         self.ch_frame[int(nfc.serial_name[-1]) - 1].nfc = nfc
+        #         nfc.signal.previous_process_signal.connect(
+        #             self.ch_frame[int(nfc.serial_name[-1]) - 1].received_previous_process
+        #         )
+        # check_nfc_set = {STR_NFCIN1, STR_NFC1, STR_NFC2}
+        # connected_nfc_set = {nfc.serial_name for nfc in self.nfc.values()}
+        # if not check_nfc_set - connected_nfc_set:
+        #     return all(nfc.is_open for nfc in self.nfc.values())
         return False
 
     def init_serial(self, nfc_list):
@@ -92,15 +92,15 @@ class SensorProcess(SensorUI):
     @Slot(object)
     def received_previous_process(self, nfc):
         nfc.clean_check_dm()
-        if self.ng_screen.isActiveWindow():
-            return
-        Beep(FREQ, DUR)
-        label = self.previous_process_label[int(nfc.serial_name.replace(NFC_IN, '')) - 1]
-        if nfc.dm and nfc.check_pre_process(SENSOR_PREVIOUS_PROCESS):
+        # if self.ng_screen.isActiveWindow():
+        #     return
+        # Beep(FREQ, DUR)
+        label = self.previous_process_label[int(nfc.serial_name.replace(STR_NFCIN, '')) - 1]
+        if nfc.dm and nfc.check_pre_process('SENSOR_PREVIOUS_PROCESS'):
             color = LIGHT_SKY_BLUE
         else:
-            self.ng_screen.set_text(nfc, SENSOR_PREVIOUS_PROCESS)
-            self.ng_screen.show_modal()
+            # self.ng_screen.set_text(nfc, 'SENSOR_PREVIOUS_PROCESS')
+            # self.ng_screen.show_modal()
             return
 
         label.set_background_color(color)
@@ -115,7 +115,7 @@ class SensorProcess(SensorUI):
     def receive_machine_serial_error(self, machine):
         frame = self.ch_frame[0] if '1' in machine.serial_name else self.ch_frame[1]
         frame.check_serial_connection()
-        make_error_popup(f"{frame.serial_machine.port} Connect Fail!!")
+        # make_error_popup(f"{frame.serial_machine.port} Connect Fail!!")
 
     @Slot(object, str, str)
     def update_label(self, label, text, color):
@@ -136,7 +136,8 @@ class SensorProcess(SensorUI):
         if e.buttons() & Qt.RightButton:
             self.mssql_config_window.show_modal()
         if e.buttons() & Qt.MidButton:
-            self.ng_screen.show_modal()
+            pass
+            # self.ng_screen.show_modal()
 
 
 if __name__ == '__main__':

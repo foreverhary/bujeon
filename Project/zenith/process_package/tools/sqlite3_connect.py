@@ -62,13 +62,13 @@ def insert_pprd(cur, dm, itime, result, pcode='', ecode=''):
 
 
 @deco_sqlite3
-def select_pprh_not_upload(cur):
+def select_pprh_not_update(cur):
     cur.execute("select DM, AUFNR, ITIME from PPRH where UP=0")
     return cur.fetchall()
 
 
 @deco_sqlite3
-def select_pprd_not_upload(cur):
+def select_pprd_not_update(cur):
     cur.execute("select DM, ITIME, RESULT, PCODE, ECODE from PPRD where UP=0")
     return cur.fetchall()
 
@@ -85,9 +85,9 @@ def update_pprd_up(cur, dm, itime):
 
 @deco_sqlite3
 def update_pprh_tryup(cur, dm, itime):
-    cur.execute(f"update PPRH SET RETRY = RETRY + 1 where DM='{dm}' and itime='{itime}'")
+    cur.execute(f"update PPRH SET RETRY = RETRY + 1 where DM='{dm}' and ITIME='{itime}'")
 
 
 @deco_sqlite3
 def update_pprd_tryup(cur, dm, itime):
-    cur.execute(f"update PPRH SET RETRY = RETRY + 1 where DM='{dm}' and itime='{itime}'")
+    cur.execute(f"update PPRD SET RETRY = RETRY + 1 where DM='{dm}' and ITIME='{itime}'")

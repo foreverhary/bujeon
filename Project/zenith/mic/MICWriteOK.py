@@ -6,7 +6,7 @@ from PySide2.QtWidgets import QVBoxLayout, QApplication
 from process_package.Views.CustomComponent import Widget, style_sheet_setting
 from process_package.Views.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
-from process_package.resource.color import LIGHT_SKY_BLUE
+from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, GREEN, YELLOW, BLUE
 from process_package.resource.string import STR_AIR_LEAK, STR_AIR, STR_MIC, STR_DATA_MATRIX, STR_NFCIN, STR_OK, STR_NFC
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger, write_beep
@@ -21,7 +21,7 @@ class MICWriteOKView(Widget):
         layout = QVBoxLayout(self)
         layout.addWidget(nfc := NFCComponent())
         layout.addWidget(
-            data_matrix := GroupLabel(title=STR_DATA_MATRIX, font_size=50, is_nfc=True, is_clean=True, clean_time=2000))
+            data_matrix := GroupLabel(title=STR_DATA_MATRIX, font_size=50, is_nfc=True))
 
         nfc.setFixedHeight(70)
         data_matrix.setMinimumSize(420, 230)
@@ -33,6 +33,7 @@ class MICWriteOKView(Widget):
 
         self._model.nfc_changed.connect(nfc.set_port)
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
+        self._model.data_matrix_color_changed.connect(self.data_matrix.set_color)
         self._model.data_matrix_background_changed.connect(self.data_matrix.set_background_color)
 
         self.load_nfc_window = SplashScreen("MIC Writer")
@@ -52,11 +53,13 @@ class MICWriteOKView(Widget):
 
 class MICWriteOKModel(QObject):
     data_matrix_changed = Signal(str)
+    data_matrix_color_changed = Signal(str)
     data_matrix_background_changed = Signal(str)
     nfc_changed = Signal(str)
 
     def __init__(self):
         super(MICWriteOKModel, self).__init__()
+        self.data_matrix_color = WHITE
         self.data_matrix = ''
 
     @property
@@ -67,6 +70,17 @@ class MICWriteOKModel(QObject):
     def data_matrix(self, value):
         self._data_matrix = value
         self.data_matrix_changed.emit(self._data_matrix)
+        self.data_matrix_color = GREEN if self.data_matrix_color == WHITE else WHITE
+        logger.debug(self.data_matrix_color)
+
+    @property
+    def data_matrix_color(self):
+        return self._data_matrix_color
+
+    @data_matrix_color.setter
+    def data_matrix_color(self, value):
+        self._data_matrix_color = value
+        self.data_matrix_color_changed.emit(value)
 
     @property
     def data_matrix_background(self):
@@ -102,6 +116,7 @@ class MICWriteOKControl(QObject):
         self._model = model
 
         self.delay_write_count = 0
+        self.data_matrix = None
 
     @Slot(dict)
     def receive_nfc_data(self, value):
@@ -110,16 +125,20 @@ class MICWriteOKControl(QObject):
             self.delay_write_count -= 1
             return
 
-        if not value.get(STR_DATA_MATRIX):
+        if not (data_matrix := value.get(STR_DATA_MATRIX)):
+            return
+
+        if self.data_matrix == data_matrix:
             return
 
         if STR_OK != value.get(STR_MIC):
             self.nfc_write.emit(
                 f"{value.get(STR_DATA_MATRIX)},{STR_AIR}:{value.get(STR_AIR) or STR_OK},{STR_MIC}:{STR_OK}")
-            self.delay_write_count = 2
+            self.delay_write_count = 4
         else:
+            self.data_matrix = data_matrix
             write_beep()
-            self._model.data_matrix = f"{value.get(STR_DATA_MATRIX)}\n" \
+            self._model.data_matrix = f"{data_matrix}\n" \
                                       f"{STR_AIR_LEAK}:{value.get(STR_AIR)}\n" \
                                       f"{STR_MIC}:{value.get(STR_MIC)}"
 

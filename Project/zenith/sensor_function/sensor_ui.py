@@ -3,12 +3,11 @@ from PySide2.QtWidgets import QHBoxLayout, QVBoxLayout, QGroupBox
 from winsound import Beep
 
 from process_package.SerialMachine import SerialMachine
-from process_package.Views.CustomComponent import Button, ComboBox, Label, Widget
+from process_package.Views.CustomComponent import Button, ComboBox, Label, Widget, get_time, LabelTimerClean
 from process_package.defined_serial_port import ports, get_serial_available_list
-from process_package.defined_variable_function import SENSOR_ATECH, COMPORT_SECTION, \
-    CONFIG_FILE_NAME, CON_OS, POGO_OS, LED, VBAT_ID, C_TEST, BATTERY, MIC, PROX_TEST, PCM, Hall_IC, \
-    SENSOR_RESULT_TEXT_SIZE, SENSOR_RESULT_HEIGHT_SIZE, PREVIOUS_PROCESS, PREVIOUS_PROCESS_TEXT_SIZE, BLUE, RED, \
-    SENSOR_PREVIOUS_PROCESS, SENSOR_PROCESS, OK, LIGHT_SKY_BLUE, get_time, SENSOR, FREQ, DUR, PROCESS_NAMES, LIGHT_BLUE
+from process_package.resource.color import BLUE, RED, LIGHT_SKY_BLUE, LIGHT_BLUE
+from process_package.resource.string import STR_CON_OS, STR_POGO_OS, STR_LED, STR_HALL_IC, STR_VBAT_ID, STR_C_TEST, \
+    STR_BATTERY, STR_PROX_TEST, STR_MIC, STR_PCM, STR_SENSOR, CONFIG_FILE_NAME, COMPORT_SECTION, STR_OK
 from process_package.tools.Config import get_config_value, set_config_value
 
 NFC_IN_COUNT = 1
@@ -26,11 +25,11 @@ class SensorUI(Widget):
         self.previous_process_label = []
         for _ in range(NFC_IN_COUNT):
             previous_process_layout.addWidget(previous_process_group := QGroupBox())
-            previous_process_group.setTitle(PREVIOUS_PROCESS)
+            previous_process_group.setTitle('PREVIOUS_PROCESS')
             previous_process_group.setLayout(group_layout := QVBoxLayout())
-            self.previous_process_label.append(label := Label(is_clean=True))
+            self.previous_process_label.append(label := LabelTimerClean(is_clean=True))
             group_layout.addWidget(label)
-            label.set_font_size(size=PREVIOUS_PROCESS_TEXT_SIZE)
+            label.set_font_size(size=80)
 
         # Frame
         layout.addLayout(frame_layout := QHBoxLayout())
@@ -58,16 +57,16 @@ class CustomLabel(Label):
 class SensorChannelLayout(QGroupBox):
     signal_update_sql = Signal(object)
     error_number = {
-        CON_OS: 1,
-        POGO_OS: 2,
-        LED: 3,
-        Hall_IC: 10,
-        VBAT_ID: 4,
-        C_TEST: 5,
-        BATTERY: 6,
-        PROX_TEST: 8,
-        MIC: 7,
-        PCM: 9,
+        STR_CON_OS: 1,
+        STR_POGO_OS: 2,
+        STR_LED: 3,
+        STR_HALL_IC: 10,
+        STR_VBAT_ID: 4,
+        STR_C_TEST: 5,
+        STR_BATTERY: 6,
+        STR_PROX_TEST: 8,
+        STR_MIC: 7,
+        STR_PCM: 9,
     }
 
     def __init__(self, channel):
@@ -92,8 +91,8 @@ class SensorChannelLayout(QGroupBox):
 
         result_label = CustomLabel("RESULT")
         self.resultInput = CustomLabel('')
-        self.resultInput.setFixedHeight(SENSOR_RESULT_HEIGHT_SIZE)
-        self.resultInput.set_font_size(size=SENSOR_RESULT_TEXT_SIZE)
+        self.resultInput.setFixedHeight(350)
+        self.resultInput.set_font_size(size=100)
 
         layout.addWidget(result_label)
         layout.addWidget(self.resultInput)
@@ -102,7 +101,7 @@ class SensorChannelLayout(QGroupBox):
 
         self.error_code = {name: True for name in self.error_number}
 
-        self.serial_machine = SerialMachine(baudrate=9600, serial_name=f'{SENSOR_ATECH}{self.channel}')
+        self.serial_machine = SerialMachine(baudrate=9600, serial_name=f'{STR_SENSOR}{self.channel}')
         self.serial_machine.signal.machine_result_signal.connect(self.receive_machine_result)
 
         self.connectButton.clicked.connect(self.connect_machine_button)
@@ -149,12 +148,12 @@ class SensorChannelLayout(QGroupBox):
         self.init_result_true()
         if not result[-1]:
             result.pop()
-        if result[-1] != OK:
+        if result[-1] != STR_OK:
             for item, key in zip(result[1:-1], self.error_code):
-                self.error_code[key] = item == OK
-        self.resultInput.set_background_color(LIGHT_SKY_BLUE if result[-1] == OK else RED)
+                self.error_code[key] = item == STR_OK
+        self.resultInput.set_background_color(LIGHT_SKY_BLUE if result[-1] == STR_OK else RED)
         self.resultInput.setText(result[-1])
-        self.nfc.current_process_result = f"{SENSOR_PROCESS}:{result[-1]}"
+        self.nfc.current_process_result = f"{'SENSOR_PROCESS'}:{result[-1]}"
         self.nfc.enable = True
         self.nfc.clean_check_dm()
         self.dmInput.clean()
@@ -170,12 +169,12 @@ class SensorChannelLayout(QGroupBox):
     def received_previous_process(self, nfc):
         nfc.check_dm = ''
         self.dmInput.set_background_color(LIGHT_BLUE)
-        if not nfc.check_pre_process_valid(SENSOR_PREVIOUS_PROCESS):
+        if not nfc.check_pre_process_valid('SENSOR_PREVIOUS_PROCESS'):
             return
         msg = [self.nfc.dm]
         msg.extend(
             f"{process_name}:{self.nfc.nfc_previous_process[process_name]}"
-            for process_name in PROCESS_NAMES
+            for process_name in 'PROCESS_NAMES'
             if process_name in self.nfc.nfc_previous_process
         )
         if self.write_delay_count:
@@ -188,10 +187,10 @@ class SensorChannelLayout(QGroupBox):
             write_msg = [self.nfc.dm]
             write_msg.extend(
                 f"{process_name}:{self.nfc.nfc_previous_process[process_name]}"
-                for process_name in SENSOR_PREVIOUS_PROCESS
+                for process_name in 'SENSOR_PREVIOUS_PROCESS'
                 if process_name in self.nfc.nfc_previous_process
             )
-            write_msg.append(f"{SENSOR_PROCESS}:{self.resultInput.text()}")
+            write_msg.append(f"{'SENSOR_PROCESS'}:{self.resultInput.text()}")
             self.write_nfc_msg = ','.join(write_msg)
             msg = self.write_nfc_msg
             self.nfc.write(msg.encode())
@@ -205,7 +204,7 @@ class SensorChannelLayout(QGroupBox):
         self.resultInput.clean()
         self.dmInput.setText(self.nfc.dm)
         self.signal_update_sql.emit(self.nfc)
-        Beep(FREQ + 1000, DUR)
+        # Beep(FREQ + 1000, DUR)
         self.write_nfc_msg = ''
 
     def update_sql(self):
@@ -213,6 +212,6 @@ class SensorChannelLayout(QGroupBox):
                                       self.nfc.dm,
                                       get_time(),
                                       self.resultInput.text(),
-                                      SENSOR,
+                                      STR_SENSOR,
                                       self.get_ecode()
                                       )

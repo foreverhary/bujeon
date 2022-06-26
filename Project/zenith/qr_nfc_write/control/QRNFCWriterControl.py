@@ -43,7 +43,8 @@ class QRNFCWriterControl(QObject):
             self._mssql.start_query_thread(self._mssql.insert_pprd,
                                            self._model.data_matrix,
                                            get_time(),
-                                           STR_OK)
+                                           STR_OK,
+                                           STR_TOUCH)
             self._model.status = f"{self._model.data_matrix} IS WRITTEN DONE"
             self._model.data_matrix = ''
         else:

@@ -21,10 +21,10 @@ class MICNFCWriter(QWidget):
         self._control = MICNFCWriterControl(self._model, mssql)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(result := GroupLabel('CH1' if nfc_name == STR_NFC1 else 'CH2'))
+        layout.addWidget(result := GroupLabel('CH1' if nfc_name == STR_NFC1 else 'CH2', is_clean=True, clean_time=4000))
         layout.addLayout(nfc_layout := QHBoxLayout())
         nfc_layout.addWidget(nfc := NFCComponent(nfc_name))
-        nfc_layout.addWidget(nfc_status := GroupLabel(title=STR_NFC, is_nfc=True))
+        nfc_layout.addWidget(nfc_status := GroupLabel(title=STR_NFC, is_nfc=True, is_clean=True, clean_time=4000))
 
         # size
         nfc.setMaximumSize(80, 50)
@@ -96,11 +96,6 @@ class MICNFCWriterControl(QObject):
             return
 
         if not self._model.result:
-            if self._model.data_matrix != data_matrix:
-                logger.debug(self._model.data_matrix)
-                logger.debug(data_matrix)
-                self._model.display_result = ''
-                self._model.nfc_status = ''
             return
 
         if self._model.result != value.get(STR_MIC):
