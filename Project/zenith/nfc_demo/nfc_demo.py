@@ -7,8 +7,8 @@ from NFC import VirtualNFC
 from process_package.Views.CustomComponent import LineEdit, Button, style_sheet_setting, window_bottom_left, Widget
 
 SLOT = 3
-COMPORT = ('com6', 'com8', 'com11')
-# COMPORT = ('com3', 'com5', 'com7')
+# COMPORT = ('com6', 'com8', 'com11')
+COMPORT = ('com3', 'com5', 'com7')
 COLUMN_COUNT = 2
 
 
@@ -18,13 +18,13 @@ class NFCDemo(Widget):
         self.app = app
         self.setLayout(layout := QGridLayout())
         self.nfcs = []
-        layout.addWidget(groupbox := NFCSlot(0, COMPORT[0]), 0, 0)
-        self.nfcs.append(groupbox)
-        layout.addWidget(groupbox := NFCSlot(2, COMPORT[2]), 0, 1)
-        self.nfcs.append(groupbox)
-        # for index, com in enumerate(COMPORT):
-        #     layout.addWidget(groupbox := NFCSlot(index, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
-        #     self.nfcs.append(groupbox)
+        # layout.addWidget(groupbox := NFCSlot(0, COMPORT[0]), 0, 0)
+        # self.nfcs.append(groupbox)
+        # layout.addWidget(groupbox := NFCSlot(2, COMPORT[2]), 0, 1)
+        # self.nfcs.append(groupbox)
+        for index, com in enumerate(COMPORT):
+            layout.addWidget(groupbox := NFCSlot(index, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
+            self.nfcs.append(groupbox)
 
         self.show_main_window()
 

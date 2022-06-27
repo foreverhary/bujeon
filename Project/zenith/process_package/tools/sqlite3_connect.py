@@ -23,7 +23,7 @@ def sqlite_init(cur):
             "CREATE table PPRH(DM text, AUFNR text, ITIME text, UP integer, RETRY integer)"
         )
         cur.execute(
-            "create table PPRD(DM text, ITIME text, RESULT text, PCODE text, ECODE text, UP integer, RETRY integer)"
+            "create table PPRD(DM text, ITIME text, RESULT text, PCODE text, ECODE text, IP text, UP integer, RETRY integer)"
         )
     except:
         pass
@@ -56,9 +56,9 @@ def insert_pprh(cur, dm, aufnr, itime):
 
 
 @deco_sqlite3
-def insert_pprd(cur, dm, itime, result, pcode='', ecode=''):
-    cur.execute("insert into PPRD values (?, ?, ?, ?, ?, 0, 0)",
-                (dm, itime, result, pcode or STR_NULL, ecode or STR_NULL))
+def insert_pprd(cur, dm, itime, result, pcode='', ecode='', ip=''):
+    cur.execute("insert into PPRD values (?, ?, ?, ?, ?, ?, 0, 0)",
+                (dm, itime, result, pcode or STR_NULL, ecode or STR_NULL, ip))
 
 
 @deco_sqlite3

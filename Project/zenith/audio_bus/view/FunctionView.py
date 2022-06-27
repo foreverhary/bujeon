@@ -1,9 +1,11 @@
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout
+from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu
 
+from audio_bus.FunctionConfig import FunctionConfig
 from process_package.Views.CustomComponent import Widget
 from process_package.Views.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
+from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.resource.size import AIR_LEAK_STATUS_FIXED_HEIGHT, AUDIO_BUS_LABEL_MINIMUM_WIDTH, \
     AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT, \
     AUDIO_BUS_NFC_FIXED_HEIGHT, AUDIO_BUS_NFC_FONT_SIZE
@@ -77,3 +79,15 @@ class FunctionView(Widget):
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
+    def contextMenuEvent(self, e):
+        menu = QMenu(self)
+
+        file_action = menu.addAction('Function File Setting')
+        db_action = menu.addAction('DB Setting')
+
+        action = menu.exec_(self.mapToGlobal(e.pos()))
+
+        if action == file_action:
+            FunctionConfig(self._model)
+        if action == db_action:
+            MSSqlDialog()

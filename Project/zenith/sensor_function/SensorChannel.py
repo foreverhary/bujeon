@@ -1,3 +1,5 @@
+import socket
+
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QGroupBox, QVBoxLayout
 
@@ -128,7 +130,8 @@ class SensorChannelControl(QObject):
                                        get_time(),
                                        self._model.result,
                                        STR_SENSOR,
-                                       self._model.get_error_code())
+                                       self._model.get_error_code(),
+                                       socket.gethostbyname(socket.gethostname()))
 
     def begin(self):
         self._mssql.timer_for_db_connect()

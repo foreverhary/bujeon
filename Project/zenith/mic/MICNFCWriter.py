@@ -1,3 +1,5 @@
+import socket
+
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout
 
@@ -117,7 +119,8 @@ class MICNFCWriterControl(QObject):
                                        get_time(),
                                        self._model.result,
                                        STR_MIC,
-                                       self._model.get_error_code()
+                                       self._model.get_error_code(),
+                                       socket.gethostbyname(socket.gethostname())
                                        )
 
     def begin(self):

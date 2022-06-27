@@ -2,8 +2,8 @@ import csv
 import os
 import sys
 
-from PySide2.QtCore import QObject, Signal, Qt
-from PySide2.QtWidgets import QApplication, QHBoxLayout
+from PySide2.QtCore import QObject, Signal, Qt, QTimer
+from PySide2.QtWidgets import QApplication, QHBoxLayout, QMenu
 
 from audio_bus.observer.FileObserver import Target
 from mic.MICNFCReader import MICNFCReader
@@ -11,11 +11,13 @@ from mic.MICNFCWriter import MICNFCWriter
 from mic.MICNFConfig import MICNFCConfig
 from process_package.Views.CustomComponent import style_sheet_setting, Widget
 from process_package.controllers.MSSqlDialog import MSSqlDialog
+from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_OK, STR_MIC, STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH, STR_PASS, \
     STR_NG, CONFIG_FILE_NAME, STR_NFCIN, STR_NFCIN1
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_value
+from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
 
@@ -48,6 +50,10 @@ class MICNFCControl(QObject):
         super(MICNFCControl, self).__init__()
         self._model = model
         self._mssql = MSSQL(STR_MIC)
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
+        self.db_update_timer.timeout.connect(self.update_db)
 
         self.result_file_observer = Target(signal=self.file_path_signal)
 
@@ -95,12 +101,11 @@ class MICNFCControl(QObject):
             self.nfc2_result_changed.emit(result)
             self.nfc1_error_result_changed.emit(error)
 
-    def right_clicked(self):
-        MICNFCConfig(self)
+    def mid_clicked(self):
+        pass
 
-    @staticmethod
-    def mid_clicked():
-        MSSqlDialog()
+    def update_db(self):
+        UpdateDB()
 
     def begin(self):
         self._mssql.timer_for_db_connect()
@@ -137,8 +142,18 @@ class MICNFCView(Widget):
             elif nfc_name == STR_NFCIN1:
                 self.nfcin.set_port(port)
 
-    def mousePressEvent(self, e):
-        super().mousePressEvent(e)
+    def contextMenuEvent(self, e):
+        menu = QMenu(self)
+
+        mic_action = menu.addAction('MIC File Setting')
+        db_action = menu.addAction('DB Setting')
+
+        action = menu.exec_(self.mapToGlobal(e.pos()))
+
+        if action == mic_action:
+            MICNFCConfig(self._control)
+        elif action == db_action:
+            MSSqlDialog()
 
 
 class MICNFCModel(QObject):

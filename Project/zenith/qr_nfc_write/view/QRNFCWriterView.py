@@ -1,8 +1,10 @@
-from PySide2.QtWidgets import QVBoxLayout
+from PySide2.QtWidgets import QVBoxLayout, QMenu
 
 from process_package.Views.CustomComponent import Widget
 from process_package.Views.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
+from process_package.controllers.MSSqlDialog import MSSqlDialog
+from process_package.controllers.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.size import MATCHING_PREVIOUS_PROCESS_FONT_SIZE, MATCHING_PREVIOUS_PROCESS_MINIMUM_HEIGHT, \
     MATCHING_DATA_MATRIX_FONT_SIZE, MATCHING_DATA_MATRIX_MINIMUM_WIDTH, MATCHING_STATUS_FONT_SIZE, \
     MATCHING_STATUS_MAXIMUM_HEIGHT, NFC_FIXED_HEIGHT
@@ -49,3 +51,15 @@ class QRNFCWriterView(Widget):
         self._model.data_matrix_background_changed.connect(self.data_matrix.set_background_color)
         self._model.status_changed.connect(self.status.setText)
         self._model.status_color_changed.connect(self.status.set_color)
+
+    def contextMenuEvent(self, e):
+        menu = QMenu(self)
+
+        order_action = menu.addAction('Order Number Setting')
+        db_action = menu.addAction('DB Setting')
+
+        action = menu.exec_(self.mapToGlobal(e.pos()))
+        if action == order_action:
+            OrderNumberDialog(self._model)
+        elif action == db_action:
+            MSSqlDialog()

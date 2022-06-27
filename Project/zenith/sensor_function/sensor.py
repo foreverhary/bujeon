@@ -1,7 +1,7 @@
 import sys
 
 from PySide2.QtCore import QObject, Qt, QTimer
-from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout
+from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QMenu
 
 from process_package.Views.CustomComponent import style_sheet_setting, Widget
 from process_package.Views.CustomMixComponent import GroupLabel
@@ -39,13 +39,9 @@ class SensorProcessControl(QObject):
         self._model = model
         self._mssql = MSSQL(STR_SEN)
 
-
         self.db_update_timer = QTimer(self)
         self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
         self.db_update_timer.timeout.connect(self.update_db)
-
-    def right_clicked(self):
-        MSSqlDialog()
 
     def mid_clicked(self):
         pass
@@ -54,7 +50,6 @@ class SensorProcessControl(QObject):
         UpdateDB()
 
     def begin(self):
-        self._mssql.get_mssql_conn()
         self._mssql.timer_for_db_connect()
 
 
@@ -65,7 +60,7 @@ class SensorProcessView(Widget):
         layout = QVBoxLayout(self)
         layout.addLayout(previous_layout := QVBoxLayout())
         previous_layout.addWidget(nfc_in := NFCComponent(STR_NFCIN))
-        previous_layout.addWidget(previous := GroupLabel(title=STR_PREVIOUS_PROCESS,is_clean=True, clean_time=3000))
+        previous_layout.addWidget(previous := GroupLabel(title=STR_PREVIOUS_PROCESS, is_clean=True, clean_time=3000))
         layout.addLayout(process_layout := QHBoxLayout())
         process_layout.addWidget(channel1 := SensorChannel(1))
         process_layout.addWidget(channel2 := SensorChannel(2))
@@ -84,8 +79,6 @@ class SensorProcessView(Widget):
         self.setWindowTitle('IR SENSOR')
         self.setMinimumWidth(640)
 
-        self.setWindowTitle(STR_MIC)
-
         self.setWindowFlags(Qt.WindowStaysOnTopHint)  # | Qt.FramelessWindowHint)
 
     def set_nfcs(self, nfcs):
@@ -97,8 +90,15 @@ class SensorProcessView(Widget):
             elif nfc_name == STR_NFC2:
                 self.channel2.set_port(port)
 
-    def mousePressEvent(self, e):
-        super().mousePressEvent(e)
+    def contextMenuEvent(self, e):
+        menu = QMenu(self)
+
+        db_action = menu.addAction('DB Setting')
+
+        action = menu.exec_(self.mapToGlobal(e.pos()))
+
+        if action == db_action:
+            MSSqlDialog()
 
 
 class SensorProcessModel(QObject):

@@ -1,10 +1,14 @@
-from PySide2.QtCore import QObject, Slot, Signal
+import socket
+
+from PySide2.QtCore import QObject, Slot, Signal, QTimer
 
 from process_package.Views.CustomComponent import get_time
 from process_package.component.nfc_checker import NFCCheckerDialog
 from process_package.controllers.MSSqlDialog import MSSqlDialog
+from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, STR_OK, STR_NG
 from process_package.tools.CommonFunction import write_beep
+from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
 
@@ -16,6 +20,10 @@ class AirLeakControl(QObject):
         self._model = model
 
         self._mssql = MSSQL(STR_AIR_LEAK)
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
+        self.db_update_timer.timeout.connect(self.update_db)
 
         # controller event connect
 
@@ -56,16 +64,17 @@ class AirLeakControl(QObject):
                                            self._model.data_matrix,
                                            get_time(),
                                            self._model.result,
-                                           STR_AIR)
+                                           STR_AIR,
+                                           '',
+                                           socket.gethostbyname(socket.gethostname()))
             self._model.unit_input = self._model.data_matrix
             self._model.data_matrix = ''
 
+    def update_db(self):
+        UpdateDB()
+
     def begin(self):
         self._mssql.timer_for_db_connect()
-
-    @staticmethod
-    def right_clicked():
-        MSSqlDialog()
 
     def mid_clicked(self):
         pass

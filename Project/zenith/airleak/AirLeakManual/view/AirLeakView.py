@@ -1,8 +1,10 @@
-from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout
+from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout, QMenu
 
 from process_package.Views.CustomComponent import Widget, Label, LabelBlink, LabelNFC
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
+from process_package.controllers.MSSqlDialog import MSSqlDialog
+from process_package.controllers.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, \
@@ -66,3 +68,13 @@ class AirLeakView(Widget):
         self._model.result_background_color_changed.connect(self.result.set_background_color)
         self._model.status_changed.connect(self.status.setText)
         self._model.status_color_changed.connect(self.status.set_color)
+
+    def contextMenuEvent(self, e):
+        menu = QMenu(self)
+
+        db_action = menu.addAction('DB Setting')
+
+        action = menu.exec_(self.mapToGlobal(e.pos()))
+
+        if action == db_action:
+            MSSqlDialog()

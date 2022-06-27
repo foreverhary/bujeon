@@ -1,7 +1,8 @@
 import csv
 import os
+import socket
 
-from PySide2.QtCore import QObject, Slot, Signal
+from PySide2.QtCore import QObject, Slot, Signal, QTimer
 from xlrd import open_workbook
 
 from audio_bus.FunctionConfig import FunctionConfig
@@ -9,11 +10,13 @@ from audio_bus.observer.FileObserver import Target
 from process_package.Views.CustomComponent import get_time
 from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
+from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, GRADE_FILE_PATH, \
     SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_MIC, STR_OK, STR_FUNCTION, STR_NG, PROCESS_NAMES
 from process_package.screen.NGScreen import NGScreen
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.Config import get_config_audio_bus
+from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
 
@@ -29,6 +32,10 @@ class FunctionControl(QObject):
         self._model = model
 
         self._mssql = MSSQL(STR_AIR_LEAK)
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
+        self.db_update_timer.timeout.connect(self.update_db)
 
         # controller event connect
 
@@ -96,26 +103,8 @@ class FunctionControl(QObject):
                                        get_time(),
                                        self._model.result,
                                        STR_FUNCTION,
-                                       self._model.get_error_code())
-        # if value.get(STR_DATA_MATRIX) in self._model.units:
-        #     self._model.unit_blink = self._model.units.index(value[STR_DATA_MATRIX])
-        #     return
-        #
-        # self._model.unit_color = len(self._model.units)
-        #
-        # if self.data_matrix != value.get(STR_DATA_MATRIX) \
-        #         or self._model.result != value.get(STR_AIR):
-        #     self.data_matrix = value.get(STR_DATA_MATRIX)
-        #     self.nfc.write(f"{self._model.data_matrix},{STR_FUN}:{self._model.result}")
-        #     self.delay_write_count = 2
-        # else:
-        #     write_beep()
-        #     self._model.unit_input = self._model.data_matrix
-        #     self._mssql.start_query_thread(self._mssql.insert_pprd,
-        #                                    get_time(),
-        #                                    self._model.data_matrix,
-        #                                    self._model.result)
-        #     self._model.data_matrix = ''
+                                       self._model.get_error_code(),
+                                       socket.gethostbyname(socket.gethostname()))
 
     @Slot(str)
     def grade_process(self, file_path):
@@ -193,6 +182,9 @@ class FunctionControl(QObject):
             self.summary_file_observer.start()
             return True
         return False
+
+    def update_db(self):
+        UpdateDB()
 
     def begin(self):
         self.start_file_observe()

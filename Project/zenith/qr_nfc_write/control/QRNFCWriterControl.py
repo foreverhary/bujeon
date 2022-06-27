@@ -1,13 +1,17 @@
-from PySide2.QtCore import QObject, Signal
+import socket
+
+from PySide2.QtCore import QObject, Signal, QTimer
 
 from process_package.Views.CustomComponent import get_time
 from process_package.check_string import check_dm
 from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.controllers.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.color import LIGHT_SKY_BLUE
+from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_OK, STR_DATA_MATRIX, STR_TOUCH
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
+from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
 
@@ -20,6 +24,10 @@ class QRNFCWriterControl(QObject):
 
         self.keyboard_listener = LineReadKeyboard()
         self._mssql = MSSQL(STR_TOUCH)
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
+        self.db_update_timer.timeout.connect(self.update_db)
 
         # controller event connect
         self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
@@ -44,7 +52,9 @@ class QRNFCWriterControl(QObject):
                                            self._model.data_matrix,
                                            get_time(),
                                            STR_OK,
-                                           STR_TOUCH)
+                                           STR_TOUCH,
+                                           '',
+                                           socket.gethostbyname(socket.gethostname()))
             self._model.status = f"{self._model.data_matrix} IS WRITTEN DONE"
             self._model.data_matrix = ''
         else:
@@ -64,12 +74,14 @@ class QRNFCWriterControl(QObject):
                                            self._model.order_number,
                                            get_time())
 
+    def update_db(self):
+        UpdateDB()
+
     def begin(self):
         self._mssql.timer_for_db_connect()
 
     def right_clicked(self):
         OrderNumberDialog(self._model)
 
-    @staticmethod
-    def mid_clicked():
-        MSSqlDialog()
+    def mid_clicked(self):
+        pass

@@ -1,4 +1,6 @@
 # path
+from process_package.resource.color import WHITE, YELLOW, GREEN
+
 CONFIG_FILE_NAME = 'config.ini'
 SAVE_DB_FILE_NAME = './log/save_db.log'
 SAVE_DB_RETRY_FILE_NAME = './log/save_db_retry.log'
@@ -153,4 +155,10 @@ NUMERAL = {
     3: STR_THIRD,
     4: STR_FOURTH,
     5: STR_FIFTH,
+}
+
+grade_colors = {
+    STR_A: WHITE,
+    STR_B: YELLOW,
+    STR_C: GREEN
 }

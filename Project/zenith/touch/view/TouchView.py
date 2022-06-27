@@ -1,9 +1,10 @@
 from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QVBoxLayout, QGroupBox
+from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QMenu
 
 from process_package.Views.CustomComponent import Widget
 from process_package.Views.CustomMixComponent import GroupLabel, HBoxComboButton
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
+from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.controllers.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.size import TOUCH_MACHINE_MINIMUM_WIDTH, TOUCH_DATA_MATRIX_FONT_SIZE, \
@@ -63,3 +64,15 @@ class TouchView(Widget):
     def change_machine_result(self, value):
         self.machine.setText(value)
         self.machine.set_background_color((LIGHT_SKY_BLUE, RED)[value == STR_NG])
+
+    def contextMenuEvent(self, e):
+        menu = QMenu(self)
+
+        order_action = menu.addAction('Order Number Setting')
+        db_action = menu.addAction('DB Setting')
+
+        action = menu.exec_(self.mapToGlobal(e.pos()))
+        if action == order_action:
+            OrderNumberDialog(self._model)
+        elif action == db_action:
+            MSSqlDialog()

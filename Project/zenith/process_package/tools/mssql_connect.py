@@ -36,33 +36,6 @@ class MSSQL(QObject):
         self._con = value
         self.connection_status_changed.emit(bool(self._con))
 
-    def set_aplzl(self):
-        cur = self.con.cursor()
-        if self.aufnr and self.keyword:
-            sql = f"""
-                    SELECT 
-                        APLZL 
-                    FROM 
-                        AUFK 
-                    WHERE 
-                        AUFNR = {self.aufnr} and 
-                        LTXA1 LIKE '%{self.keyword}%'
-                """
-            cur.execute(sql)
-            logger.debug(sql)
-            if fetch := cur.fetchone():
-                self.aplzl = fetch[0]
-
-    def set_aufnr_with_dm(self, dm):
-        cur = self.con.cursor()
-        sql = f"SELECT AUFNR FROM PPRH WHERE DM = '{dm}'"
-        cur.execute(sql)
-        if fetch := cur.fetchone():
-            if fetch[0] != self.aufnr:
-                self.aufnr = fetch[0]
-            return True
-        logger.debug(fetch)
-
     def select_pprd(self, dm, itime):
         cur = self.con.cursor()
         sql = f"select DM, ITIME from PPRD where DM = '{dm}' and ITIME = '{itime}'"
@@ -70,10 +43,7 @@ class MSSQL(QObject):
         cur.execute(sql)
         return cur.fetchone()
 
-    def insert_pprd(self, dm, itime, result=None, pcode='', ecode=''):
-        # if not self.set_aufnr_with_dm(dm):
-        #     raise TypeError
-        # self.set_aplzl()
+    def insert_pprd(self, dm, itime, result=None, pcode='', ecode='', ip=''):
         cur = self.con.cursor()
         sql = f"""
             INSERT INTO PPRD 
@@ -82,7 +52,8 @@ class MSSQL(QObject):
                 ITIME, 
                 RESULT, 
                 PCODE, 
-                ECODE
+                ECODE,
+                IP
             )
             values
             (
@@ -90,7 +61,8 @@ class MSSQL(QObject):
                 '{itime}', 
                 '{result}', 
                 '{pcode or STR_NULL}', 
-                '{ecode or STR_NULL}')
+                '{ecode or STR_NULL}',
+                '{ip}')
             """
         logger.debug(sql)
         cur.execute(sql)
@@ -118,29 +90,6 @@ class MSSQL(QObject):
         cur.execute(sql)
         self.con.commit()
         return True
-
-    def select_aplzl_with_order_keyword(self):
-        sql = f"select APLZL from AUFK where AUFNR = '{self.aufnr}' and LTXA1 like '%{self.keyword}%'"
-        logger.debug(sql)
-        cur = self.con.cursor()
-        cur.execute(sql)
-        if fetch := self.cur.fetchone():
-            return fetch[0]
-
-    def select_result_with_dm_keyword(self, dm, keyword):
-        sql = f"""
-            select top 1 C.RESULT from PPRH as A
-            left join AUFK as B on A.AUFNR = B.AUFNR
-            left join PPRD as C on A.DM = C.DM and B.APLZL = C.APLZL
-            where A.DM = '{dm}' and B.LTXA1 like '%{keyword}%' order by C.ITIME desc
-        """
-        logger.debug(sql)
-        cur = self.con.cursor()
-        cur.execute(sql)
-        if fetch := cur.fetchone():
-            self.pre_process_result_signal.emit(fetch[0])
-        else:
-            self.pre_process_result_signal.emit('')
 
     def get_mssql_conn(self):  # sourcery skip: use-fstring-for-concatenation
         logger.debug('get_mssql_conn')
@@ -172,7 +121,6 @@ class MSSQL(QObject):
         else:
             self.start_query_thread(self.get_mssql_conn)
 
-
     def timer_for_db_connect(self):
         self.db_connect_timer = QTimer(self)
         self.db_connect_timer.start(CHECK_DB_TIME)
@@ -198,18 +146,6 @@ class MSSQL(QObject):
         else:
             up(func, *args)
 
-    def save_query_db_fail(self, func, *args):
-        if "pprh" in func.__name__:
-            table = "PPRH"
-        if "pprd" in func.__name__:
-            table = "PPRD"
-
-        if not os.path.isdir('./log'):
-            os.mkdir('log')
-        with open("./log/save_db.log", 'a') as f:
-            merge_args = [table] + list(args) + ['0\n']
-            f.write("\t".join(merge_args))
-
     def select_order_number_with_date_material_model(self,
                                                      date,
                                                      order_keyword='',
@@ -230,39 +166,6 @@ class MSSQL(QObject):
 
         self.cur.execute(sql)
         self.order_list_changed.emit(self.cur.fetchall())
-
-
-def get_mssql_conn():
-    return pymssql.connect(
-        server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
-        user=get_config_mssql(MSSQL_ID),
-        password=get_config_mssql(MSSQL_PASSWORD),
-        database=get_config_mssql(MSSQL_DATABASE),
-        autocommit=True,
-        login_timeout=0.5,
-        timeout=3,
-    )
-
-
-def select_order_number_with_date_material_model(date,
-                                                 order_keyword='',
-                                                 material_keyword='',
-                                                 model_keyword=''):
-    conn = get_mssql_conn()
-    cur = conn.cursor()
-    sql = f"""
-        select A.AUFNR as order_number,
-                C.MATNR as material_code, C.MAKTX as model_name 
-        from AFKO as A 
-        left join MATE as C on A.MATNR = C.MATNR
-        where A.GSTRP = '{date}'
-        and A.AUFNR like '%{order_keyword}%'
-        and C.MATNR like '%{material_keyword}%' 
-        and C.MAKTX like '%{model_keyword}%' 
-        order by A.AUFNR
-    """
-    cur.execute(sql)
-    return cur.fetchall()
 
 
 if __name__ == '__main__':

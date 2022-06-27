@@ -1,11 +1,16 @@
-from PySide2.QtCore import QObject, Slot, Signal
+import socket
+
+from PySide2.QtCore import QObject, Slot, Signal, QTimer
+from PySide2.QtWidgets import QMenu
 
 from process_package.Views.CustomComponent import get_time
 from process_package.check_string import check_dm
 from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.controllers.OrderNumberDialog import OrderNumberDialog
+from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_TOUCH, STR_OK, STR_NG
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
+from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
 
@@ -18,6 +23,10 @@ class TouchControl(QObject):
 
         self.keyboard_listener = LineReadKeyboard()
         self._mssql = MSSQL(STR_TOUCH)
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
+        self.db_update_timer.timeout.connect(self.update_db)
 
         # controller event connect
         self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
@@ -50,16 +59,19 @@ class TouchControl(QObject):
                 self._mssql.start_query_thread(self._mssql.insert_pprd,
                                                self._model.data_matrix,
                                                get_time(),
-                                               self._model.machine_result)
+                                               self._model.machine_result,
+                                               STR_TOUCH,
+                                               '',
+                                               socket.gethostbyname(socket.gethostname()))
 
                 self._model.data_matrix = self._model.data_matrix_waiting
                 self._model.data_matrix_waiting = ''
 
+    def update_db(self):
+        UpdateDB()
+
     def begin(self):
         self._mssql.timer_for_db_connect()
 
-    def right_clicked(self):
-        OrderNumberDialog(self._model)
-
     def mid_clicked(self):
-        MSSqlDialog()
+        pass

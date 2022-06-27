@@ -21,8 +21,6 @@ class Widget(QWidget):
         self.m_flag = False
 
     def mousePressEvent(self, e):
-        if e.buttons() & Qt.RightButton:
-            self._control.right_clicked()
         if e.buttons() & Qt.MidButton:
             self._control.mid_clicked()
         if e.buttons() & Qt.LeftButton:
