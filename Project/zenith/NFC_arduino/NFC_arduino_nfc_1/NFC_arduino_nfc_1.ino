@@ -64,6 +64,8 @@ void loop(void) {
   
   if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 500)){
     if(cmd_index > 0){
+      cmd[cmd_index] = 0xfe;
+      cmd_index++;
       WriteNfc(cmd, cmd_index);
     }else{
       if (uidLength == 7){
@@ -78,7 +80,8 @@ void loop(void) {
           }
           else{
             for(uint8_t pdata=0;pdata<4;pdata++){
-              if(data[pdata] == 0xfe or data[pdata] == 0x00){
+//              if(data[pdata] == 0xfe or data[pdata] == 0x00){
+              if(data[pdata] == 0xfe){
                 Serial.print("UID: ");
                 PrintCharHex(uid, uidLength);
                 
@@ -88,6 +91,11 @@ void loop(void) {
                 }
                 Serial.println();
                 return;
+                }
+                else if(data[pdata] == 0x00){
+                  Serial.print("UID: ");
+                  PrintCharHex(uid, uidLength);
+                  Serial.println();
                 }else{
                 *pOut++ = (char)data[pdata];
               }

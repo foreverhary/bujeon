@@ -16,6 +16,9 @@ class FunctionModel(ConfigModel):
     comport_open_changed = Signal(bool)
     available_comport_changed = Signal(list)
 
+    previous_changed = Signal(str)
+    previous_color_changed = Signal(str)
+
     grade_changed = Signal(str)
     grade_color_changed = Signal(str)
 
@@ -40,7 +43,18 @@ class FunctionModel(ConfigModel):
         self.nfc_in = NFCModel()
         self.nfc1 = NFCModel()
         self.nfc2 = NFCModel()
+        self.result = ''
         self.error_code_result = {}
+
+    @property
+    def previous(self):
+        return self._previous
+
+    @previous.setter
+    def previous(self, value):
+        self._previous = value
+        self.previous_changed.emit(value)
+        self.previous_color_changed.emit(LIGHT_SKY_BLUE)
 
     @property
     def grade(self):

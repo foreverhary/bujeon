@@ -8,9 +8,10 @@ from audio_bus.FunctionConfig import FunctionConfig
 from audio_bus.observer.FileObserver import Target
 from process_package.Views.CustomComponent import get_time
 from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.resource.color import WHITE, RED, LIGHT_SKY_BLUE
-from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, STR_NG, GRADE_FILE_PATH, \
-    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE
+from process_package.resource.color import RED, LIGHT_SKY_BLUE
+from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, GRADE_FILE_PATH, \
+    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_MIC, STR_OK, STR_FUNCTION, STR_NG, PROCESS_NAMES
+from process_package.screen.NGScreen import NGScreen
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.mssql_connect import MSSQL
@@ -32,6 +33,9 @@ class FunctionControl(QObject):
         # controller event connect
 
         self.delay_write_count = 0
+        self.ng_screen_opened = False
+        self.process_name = STR_FUN
+        self.previous = {}
 
         # file observer
         self.grade_file_observer = Target(signal=self.grade_signal)
@@ -44,7 +48,16 @@ class FunctionControl(QObject):
 
     @Slot(dict)
     def check_previous(self, value):
-        pass
+        if self.ng_screen_opened:
+            return
+        if (data_matrix := value.get(STR_DATA_MATRIX)) \
+                and (value.get(STR_AIR) == STR_OK) \
+                and (value.get(STR_MIC) == STR_OK):
+            self._model.previous = data_matrix
+        else:
+            self.previous = value
+            self.ng_screen_opened = True
+            NGScreen(self)
 
     @Slot(dict)
     def receive_nfc_data(self, value):
@@ -60,14 +73,30 @@ class FunctionControl(QObject):
             return
 
         if self.data_matrix != data_matrix or self._model.result != value.get(STR_FUN):
-            self.data_matrix = value.get(STR_DATA_MATRIX)
-            self.nfc1_write.emit(f"{self.data_matrix},{STR_FUN}:{self._model.result}")
-            self.nfc2_write.emit(f"{self.data_matrix},{STR_FUN}:{self._model.result}")
-            self.delay_write_count = 2
+            self.data_matrix = data_matrix
+            msg = data_matrix
+            for name in PROCESS_NAMES:
+                if result := value.get(name):
+                    msg += f",{name}:{result}"
+                if name == self.process_name:
+                    msg += f",{name}:{self._model.result}"
+                    break
+            self.nfc1_write.emit(msg)
+            self.nfc2_write.emit(msg)
+            self.delay_write_count = 3
         else:
             write_beep()
             self._model.status = f"{data_matrix} is {STR_WRITE_DONE}"
-        #
+            self.sql_update()
+            self._model.result = ''
+
+    def sql_update(self):
+        self._mssql.start_query_thread(self._mssql.insert_pprd,
+                                       self.data_matrix,
+                                       get_time(),
+                                       self._model.result,
+                                       STR_FUNCTION,
+                                       self._model.get_error_code())
         # if value.get(STR_DATA_MATRIX) in self._model.units:
         #     self._model.unit_blink = self._model.units.index(value[STR_DATA_MATRIX])
         #     return
@@ -138,7 +167,7 @@ class FunctionControl(QObject):
                 if key in name and 'Failed' in result_value:
                     self._model.error_code_result[key] = False
         self._model.result = self._model.grade
-        # self._model.result = STR_NG if False in self._model.error_code_result.values() else self._model.grade
+        self._model.result = STR_NG if False in self._model.error_code_result.values() else self._model.grade
 
     def start_file_observe(self):
         if self.start_grade_file_observe() and self.start_summary_file_observe():

@@ -1,22 +1,18 @@
-import csv
-import os
 import sys
 
-from PySide2.QtCore import QObject, Signal, Qt
+from PySide2.QtCore import QObject, Qt, QTimer
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout
 
-from audio_bus.observer.FileObserver import Target
-from mic.MICNFCReader import MICNFCReader
-from mic.MICNFCWriter import MICNFCWriter
-from mic.MICNFConfig import MICNFCConfig
 from process_package.Views.CustomComponent import style_sheet_setting, Widget
+from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.NFCComponent import NFCComponent
 from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.resource.string import STR_OK, STR_MIC, STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH, STR_PASS, \
-    STR_NG, CONFIG_FILE_NAME, STR_NFCIN, STR_NFCIN1
+from process_package.resource.number import CHECK_DB_UPDATE_TIME
+from process_package.resource.string import STR_MIC, STR_NFC1, STR_NFC2, STR_NFCIN, STR_PREVIOUS_PROCESS, STR_SEN
 from process_package.screen.SplashScreen import SplashScreen
-from process_package.tools.CommonFunction import logger
-from process_package.tools.Config import get_config_value
+from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
+from sensor_function.SensorChannel import SensorChannel
 
 
 class SensorProcess(QApplication):
@@ -41,15 +37,24 @@ class SensorProcessControl(QObject):
     def __init__(self, model):
         super(SensorProcessControl, self).__init__()
         self._model = model
-        self._mssql = MSSQL(STR_MIC)
+        self._mssql = MSSQL(STR_SEN)
+
+
+        self.db_update_timer = QTimer(self)
+        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
+        self.db_update_timer.timeout.connect(self.update_db)
 
     def right_clicked(self):
         MSSqlDialog()
 
-    def mid_clicked():
+    def mid_clicked(self):
         pass
 
+    def update_db(self):
+        UpdateDB()
+
     def begin(self):
+        self._mssql.get_mssql_conn()
         self._mssql.timer_for_db_connect()
 
 
@@ -58,14 +63,26 @@ class SensorProcessView(Widget):
         super(SensorProcessView, self).__init__()
         self._model, self._control = args
         layout = QVBoxLayout(self)
+        layout.addLayout(previous_layout := QVBoxLayout())
+        previous_layout.addWidget(nfc_in := NFCComponent(STR_NFCIN))
+        previous_layout.addWidget(previous := GroupLabel(title=STR_PREVIOUS_PROCESS,is_clean=True, clean_time=3000))
         layout.addLayout(process_layout := QHBoxLayout())
-        layout.addWidget()
+        process_layout.addWidget(channel1 := SensorChannel(1))
+        process_layout.addWidget(channel2 := SensorChannel(2))
+
+        # size
+
+        previous.set_font_size(80)
+
+        # assign
+        self.nfcin = nfc_in
+        self.previous = previous.label
+
+        self.channel1 = channel1
+        self.channel2 = channel2
 
         self.setWindowTitle('IR SENSOR')
         self.setMinimumWidth(640)
-
-        # assign
-
 
         self.setWindowTitle(STR_MIC)
 
@@ -73,12 +90,12 @@ class SensorProcessView(Widget):
 
     def set_nfcs(self, nfcs):
         for port, nfc_name in nfcs.items():
-            if nfc_name == STR_NFC1:
-                self.nfc1.set_port(port)
-            elif nfc_name == STR_NFC2:
-                self.nfc2.set_port(port)
-            elif nfc_name == STR_NFCIN1:
+            if STR_NFCIN in nfc_name:
                 self.nfcin.set_port(port)
+            elif nfc_name == STR_NFC1:
+                self.channel1.set_port(port)
+            elif nfc_name == STR_NFC2:
+                self.channel2.set_port(port)
 
     def mousePressEvent(self, e):
         super().mousePressEvent(e)
@@ -87,8 +104,6 @@ class SensorProcessView(Widget):
 class SensorProcessModel(QObject):
     def __init__(self):
         super(SensorProcessModel, self).__init__()
-        self.error_code_nfc1_result = {}
-        self.error_code_nfc2_result = {}
 
     def begin(self):
         pass

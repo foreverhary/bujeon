@@ -4,13 +4,13 @@ from threading import Thread
 import pymssql
 from PySide2.QtCore import QObject, Signal, QTimer
 from pymssql._pymssql import OperationalError, InterfaceError, IntegrityError
+
 # mssql server
 from process_package.Views.CustomComponent import get_time
+from process_package.resource.number import CHECK_DB_TIME
+from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_mssql
-from process_package.tools.db_update_from_file import UpdateDB
-from process_package.resource.number import CHECK_DB_TIME, CHECK_DB_UPDATE_TIME
-from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 from process_package.tools.sqlite3_connect import sqlite_init, insert, up
 
 
@@ -63,17 +63,22 @@ class MSSQL(QObject):
             return True
         logger.debug(fetch)
 
+    def select_pprd(self, dm, itime):
+        cur = self.con.cursor()
+        sql = f"select DM, ITIME from PPRD where DM = '{dm}' and ITIME = '{itime}'"
+        logger.debug(sql)
+        cur.execute(sql)
+        return cur.fetchone()
+
     def insert_pprd(self, dm, itime, result=None, pcode='', ecode=''):
-        if not self.set_aufnr_with_dm(dm):
-            raise TypeError
-        self.set_aplzl()
+        # if not self.set_aufnr_with_dm(dm):
+        #     raise TypeError
+        # self.set_aplzl()
         cur = self.con.cursor()
         sql = f"""
             INSERT INTO PPRD 
             (
                 DM, 
-                AUFNR, 
-                APLZL, 
                 ITIME, 
                 RESULT, 
                 PCODE, 
@@ -82,8 +87,6 @@ class MSSQL(QObject):
             values
             (
                 '{dm}', 
-                '{self.aufnr}', 
-                '{self.aplzl}', 
                 '{itime}', 
                 '{result}', 
                 '{pcode or STR_NULL}', 
@@ -91,6 +94,7 @@ class MSSQL(QObject):
             """
         logger.debug(sql)
         cur.execute(sql)
+        logger.debug('after execute')
         self.con.commit()
         return True
 
@@ -139,6 +143,7 @@ class MSSQL(QObject):
             self.pre_process_result_signal.emit('')
 
     def get_mssql_conn(self):  # sourcery skip: use-fstring-for-concatenation
+        logger.debug('get_mssql_conn')
         self.con = pymssql.connect(server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
                                    user=get_config_mssql(MSSQL_ID),
                                    password=get_config_mssql(MSSQL_PASSWORD),
@@ -146,10 +151,11 @@ class MSSQL(QObject):
                                    autocommit=True,
                                    login_timeout=3,
                                    timeout=3)
-        self.cur = self.con.cursor()
+        # self.cur = self.con.cursor()
 
     def get_time(self):
         sql = "SELECT GETDATE()"
+        logger.debug(sql)
         self.cur.execute(sql)
 
     def start_query_thread(self, *args):
@@ -166,17 +172,11 @@ class MSSQL(QObject):
         else:
             self.start_query_thread(self.get_mssql_conn)
 
-    def update_db(self):
-        self.update_instance = UpdateDB(self)
 
     def timer_for_db_connect(self):
         self.db_connect_timer = QTimer(self)
         self.db_connect_timer.start(CHECK_DB_TIME)
         self.db_connect_timer.timeout.connect(self.check_connect_db)
-
-        self.db_update_timer = QTimer(self)
-        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
-        self.db_update_timer.timeout.connect(self.update_db)
 
     def __call__(self, func, *args, **kwargs):
         try:
@@ -187,6 +187,7 @@ class MSSQL(QObject):
                 TypeError,
                 AttributeError) as e:
             logger.error(f"{type(e)} : {e}")
+            self.con = None
             # if "insert" in func.__name__:
             #     logger.error(f"{func.__name__} Need to Save!!")
             #     self.save_query_db_fail(func, *args)

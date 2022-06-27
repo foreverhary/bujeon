@@ -5,22 +5,24 @@ from pymssql._pymssql import OperationalError
 
 from process_package.tools.CommonFunction import logger
 from process_package.resource.string import SAVE_DB_RETRY_FILE_NAME, SAVE_DB_FILE_NAME
+from process_package.tools.mssql_connect import MSSQL
 from process_package.tools.sqlite3_connect import select_pprh_not_update, update_pprh_tryup, update_pprh_up, \
     update_pprd_tryup, update_pprd_up, select_pprd_not_update
 
 
 class UpdateDB(Thread):
-    def __init__(self, mssql):
+    def __init__(self):
         super(UpdateDB, self).__init__()
         self.query_lines = []
-        self.mssql = mssql
         self.start()
 
     def run(self):
+        mssql = MSSQL()
+        mssql.get_mssql_conn()
         for query in select_pprh_not_update():
             logger.debug(query)
             try:
-                self.mssql.insert_pprh(*query)
+                mssql.insert_pprh(*query)
             except:
                 update_pprh_tryup(query[0], query[2])
             else:
@@ -28,16 +30,12 @@ class UpdateDB(Thread):
         for query in select_pprd_not_update():
             logger.debug(query)
             try:
-                self.mssql.insert_pprd(*query)
-            except:
+                mssql.insert_pprd(*query)
+            except Exception as e:
+                logger.debug(f"{type(e)}:{e}")
                 update_pprd_tryup(*query[:2])
             else:
                 update_pprd_up(*query[:2])
-        # self.read_file(SAVE_DB_RETRY_FILE_NAME)
-        # self.db_update()
-        # with Lock():
-        #     self.read_file(SAVE_DB_FILE_NAME)
-        # self.db_update()
 
     def db_update(self):
         for index, query_str in enumerate(self.query_lines):

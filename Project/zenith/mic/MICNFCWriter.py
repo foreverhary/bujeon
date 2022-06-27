@@ -21,7 +21,7 @@ class MICNFCWriter(QWidget):
         self._control = MICNFCWriterControl(self._model, mssql)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(result := GroupLabel('CH1' if nfc_name == STR_NFC1 else 'CH2', is_clean=True, clean_time=4000))
+        layout.addWidget(result := GroupLabel('CH1' if nfc_name == STR_NFC1 else 'CH2', is_clean=True, clean_time=5000))
         layout.addLayout(nfc_layout := QHBoxLayout())
         nfc_layout.addWidget(nfc := NFCComponent(nfc_name))
         nfc_layout.addWidget(nfc_status := GroupLabel(title=STR_NFC, is_nfc=True, is_clean=True, clean_time=4000))
@@ -113,8 +113,8 @@ class MICNFCWriterControl(QObject):
 
     def sql_update(self, data_matrix):
         self._mssql.start_query_thread(self._mssql.insert_pprd,
-                                       get_time(),
                                        data_matrix,
+                                       get_time(),
                                        self._model.result,
                                        STR_MIC,
                                        self._model.get_error_code()
