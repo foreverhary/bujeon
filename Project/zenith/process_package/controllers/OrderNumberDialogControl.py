@@ -11,7 +11,7 @@ class OrderNumberDialogControl(QObject):
         self._mssql = MSSQL(STR_TOUCH)
         self._mssql.order_list_changed.connect(self.change_order_number_list)
         self._mssql.connection_status_changed.connect(self.change_connection_status)
-        self._mssql.start_query_thread(self._mssql.get_mssql_conn)
+        # self._mssql.start_query_thread(self._mssql.get_mssql_conn)
 
     @Slot(object)
     def change_date(self, value):
@@ -40,12 +40,12 @@ class OrderNumberDialogControl(QObject):
 
     @Slot()
     def get_order_list(self):
-        if self._mssql.con:
-            self._mssql.start_query_thread(self._mssql.select_order_number_with_date_material_model,
-                                           self._model.date,
-                                           self._model.order_keyword,
-                                           self._model.material_keyword,
-                                           self._model.model_keyword)
+        # if self._mssql.con:
+        self._mssql.start_query_thread(self._mssql.select_order_number_with_date_material_model,
+                                       self._model.date,
+                                       self._model.order_keyword,
+                                       self._model.material_keyword,
+                                       self._model.model_keyword)
 
     @Slot(bool)
     def change_connection_status(self, connection):

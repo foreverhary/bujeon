@@ -1,13 +1,11 @@
-import os
 from threading import Thread
 
 import pymssql
-from PySide2.QtCore import QObject, Signal, QTimer
+from PySide2.QtCore import QObject, Signal
 from pymssql._pymssql import OperationalError, InterfaceError, IntegrityError
 
 # mssql server
 from process_package.Views.CustomComponent import get_time
-from process_package.resource.number import CHECK_DB_TIME
 from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_mssql
@@ -100,7 +98,7 @@ class MSSQL(QObject):
                                    autocommit=True,
                                    login_timeout=3,
                                    timeout=3)
-        # self.cur = self.con.cursor()
+        self.cur = self.con.cursor()
 
     def get_time(self):
         sql = "SELECT GETDATE()"
@@ -122,12 +120,14 @@ class MSSQL(QObject):
             self.start_query_thread(self.get_mssql_conn)
 
     def timer_for_db_connect(self):
-        self.db_connect_timer = QTimer(self)
-        self.db_connect_timer.start(CHECK_DB_TIME)
-        self.db_connect_timer.timeout.connect(self.check_connect_db)
+        pass
+        # self.db_connect_timer = QTimer(self)
+        # self.db_connect_timer.start(CHECK_DB_TIME)
+        # self.db_connect_timer.timeout.connect(self.check_connect_db)
 
     def __call__(self, func, *args, **kwargs):
         try:
+            self.get_mssql_conn()
             return_value = func(*args, **kwargs)
         except (OperationalError,
                 IntegrityError,
@@ -135,16 +135,13 @@ class MSSQL(QObject):
                 TypeError,
                 AttributeError) as e:
             logger.error(f"{type(e)} : {e}")
-            self.con = None
-            # if "insert" in func.__name__:
-            #     logger.error(f"{func.__name__} Need to Save!!")
-            #     self.save_query_db_fail(func, *args)
-            # return False
         except Exception as e:
             logger.error(f"{type(e)} : {e}")
             logger.error(f"{func.__name__} To Do error proces")
         else:
             up(func, *args)
+            self.con.close()
+            return return_value
 
     def select_order_number_with_date_material_model(self,
                                                      date,

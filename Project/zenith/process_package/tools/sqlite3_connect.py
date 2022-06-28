@@ -69,7 +69,7 @@ def select_pprh_not_update(cur):
 
 @deco_sqlite3
 def select_pprd_not_update(cur):
-    cur.execute("select DM, ITIME, RESULT, PCODE, ECODE from PPRD where UP=0")
+    cur.execute("select DM, ITIME, RESULT, PCODE, ECODE, IP from PPRD where UP=0")
     return cur.fetchall()
 
 

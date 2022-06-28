@@ -99,7 +99,7 @@ class MICNFCControl(QObject):
             self.nfc1_error_result_changed.emit(error)
         elif side == 'R':
             self.nfc2_result_changed.emit(result)
-            self.nfc1_error_result_changed.emit(error)
+            self.nfc2_error_result_changed.emit(error)
 
     def mid_clicked(self):
         pass

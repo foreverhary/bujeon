@@ -78,7 +78,7 @@ class QRNFCWriterControl(QObject):
         UpdateDB()
 
     def begin(self):
-        self._mssql.timer_for_db_connect()
+        pass
 
     def right_clicked(self):
         OrderNumberDialog(self._model)
