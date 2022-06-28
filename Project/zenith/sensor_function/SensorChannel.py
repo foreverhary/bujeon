@@ -42,6 +42,7 @@ class SensorChannel(QGroupBox):
         self.nfc = nfc
 
         # view connect control
+        self.comport.comport_save.connect(self._control.comport_save)
         self.comport.serial_output_data.connect(self._control.input_serial_data)
         self.nfc.nfc_data_out.connect(self._control.receive_nfc_data)
 

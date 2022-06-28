@@ -61,11 +61,16 @@ class AirLeakView(Widget):
         self._model.unit_color_changed.connect(
             lambda unit_index: self.units[unit_index].set_background_color(LIGHT_SKY_BLUE))
         self._model.unit_blink_changed.connect(lambda unit_index: self.units[unit_index].blink_text())
+        self._model.units_clean.connect(self.unit_clean)
 
         self._model.result_changed.connect(self.result.setText)
         self._model.result_background_color_changed.connect(self.result.set_background_color)
         self._model.status_changed.connect(self.status.setText)
         self._model.status_color_changed.connect(self.status.set_color)
+
+    def unit_clean(self):
+        for unit in self.units:
+            unit.clean()
 
     def contextMenuEvent(self, e):
         menu = QMenu(self)

@@ -68,10 +68,10 @@ class FunctionControl(QObject):
 
     @Slot(dict)
     def receive_nfc_data(self, value):
-        self._model.nfc_color = LIGHT_SKY_BLUE
         if not self._model.result:
             return
 
+        self._model.nfc_color = LIGHT_SKY_BLUE
         if self.delay_write_count:
             self.delay_write_count -= 1
             return
@@ -93,6 +93,7 @@ class FunctionControl(QObject):
             self.delay_write_count = 3
         else:
             write_beep()
+            self._model.nfc_input = data_matrix
             self._model.status = f"{data_matrix} is {STR_WRITE_DONE}"
             self.sql_update()
             self._model.result = ''

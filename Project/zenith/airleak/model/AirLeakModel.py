@@ -16,6 +16,7 @@ class AirLeakModel(ConfigModel):
     unit_input_changed = Signal(int, str)
     unit_color_changed = Signal(int)
     unit_blink_changed = Signal(int)
+    units_clean = Signal()
 
     status_changed = Signal(str)
     status_color_changed = Signal(str)
@@ -49,6 +50,7 @@ class AirLeakModel(ConfigModel):
         if not value:
             self.result_background_color = BACK_GROUND_COLOR
         else:
+            self.units_clean.emit()
             self.result_background_color = LIGHT_SKY_BLUE if value == STR_OK else RED
             self.status = "TAG FIRST JIG"
 
@@ -73,6 +75,7 @@ class AirLeakModel(ConfigModel):
         if len(self.units) < 4:
             self.status = f"TAG {NUMERAL[len(self.units) + 1]} JIG"
         else:
+            self.units = []
             self.result = ''
             self.status = STR_WRITE_DONE
 
