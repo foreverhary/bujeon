@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['touch.py'],
+a = Analysis(['nfc_demo.py'],
              pathex=['../'],
              binaries=[],
              datas=[],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='touch',
+          name='nfc_demo',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

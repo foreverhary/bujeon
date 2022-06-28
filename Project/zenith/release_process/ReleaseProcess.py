@@ -7,7 +7,7 @@ from process_package.Views.CustomComponent import style_sheet_setting, window_ce
 from process_package.Views.CustomMixComponent import GroupLabel
 from process_package.check_string import check_dm
 from process_package.component.NFCComponent import NFCComponent
-from process_package.resource.color import WHITE, YELLOW, GREEN, BACK_GROUND_COLOR, RED, LIGHT_SKY_BLUE
+from process_package.resource.color import WHITE, BACK_GROUND_COLOR, RED
 from process_package.resource.size import RELEASE_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, RELEASE_DATA_MATRIX_FIXED_HEIGHT, \
     RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_RESULT_MIN_HEIGHT, RELEASE_GRADE_FONT_SIZE
 from process_package.resource.string import STR_RELEASE, STR_NFC1, STR_DATA_MATRIX, STR_RESULT, STR_NFC, STR_FUN, \

@@ -88,6 +88,6 @@ class FunctionView(Widget):
         action = menu.exec_(self.mapToGlobal(e.pos()))
 
         if action == file_action:
-            FunctionConfig(self._model)
+            FunctionConfig(self._model, self._control)
         if action == db_action:
             MSSqlDialog()

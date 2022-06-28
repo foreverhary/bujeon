@@ -5,9 +5,10 @@ from PySide2.QtWidgets import QApplication
 from audio_bus.control.FunctionControl import FunctionControl
 from audio_bus.model.FunctionModel import FunctionModel
 from audio_bus.view.FunctionView import FunctionView
-from process_package.Views.CustomComponent import style_sheet_setting, window_center
+from process_package.Views.CustomComponent import style_sheet_setting, window_center, window_right
 from process_package.resource.string import STR_FUNCTION
 from process_package.screen.SplashScreen import SplashScreen
+from process_package.tools.CommonFunction import logger
 
 
 class Function(QApplication):
@@ -25,10 +26,11 @@ class Function(QApplication):
         self._model.nfcs = nfcs
         self._view.show()
         self._control.begin()
-        window_center(self._view)
+        window_right(self._view)
         self.load_nfc_window.close()
 
 
 if __name__ == '__main__':
+    logger.debug('function start')
     app = Function(sys.argv)
     sys.exit(app.exec_())

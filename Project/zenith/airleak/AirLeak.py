@@ -2,9 +2,9 @@ import sys
 
 from PySide2.QtWidgets import QApplication
 
-from airleak.AirLeakManual.control.AirLeakControl import AirLeakControl
-from airleak.AirLeakManual.model.AirLeakModel import AirLeakModel
-from airleak.AirLeakManual.view.AirLeakView import AirLeakView
+from control.AirLeakControl import AirLeakControl
+from model.AirLeakModel import AirLeakModel
+from view.AirLeakView import AirLeakView
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.Views.CustomComponent import style_sheet_setting, window_center
 from process_package.resource.string import STR_AIR_LEAK

@@ -22,6 +22,6 @@ class Touch(QApplication):
 
 
 if __name__ == '__main__':
-    logger.info("start touch process")
+    logger.warn("start touch process")
     app = Touch(sys.argv)
     sys.exit(app.exec_())

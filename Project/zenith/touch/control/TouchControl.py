@@ -1,12 +1,9 @@
 import socket
 
 from PySide2.QtCore import QObject, Slot, Signal, QTimer
-from PySide2.QtWidgets import QMenu
 
 from process_package.Views.CustomComponent import get_time
 from process_package.check_string import check_dm
-from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.controllers.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_TOUCH, STR_OK, STR_NG
 from process_package.tools.LineReadKeyboard import LineReadKeyboard

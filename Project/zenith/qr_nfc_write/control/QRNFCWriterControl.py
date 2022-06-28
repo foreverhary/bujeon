@@ -4,8 +4,7 @@ from PySide2.QtCore import QObject, Signal, QTimer
 
 from process_package.Views.CustomComponent import get_time
 from process_package.check_string import check_dm
-from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.controllers.OrderNumberDialog import OrderNumberDialog
+from process_package.component.SearchDataMatrixLocal import SearchDataMatrixLocal
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_OK, STR_DATA_MATRIX, STR_TOUCH
@@ -80,8 +79,5 @@ class QRNFCWriterControl(QObject):
     def begin(self):
         pass
 
-    def right_clicked(self):
-        OrderNumberDialog(self._model)
-
     def mid_clicked(self):
-        pass
+        SearchDataMatrixLocal()

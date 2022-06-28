@@ -10,18 +10,15 @@ from process_package.Views.CustomComponent import style_sheet_setting
 
 
 class FunctionConfig(QObject):
-    def __init__(self, parent_model):
+    def __init__(self, parent_model, parent_control):
         super(FunctionConfig, self).__init__()
         self._parent_model = parent_model
+        self._parent_control = parent_control
         self._model = FunctionConfigModel()
         self._control = FunctionConfigControl(self._model)
-        self._view = FunctionConfigView(self._model, self._control)
+        self._view = FunctionConfigView(self._model, self._control, self._parent_control)
         self._model.begin_config_read()
         self._view.showModal()
-
-    @Slot(str)
-    def close_receive(self, value):
-        pass
 
 
 if __name__ == '__main__':

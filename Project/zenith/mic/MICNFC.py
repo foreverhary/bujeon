@@ -9,7 +9,7 @@ from audio_bus.observer.FileObserver import Target
 from mic.MICNFCReader import MICNFCReader
 from mic.MICNFCWriter import MICNFCWriter
 from mic.MICNFConfig import MICNFCConfig
-from process_package.Views.CustomComponent import style_sheet_setting, Widget
+from process_package.Views.CustomComponent import style_sheet_setting, Widget, window_center
 from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_OK, STR_MIC, STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH, STR_PASS, \
@@ -35,6 +35,7 @@ class MICNFC(QApplication):
         style_sheet_setting(self)
         self._view.set_nfcs(nfcs)
         self._view.show()
+        window_center(self._view)
         self.load_nfc_window.close()
 
 

@@ -4,14 +4,12 @@ from process_package.Views.CustomComponent import Widget, Label, LabelBlink, Lab
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.controllers.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, \
     AIR_LEAK_RESULT_MINIMUM_HEIGHT, AIR_LEAK_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, COMPORT_FIXED_HEIGHT, \
     AIR_LEAK_STATUS_FIXED_HEIGHT
 from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESULT, STR_UNIT, STR_AIR_LEAK, STR_NFC1
-from process_package.tools.clickable import clickable
 
 
 class AirLeakView(Widget):

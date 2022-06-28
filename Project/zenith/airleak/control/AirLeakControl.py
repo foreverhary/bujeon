@@ -3,8 +3,6 @@ import socket
 from PySide2.QtCore import QObject, Slot, Signal, QTimer
 
 from process_package.Views.CustomComponent import get_time
-from process_package.component.nfc_checker import NFCCheckerDialog
-from process_package.controllers.MSSqlDialog import MSSqlDialog
 from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, STR_OK, STR_NG
 from process_package.tools.CommonFunction import write_beep

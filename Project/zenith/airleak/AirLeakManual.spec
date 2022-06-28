@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['sensor_process.py'],
+a = Analysis(['AirLeak.py'],
              pathex=['../'],
              binaries=[],
              datas=[],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='sensor_process',
+          name='AirLeak',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

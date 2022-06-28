@@ -1,6 +1,5 @@
 from PySide2.QtCore import Signal
 
-from process_package.defined_serial_port import get_serial_available_list
 from process_package.models.ConfigModel import ConfigModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED, BACK_GROUND_COLOR, WHITE
 from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_OK, STR_NFC1, \

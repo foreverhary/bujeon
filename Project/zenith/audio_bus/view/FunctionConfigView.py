@@ -1,4 +1,4 @@
-from PySide2.QtCore import Slot, Qt
+from PySide2.QtCore import Slot, Qt, Signal
 from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGroupBox, QGridLayout
 
 from process_package.Views.CustomComponent import LeftAlignLabel, Label, Button, LineEdit
@@ -10,7 +10,7 @@ from process_package.resource.size import AUDIO_BUS_CONFIG_BUTTON_MIN_WIDTH, \
 class FunctionConfigView(QDialog):
     def __init__(self, *args):
         super(FunctionConfigView, self).__init__()
-        self._model, self._control = args
+        self._model, self._control, self._parent_control = args
 
         # UI
         layout = QVBoxLayout(self)
@@ -99,3 +99,6 @@ class FunctionConfigView(QDialog):
 
     def showModal(self):
         return super().exec_()
+
+    def closeEvent(self, e):
+        self._parent_control.start_file_observe()

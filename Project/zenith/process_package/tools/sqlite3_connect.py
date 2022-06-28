@@ -91,3 +91,9 @@ def update_pprh_tryup(cur, dm, itime):
 @deco_sqlite3
 def update_pprd_tryup(cur, dm, itime):
     cur.execute(f"update PPRD SET RETRY = RETRY + 1 where DM='{dm}' and ITIME='{itime}'")
+
+
+@deco_sqlite3
+def select_pprd_with_data_matrix(cur, dm):
+    cur.execute(f"select DM, ITIME, RESULT, PCODE, ECODE, IP from PPRD where DM = '{dm}'")
+    return cur.fetchall()
