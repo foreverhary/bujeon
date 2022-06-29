@@ -144,7 +144,7 @@ class SplashScreen(QMainWindow):
         self.ui.circularProgress.setStyleSheet(newStylesheet)
 
     def serial_nfc_check(self, port, ser_list):
-        ser = Serial(port, 115200, timeout=2)
+        ser = Serial(port, 115200, timeout=3)
         if data := ser.readline().decode().replace('\r', '').replace('\n', '').replace(' ', ''):
             if STR_NFC in data:
                 ser_list[port] = data
