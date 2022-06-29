@@ -2,7 +2,7 @@ import datetime
 import sys
 
 from PySide2.QtCore import QObject, Slot, Signal, Qt
-from PySide2.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QHBoxLayout, QHeaderView, \
+from PySide2.QtWidgets import QVBoxLayout, QTableWidget, QTableWidgetItem, QHBoxLayout, QHeaderView, \
     QApplication
 
 from process_package.check_string import check_dm
@@ -10,7 +10,6 @@ from process_package.component.CustomComponent import Label, LineEdit, Widget, s
 from process_package.tools.CommonFunction import logger
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.mssql_connect import MSSQL
-from process_package.tools.sqlite3_connect import sqlite_init, select_pprd_with_data_matrix
 
 
 class DBSearch(Widget):

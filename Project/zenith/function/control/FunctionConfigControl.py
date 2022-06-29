@@ -1,8 +1,6 @@
 from PySide2.QtCore import QObject, Slot
 from PySide2.QtWidgets import QFileDialog
 
-from process_package.tools.CommonFunction import logger
-
 
 class FunctionConfigControl(QObject):
 
