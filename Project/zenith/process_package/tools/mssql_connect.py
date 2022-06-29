@@ -139,7 +139,8 @@ class MSSQL(QObject):
             logger.error(f"{type(e)} : {e}")
             logger.error(f"{func.__name__} To Do error proces")
         else:
-            up(func, *args)
+            if 'insert' in func.__name__:
+                up(func, *args)
             self.con.close()
             return return_value
 
@@ -163,6 +164,10 @@ class MSSQL(QObject):
 
         self.cur.execute(sql)
         self.order_list_changed.emit(self.cur.fetchall())
+
+    def select_pprd_with_data_matrix(self, dm):
+        self.cur.execute(f"select DM, ITIME, RESULT, PCODE, ECODE, IP from PPRD where DM = '{dm}' order by ITIME desc")
+        return self.cur.fetchall()
 
 
 if __name__ == '__main__':

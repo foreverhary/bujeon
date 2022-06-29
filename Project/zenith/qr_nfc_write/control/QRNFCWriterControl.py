@@ -31,6 +31,7 @@ class QRNFCWriterControl(QObject):
         # controller event connect
         self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
 
+        self.keyboard_disabled = False
         self.delay_write_count = 0
 
     def receive_nfc_data(self, value):
@@ -62,6 +63,8 @@ class QRNFCWriterControl(QObject):
             self.delay_write_count = 2
 
     def input_keyboard_line(self, value):
+        if self.keyboard_disabled:
+            return
         self._model.data_matrix = data_matrix if (data_matrix := check_dm(value)) else ''
 
         if not self._model.data_matrix:
@@ -80,4 +83,5 @@ class QRNFCWriterControl(QObject):
         pass
 
     def mid_clicked(self):
+        self.keyboard_disabled = True
         SearchDataMatrixLocal(self)

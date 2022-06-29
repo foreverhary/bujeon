@@ -95,5 +95,5 @@ def update_pprd_tryup(cur, dm, itime):
 
 @deco_sqlite3
 def select_pprd_with_data_matrix(cur, dm):
-    cur.execute(f"select DM, ITIME, RESULT, PCODE, ECODE, IP from PPRD where DM = '{dm}'")
+    cur.execute(f"select DM, ITIME, RESULT, PCODE, ECODE, IP from PPRD where DM = '{dm}' order by ITIME desc")
     return cur.fetchall()
