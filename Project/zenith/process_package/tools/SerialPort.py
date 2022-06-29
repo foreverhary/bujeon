@@ -10,10 +10,10 @@ class SerialPort(QObject):
     line_out_signal = Signal(str)
     connection_signal = Signal(bool)
 
-    def __init__(self, ):
+    def __init__(self):
         super(SerialPort, self).__init__()
         self._serial = Serial()
-        self.thread = Thread(target=self.read_line_data(), daemon=True)
+        self.thread = Thread(target=self.read_line_data, daemon=True)
         self.out = ''
 
     @property
