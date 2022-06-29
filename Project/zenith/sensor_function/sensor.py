@@ -114,7 +114,7 @@ class SensorProcessView(Widget):
         self._model.grade_changed.connect(self.grade.setText)
         self._model.grade_color_changed.connect(self.grade.set_color)
 
-        self.setWindowTitle('IR SENSOR')
+        self.setWindowTitle('IR SENSOR v1.1')
         self.setMinimumWidth(640)
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)  # | Qt.FramelessWindowHint)

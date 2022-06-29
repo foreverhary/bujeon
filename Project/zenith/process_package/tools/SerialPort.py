@@ -37,7 +37,7 @@ class SerialPort(QObject):
     def read_line_data(self):
         while True:
             try:
-                self.out = self._serial.readline().decode().replace('\r', '').replace('\n', '')
+                self.out = self._serial.readline().decode().replace('\r', '').replace('\n', '').replace('\x00', '').replace('\x02', '')
                 logger.debug(self.out)
                 self.line_out_signal.emit(self.out)
             except Exception as e:
