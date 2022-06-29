@@ -76,14 +76,26 @@ class MICNFCControl(QObject):
         try:
             with open(value) as f:
                 csv_lines = list(csv.reader(f))
-            lines = [iter(csv_lines[i]) for i in range(-2, 0)]
+            csv_line_index = -1
+            fill_line_num = 0
+            lines = []
+            while fill_line_num < 2:
+                if line := csv_lines[csv_line_index]:
+                    lines.append(iter(line))
+                    fill_line_num += 1
+                csv_line_index -= 1
         except IndexError:
             return
         error = {}
         for first, second in zip(*lines):
             if first == second:
                 if 'CH' in first:
-                    side = "L" if ('1', '2') == tuple(map(next, lines)) else 'R'
+                    channel = tuple(map(next, lines))
+                    if '1' in channel and '2' in channel:
+                        side = 'L'
+                    elif '3' in channel and '4' in channel:
+                        side = 'R'
+
                 if 'FRF' in first or 'SENS' in first or 'CURRENT' in first:
                     [tuple(map(next, lines)) for _ in range(3)]
                     error_result_set = set(map(next, lines))
