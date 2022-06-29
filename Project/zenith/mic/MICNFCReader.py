@@ -1,8 +1,7 @@
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QWidget, QVBoxLayout
 
-from process_package.Views.CustomComponent import LabelTimerClean
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
 from process_package.resource.string import STR_DATA_MATRIX, STR_AIR, STR_NG, STR_PREVIOUS_PROCESS

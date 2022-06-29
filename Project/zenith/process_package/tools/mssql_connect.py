@@ -5,7 +5,7 @@ from PySide2.QtCore import QObject, Signal
 from pymssql._pymssql import OperationalError, InterfaceError, IntegrityError
 
 # mssql server
-from process_package.Views.CustomComponent import get_time
+from process_package.component.CustomComponent import get_time
 from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_mssql

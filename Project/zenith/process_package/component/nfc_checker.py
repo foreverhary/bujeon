@@ -1,8 +1,8 @@
 from PySide2.QtCore import Qt, Signal, QTimer, Slot
 from PySide2.QtWidgets import QDialog, QGridLayout, QGroupBox, QVBoxLayout, QHBoxLayout
 
-from process_package.Views.CustomComponent import LineEdit, Label, Button
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomComponent import LineEdit, Label, Button
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_AIR, STR_MIC, STR_FUN, STR_SEN
 
 

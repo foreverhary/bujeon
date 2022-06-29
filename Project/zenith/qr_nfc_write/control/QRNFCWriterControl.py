@@ -2,7 +2,7 @@ import socket
 
 from PySide2.QtCore import QObject, Signal, QTimer
 
-from process_package.Views.CustomComponent import get_time
+from process_package.component.CustomComponent import get_time
 from process_package.check_string import check_dm
 from process_package.component.SearchDataMatrixLocal import SearchDataMatrixLocal
 from process_package.resource.color import LIGHT_SKY_BLUE
@@ -80,4 +80,4 @@ class QRNFCWriterControl(QObject):
         pass
 
     def mid_clicked(self):
-        SearchDataMatrixLocal()
+        SearchDataMatrixLocal(self)

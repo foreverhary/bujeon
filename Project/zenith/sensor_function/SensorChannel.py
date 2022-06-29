@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QGroupBox, QVBoxLayout
 
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
-from process_package.Views.CustomComponent import Button, ComboBox, Label, Widget, get_time, LabelTimerClean, LabelNFC
+from process_package.component.CustomComponent import Label, get_time, LabelNFC
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
 from process_package.resource.string import STR_RESULT, STR_CON_OS, STR_POGO_OS, STR_LED, STR_HALL_IC, STR_VBAT_ID, \
     STR_C_TEST, STR_BATTERY, STR_PROX_TEST, STR_MIC, STR_PCM, STR_SEN, CONFIG_FILE_NAME, COMPORT_SECTION, \

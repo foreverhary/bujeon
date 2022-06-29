@@ -3,7 +3,7 @@ import sys
 from PySide2.QtWidgets import QApplication
 
 from process_package.screen.SplashScreen import SplashScreen
-from process_package.Views.CustomComponent import style_sheet_setting, window_center
+from process_package.component.CustomComponent import style_sheet_setting, window_center
 from qr_nfc_write.control.QRNFCWriterControl import QRNFCWriterControl
 from qr_nfc_write.model.QRNFCWriterModel import QRNFCWriterModel
 from qr_nfc_write.view.QRNFCWriterView import QRNFCWriterView

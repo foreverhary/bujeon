@@ -1,11 +1,10 @@
-from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout
 
-from process_package.Views.CustomComponent import Widget, LabelTimerClean
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomComponent import Widget
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.resource.size import RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_DATA_MATRIX_FIXED_HEIGHT, \
-    RELEASE_STATUS_FONT_SIZE, RELEASE_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, RELEASE_RESULT_MIN_HEIGHT
-from process_package.resource.string import STR_DATA_MATRIX, STR_RESULT, STR_STATUS, STR_NFC1
+    RELEASE_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, RELEASE_RESULT_MIN_HEIGHT
+from process_package.resource.string import STR_DATA_MATRIX, STR_RESULT, STR_NFC1
 
 
 class ReleaseProcessView(Widget):

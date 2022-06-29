@@ -5,7 +5,7 @@ from PySide2.QtGui import QCursor
 from PySide2.QtWidgets import QDialog, QGridLayout, QApplication
 
 from nfc_layout import NFCLayout
-from process_package.Views.CustomComponent import Label, Widget, style_sheet_setting, window_center
+from process_package.component.CustomComponent import Label, Widget, style_sheet_setting, window_center
 from process_package.resource.color import RED
 from process_package.screen.SplashScreen import SplashScreen
 LOCATION = 'AA'

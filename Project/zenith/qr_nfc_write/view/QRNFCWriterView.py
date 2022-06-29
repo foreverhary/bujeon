@@ -1,15 +1,15 @@
 from PySide2.QtWidgets import QVBoxLayout, QMenu
 
-from process_package.Views.CustomComponent import Widget
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomComponent import Widget
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
-from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.controllers.OrderNumberDialog import OrderNumberDialog
+from process_package.MSSqlDialog import MSSqlDialog
+from process_package.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.size import MATCHING_PREVIOUS_PROCESS_FONT_SIZE, MATCHING_PREVIOUS_PROCESS_MINIMUM_HEIGHT, \
     MATCHING_DATA_MATRIX_FONT_SIZE, MATCHING_DATA_MATRIX_MINIMUM_WIDTH, MATCHING_STATUS_FONT_SIZE, \
     MATCHING_STATUS_MAXIMUM_HEIGHT, NFC_FIXED_HEIGHT
 from process_package.resource.string import STR_DATA_MATRIX, STR_STATUS, STR_QR_MATCHING, \
-    STR_ORDER_NUMBER, STR_NFC1
+    STR_ORDER_NUMBER, STR_NFC1, STR_NFC
 
 
 class QRNFCWriterView(Widget):
@@ -19,7 +19,7 @@ class QRNFCWriterView(Widget):
 
         # UI
         layout = QVBoxLayout(self)
-        layout.addWidget(nfc := NFCComponent(STR_NFC1))
+        layout.addWidget(nfc := NFCComponent(STR_NFC))
         layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, is_nfc=True))
         layout.addWidget(status := GroupLabel(STR_STATUS))

@@ -2,7 +2,7 @@ import socket
 
 from PySide2.QtCore import QObject, Slot, Signal, QTimer
 
-from process_package.Views.CustomComponent import get_time
+from process_package.component.CustomComponent import get_time
 from process_package.check_string import check_dm
 from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_TOUCH, STR_OK, STR_NG

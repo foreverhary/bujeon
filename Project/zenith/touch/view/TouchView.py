@@ -1,11 +1,11 @@
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QMenu
 
-from process_package.Views.CustomComponent import Widget
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomComponent import Widget
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
-from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.controllers.OrderNumberDialog import OrderNumberDialog
+from process_package.MSSqlDialog import MSSqlDialog
+from process_package.OrderNumberDialog import OrderNumberDialog
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.size import TOUCH_MACHINE_MINIMUM_WIDTH, TOUCH_DATA_MATRIX_FONT_SIZE, \
     TOUCH_MACHINE_RESULT_FONT_SIZE, TOUCH_COMPORT_MAXIMUM_HEIGHT, TOUCH_ORDER_MAXIMUM_HEIGHT, \

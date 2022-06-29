@@ -1,10 +1,9 @@
 from PySide2.QtCore import Slot, Signal
 from PySide2.QtWidgets import QHBoxLayout, QVBoxLayout, QGroupBox
-from winsound import Beep
 
-from process_package.SerialMachine import SerialMachine
-from process_package.Views.CustomComponent import Button, ComboBox, Label, Widget, get_time, LabelTimerClean
-from process_package.defined_serial_port import ports, get_serial_available_list
+from process_package.old.SerialMachine import SerialMachine
+from process_package.component.CustomComponent import Button, ComboBox, Label, Widget, get_time, LabelTimerClean
+from process_package.old.defined_serial_port import ports, get_serial_available_list
 from process_package.resource.color import BLUE, RED, LIGHT_SKY_BLUE, LIGHT_BLUE
 from process_package.resource.string import STR_CON_OS, STR_POGO_OS, STR_LED, STR_HALL_IC, STR_VBAT_ID, STR_C_TEST, \
     STR_BATTERY, STR_PROX_TEST, STR_MIC, STR_PCM, STR_SENSOR, CONFIG_FILE_NAME, COMPORT_SECTION, STR_OK

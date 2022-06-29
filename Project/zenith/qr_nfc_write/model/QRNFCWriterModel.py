@@ -1,7 +1,8 @@
 from PySide2.QtCore import QObject, Signal
 
 from process_package.resource.color import LIGHT_SKY_BLUE, WHITE
-from process_package.resource.string import STR_NFC1, STR_TAG_NFC_JIG, STR_DONE, STR_READY, STR_INSERT_ORDER_NUMBER
+from process_package.resource.string import STR_NFC1, STR_TAG_NFC_JIG, STR_DONE, STR_READY, STR_INSERT_ORDER_NUMBER, \
+    STR_NFC
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import set_order_number, get_order_number
 
@@ -80,7 +81,7 @@ class QRNFCWriterModel(QObject):
         self._nfc = None
         for port, nfc in value.items():
             logger.debug(f"{port}:{nfc}")
-            if nfc == STR_NFC1:
+            if STR_NFC in nfc:
                 self._nfc = port
                 self.nfc_changed.emit(port)
                 break

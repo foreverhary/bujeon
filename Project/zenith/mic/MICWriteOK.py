@@ -3,10 +3,10 @@ import sys
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QVBoxLayout, QApplication
 
-from process_package.Views.CustomComponent import Widget, style_sheet_setting
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomComponent import Widget, style_sheet_setting
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
-from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, GREEN, YELLOW, BLUE
+from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, GREEN
 from process_package.resource.string import STR_AIR_LEAK, STR_AIR, STR_MIC, STR_DATA_MATRIX, STR_NFCIN, STR_OK, STR_NFC
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger, write_beep

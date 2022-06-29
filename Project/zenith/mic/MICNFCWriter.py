@@ -3,8 +3,8 @@ import socket
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout
 
-from process_package.Views.CustomComponent import get_time
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomComponent import get_time
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.check_string import nfc_dict_to_list
 from process_package.component.NFCComponent import NFCComponent
 from process_package.resource.color import LIGHT_SKY_BLUE, RED

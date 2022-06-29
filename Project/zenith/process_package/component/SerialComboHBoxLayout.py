@@ -1,10 +1,9 @@
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QHBoxLayout, QComboBox
 
-from process_package.Views.CustomComponent import Button
-from process_package.defined_serial_port import get_serial_available_list
+from process_package.component.CustomComponent import Button
+from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.color import BLUE, RED
-from process_package.tools.CommonFunction import logger
 from process_package.tools.SerialPort import SerialPort
 
 

@@ -4,8 +4,8 @@ from threading import Thread
 from PyQt5.QtCore import QTimer, QCoreApplication
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QApplication
 
-from process_package.Views.CustomComponent import Button
-from process_package.defined_variable_function import logger
+from process_package.component.CustomComponent import Button
+from process_package.old.defined_variable_function import logger
 
 
 class TestThread(QWidget):

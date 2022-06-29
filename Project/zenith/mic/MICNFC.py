@@ -5,12 +5,12 @@ import sys
 from PySide2.QtCore import QObject, Signal, Qt, QTimer
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QMenu
 
-from audio_bus.observer.FileObserver import Target
+from process_package.observer.FileObserver import Target
 from mic.MICNFCReader import MICNFCReader
 from mic.MICNFCWriter import MICNFCWriter
 from mic.MICNFConfig import MICNFCConfig
-from process_package.Views.CustomComponent import style_sheet_setting, Widget, window_center
-from process_package.controllers.MSSqlDialog import MSSqlDialog
+from process_package.component.CustomComponent import style_sheet_setting, Widget, window_center
+from process_package.MSSqlDialog import MSSqlDialog
 from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_OK, STR_MIC, STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH, STR_PASS, \
     STR_NG, CONFIG_FILE_NAME, STR_NFCIN, STR_NFCIN1

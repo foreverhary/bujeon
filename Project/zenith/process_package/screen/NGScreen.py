@@ -1,9 +1,9 @@
 from PySide2.QtCore import QTimer, Qt
 from PySide2.QtWidgets import QDialog, QVBoxLayout
 
-from process_package.Views.CustomComponent import Label
+from process_package.component.CustomComponent import Label
 from process_package.resource.color import RED
-from process_package.resource.string import STR_DATA_MATRIX, PROCESS_NAMES, PROCESS_OK_RESULTS, PROCESS_FULL_NAMES
+from process_package.resource.string import STR_DATA_MATRIX, PROCESS_FULL_NAMES
 
 NG_FONT_SIZE = 70
 

@@ -1,9 +1,9 @@
 from threading import Thread
 
-from PySide2.QtCore import QObject, Signal, QTimer
+from PySide2.QtCore import QObject
 from serial import Serial
 
-from process_package.defined_serial_port import get_serial_available_list
+from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.string import STR_NFC
 from process_package.tools.CommonFunction import logger
 

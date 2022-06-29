@@ -1,7 +1,7 @@
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QHBoxLayout
 
-from process_package.Views.CustomComponent import LeftAlignLabel, LineEdit, Button
+from process_package.component.CustomComponent import LeftAlignLabel, LineEdit, Button
 
 
 class MSSqlDialogView(QDialog):

@@ -3,7 +3,7 @@ from threading import Thread
 from PySide2.QtCore import Signal, QTimer
 from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout
 
-from process_package.Views.CustomComponent import Label, LineEdit, Button
+from process_package.component.CustomComponent import Label, LineEdit, Button
 
 EDIT_WIDTH_SIZE = 650
 EDIT_HEIGHT_SIZE = 140

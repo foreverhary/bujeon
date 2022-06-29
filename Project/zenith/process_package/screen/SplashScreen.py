@@ -6,7 +6,7 @@ from PySide2.QtGui import QColor
 from PySide2.QtWidgets import QMainWindow, QGraphicsDropShadowEffect, QApplication, QDesktopWidget
 from serial import Serial
 
-from process_package.defined_serial_port import get_serial_available_list
+from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.string import STR_NFC
 from process_package.tools.CommonFunction import logger
 from process_package.screen.ui_splash_screen import Ui_SplashScreen

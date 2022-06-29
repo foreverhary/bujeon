@@ -1,7 +1,7 @@
 from PySide2.QtCore import Signal, Qt
 from PySide2.QtWidgets import QDialog, QHBoxLayout, QGroupBox, QGridLayout, QVBoxLayout
 
-from process_package.Views.CustomComponent import LeftAlignLabel, DateEdit, LineEdit, Button, ComboBox
+from process_package.component.CustomComponent import LeftAlignLabel, DateEdit, LineEdit, Button, ComboBox
 from process_package.resource.size import ORDER_SEARCH_BOX_MINIMUM_WIDTH
 
 

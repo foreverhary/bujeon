@@ -3,7 +3,7 @@ from PySide2.QtCore import Signal
 from process_package.models.ConfigModel import ConfigModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED, BACK_GROUND_COLOR, WHITE
 from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_OK, STR_NFC1, \
-    NUMERAL, STR_WRITE_DONE, STR_AIR_LEAK
+    NUMERAL, STR_WRITE_DONE, STR_AIR_LEAK, STR_NFC
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import set_config_value, get_config_value
 
@@ -50,6 +50,7 @@ class AirLeakModel(ConfigModel):
         if not value:
             self.result_background_color = BACK_GROUND_COLOR
         else:
+            self.units = []
             self.units_clean.emit()
             self.result_background_color = LIGHT_SKY_BLUE if value == STR_OK else RED
             self.status = "TAG FIRST JIG"
@@ -127,7 +128,7 @@ class AirLeakModel(ConfigModel):
         self._nfc = None
         for port, nfc in value.items():
             logger.debug(f"{port}:{nfc}")
-            if nfc == STR_NFC1:
+            if STR_NFC in nfc:
                 self._nfc = port
                 self.nfc_changed.emit(port)
                 break

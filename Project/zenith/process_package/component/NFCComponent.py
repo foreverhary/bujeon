@@ -1,6 +1,6 @@
 from PySide2.QtCore import QObject, Signal, Slot
 
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.nfc_checker import NFCCheckerDialog
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
 from process_package.tools.NFCSerialPort import NFCSerialPort

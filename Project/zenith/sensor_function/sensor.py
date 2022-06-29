@@ -3,11 +3,11 @@ import sys
 from PySide2.QtCore import QObject, Qt, QTimer, Slot, Signal
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QMenu
 
-from process_package.Views.CustomComponent import style_sheet_setting, Widget
-from process_package.Views.CustomMixComponent import GroupLabel
+from process_package.component.CustomComponent import style_sheet_setting, Widget
+from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
-from process_package.controllers.MSSqlDialog import MSSqlDialog
-from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, GREEN, YELLOW
+from process_package.MSSqlDialog import MSSqlDialog
+from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, YELLOW
 from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_MIC, STR_NFC1, STR_NFC2, STR_NFCIN, STR_PREVIOUS_PROCESS, STR_SEN, \
     STR_DATA_MATRIX, STR_AIR, STR_OK, STR_FUN, PROCESS_OK_RESULTS, STR_GRADE, STR_A, STR_B, STR_C

@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QApplication
 from control.TouchControl import TouchControl
 from model.TouchModel import TouchModel
 from view.TouchView import TouchView
-from process_package.Views.CustomComponent import style_sheet_setting
+from process_package.component.CustomComponent import style_sheet_setting
 from process_package.tools.CommonFunction import logger
 
 
