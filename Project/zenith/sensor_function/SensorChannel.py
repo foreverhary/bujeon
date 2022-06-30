@@ -63,6 +63,7 @@ class SensorChannel(QGroupBox):
 
 class SensorChannelControl(QObject):
     nfc_write = Signal(str)
+
     def __init__(self, model):
         super(SensorChannelControl, self).__init__()
         self._model = model
@@ -80,9 +81,16 @@ class SensorChannelControl(QObject):
     @Slot(str)
     def input_serial_data(self, value):
         value = value.upper()
-        split_list = value.split(',')
+        if value[:2] not in ['L,', 'R,']:
+            return
+        # split_list = value.split(',')
+        split_list = [item for item in value.split(',') if item]
         if len(split_list) < 2:
             return
+
+        for item in split_list[1:]:
+            if item not in [STR_OK, STR_NG]:
+                return
 
         self._model.init_result()
         split_list = split_list[1:-1]
