@@ -8,7 +8,7 @@ from process_package.tools.CommonFunction import logger
 
 class SerialPort(QObject):
     line_out_signal = Signal(str)
-    connection_signal = Signal(bool)
+    serial_connection_signal = Signal(bool)
 
     def __init__(self):
         super(SerialPort, self).__init__()
@@ -50,6 +50,7 @@ class SerialPort(QObject):
         if not self.thread.is_alive():
             self.thread = Thread(target=self.read_line_data, daemon=True)
             self.thread.start()
+        self.serial_connection_signal.emit(True)
 
     def write(self, value):
         self._serial.write(value.encode())
@@ -70,6 +71,7 @@ class SerialPort(QObject):
 
     def is_open_close(self):
         if self._serial.is_open:
+            self.serial_connection_signal.emit(False)
             self._serial.close()
 
 #

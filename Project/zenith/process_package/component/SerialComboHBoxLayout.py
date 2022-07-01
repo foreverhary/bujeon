@@ -25,6 +25,7 @@ class SerialComboHBoxLayout(QHBoxLayout):
 
         # serial data out
         self._control.serial_output_data.connect(self.serial_output_data.emit)
+        self._control.serial_connection.connect(self.serial_connection)
 
         # connect widgets to controller
         self.comport.currentIndexChanged.connect(self._control.change_comport)
@@ -39,9 +40,6 @@ class SerialComboHBoxLayout(QHBoxLayout):
 
         # listen for out of class event signals
 
-        self._model.begin()
-        self._control.comport_clicked()
-
     @Slot(list)
     def fill_combobox(self, rows):
         self.comport.clear()
@@ -52,9 +50,20 @@ class SerialComboHBoxLayout(QHBoxLayout):
         self.button.set_background_color(BLUE if connection else RED)
         self.comport.setEnabled(not connection)
 
+    def nfc_ports(self, value):
+        available_ports = get_serial_available_list()
+        for port in value:
+            available_ports.remove(port)
+        self._model.available_comport = available_ports
+
+    def begin(self):
+        self._model.begin()
+        self._control.comport_clicked()
+
 
 class SerialComboHBoxLayoutControl(QObject):
     serial_output_data = Signal(str)
+    serial_connection = Signal(bool)
 
     def __init__(self, model):
         super(SerialComboHBoxLayoutControl, self).__init__()
@@ -62,6 +71,7 @@ class SerialComboHBoxLayoutControl(QObject):
 
         self.serial = SerialPort()
         self.serial.line_out_signal.connect(self.serial_output_data.emit)
+        self.serial.serial_connection_signal.connect(self.serial_connection.emit)
 
     @Slot(int)
     def change_comport(self, comport_index):
@@ -124,6 +134,5 @@ class SerialComboHBoxLayoutModel(QObject):
             self.comport_index = ports.index(backup_comport)
 
     def begin(self):
-        self.available_comport = get_serial_available_list()
         if self.comport:
             self.comport_index = self.available_comport.index(self.comport)

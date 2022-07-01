@@ -20,10 +20,7 @@ class TouchControl(QObject):
 
         self.keyboard_listener = LineReadKeyboard()
         self._mssql = MSSQL(STR_TOUCH)
-
-        self.db_update_timer = QTimer(self)
-        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
-        self.db_update_timer.timeout.connect(self.update_db)
+        self.update_db = UpdateDB()
 
         # controller event connect
         self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
@@ -63,9 +60,6 @@ class TouchControl(QObject):
 
                 self._model.data_matrix = self._model.data_matrix_waiting
                 self._model.data_matrix_waiting = ''
-
-    def update_db(self):
-        UpdateDB()
 
     def begin(self):
         self._mssql.timer_for_db_connect()

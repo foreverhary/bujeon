@@ -19,9 +19,7 @@ class AirLeakControl(QObject):
 
         self._mssql = MSSQL(STR_AIR_LEAK)
 
-        self.db_update_timer = QTimer(self)
-        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
-        self.db_update_timer.timeout.connect(self.update_db)
+        self.update_db = UpdateDB()
 
         # controller event connect
 
@@ -67,9 +65,6 @@ class AirLeakControl(QObject):
                                            socket.gethostbyname(socket.gethostname()))
             self._model.unit_input = self._model.data_matrix
             self._model.data_matrix = ''
-
-    def update_db(self):
-        UpdateDB()
 
     def begin(self):
         self._mssql.timer_for_db_connect()

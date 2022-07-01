@@ -32,10 +32,7 @@ class FunctionControl(QObject):
         self._model = model
 
         self._mssql = MSSQL(STR_AIR_LEAK)
-
-        self.db_update_timer = QTimer(self)
-        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
-        self.db_update_timer.timeout.connect(self.update_db)
+        self.update_db = UpdateDB()
 
         # controller event connect
 
@@ -183,9 +180,6 @@ class FunctionControl(QObject):
             self.summary_file_observer.start()
             return True
         return False
-
-    def update_db(self):
-        UpdateDB()
 
     def begin(self):
         self.start_file_observe()

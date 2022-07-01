@@ -156,13 +156,13 @@ void WriteNfc(uint8_t* cmd, uint8_t cmd_index)
       memset(pageBuffer, 0xfe, 4);
       memcpy(pageBuffer, cmdcopy, len);
       if(!(nfc.mifareultralight_WritePage(currentPage, pageBuffer))){
-        return 0;
+        return;
       }
       break;
     }else{
       memcpy(pageBuffer, cmdcopy, 4);
       if(!(nfc.mifareultralight_WritePage(currentPage, pageBuffer))){
-        return 0;
+        return;
       }
       currentPage++;
       cmdcopy += 4;

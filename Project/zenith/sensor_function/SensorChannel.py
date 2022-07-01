@@ -57,8 +57,14 @@ class SensorChannel(QGroupBox):
         self._model.result_clean.connect(self.result.clean)
         self._model.result_color_changed.connect(self.result.set_background_color)
 
+    def nfc_ports(self, value):
+        self.comport.nfc_ports(value)
+
     def set_port(self, value):
         self.nfc.set_port(value)
+
+    def begin(self):
+        self.comport.begin()
 
 
 class SensorChannelControl(QObject):

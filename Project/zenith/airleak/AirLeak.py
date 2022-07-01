@@ -10,7 +10,6 @@ from process_package.component.CustomComponent import style_sheet_setting, windo
 from process_package.resource.string import STR_AIR_LEAK
 
 
-
 class AirLeak(QApplication):
     def __init__(self, sys_argv):
         super(AirLeak, self).__init__(sys_argv)

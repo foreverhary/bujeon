@@ -11,6 +11,7 @@
 // Use this line for a breakout with a software SPI connection (recommended):
 Adafruit_PN532 nfc(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 bool keep_going = true;
+bool is_open = true;
 
 // classic
 #define LAST_SECTOR 3
@@ -63,6 +64,8 @@ void loop(void) {
   
   if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 500)){
     if(cmd_index > 0){
+      cmd[cmd_index] = 0xfe;
+      cmd_index++;
       WriteNfc(cmd, cmd_index);
     }else{
       if (uidLength == 7){
@@ -77,7 +80,8 @@ void loop(void) {
           }
           else{
             for(uint8_t pdata=0;pdata<4;pdata++){
-              if(data[pdata] == 0xfe or data[pdata] == 0x00){
+//              if(data[pdata] == 0xfe or data[pdata] == 0x00){
+              if(data[pdata] == 0xfe){
                 Serial.print("UID: ");
                 PrintCharHex(uid, uidLength);
                 
@@ -87,6 +91,11 @@ void loop(void) {
                 }
                 Serial.println();
                 return;
+                }
+                else if(data[pdata] == 0x00){
+                  Serial.print("UID: ");
+                  PrintCharHex(uid, uidLength);
+                  Serial.println();
                 }else{
                 *pOut++ = (char)data[pdata];
               }
@@ -96,6 +105,14 @@ void loop(void) {
           memset(data, 0 , 4);
         }
       }      
+    }
+  }else{
+    if(!nfc.getFirmwareVersion()){
+      Serial.println("disconnected");
+      is_open = false;
+    }else if(!is_open){
+      Serial.println("reconnect");
+      is_open=true;
     }
   }
 }

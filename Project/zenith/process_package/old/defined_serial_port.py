@@ -1,6 +1,6 @@
 import serial.tools.list_ports
 from PySide2.QtSerialPort import QSerialPortInfo
-from serial import SerialException, Serial
+from serial import SerialException
 
 ports = [s.device for s in serial.tools.list_ports.comports()]
 ports.sort()

@@ -7,8 +7,8 @@ from NFC import VirtualNFC
 from process_package.component.CustomComponent import LineEdit, Button, style_sheet_setting, window_bottom_left, Widget
 
 SLOT = 3
-# COMPORT = ('com6', 'com8', 'com11')
-COMPORT = ('com3', 'com5', 'com7')
+COMPORT = ('com5', 'com7', 'com9')
+# COMPORT = ('com3', 'com5', 'com7')
 COLUMN_COUNT = 2
 
 

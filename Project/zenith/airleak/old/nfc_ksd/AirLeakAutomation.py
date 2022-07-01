@@ -1,27 +1,28 @@
 import re
 import sys
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
-from PyQt5.QtGui import QIcon, QCursor
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtCore import Signal, Slot, Qt
+from PySide2.QtGui import QIcon, QCursor
+from PySide2.QtWidgets import QApplication
 
 from airleak.old.nfc_ksd.AirLeakAutomationUi import AirLeakAutomationUi, AIR_LEAK_NFC_COUNT
+from process_package.component.CustomComponent import get_time, style_sheet_setting, window_center, make_error_popup
+from process_package.resource.color import BLUE, RED
 from process_package.screen.SplashScreen import SplashScreen
-from process_package.old.defined_variable_function import style_sheet_setting, window_center, NFC, BLUE, RED, logger, \
-    AIR_LEAK_PREVIOUS_PROCESS, get_time, make_error_popup
+from process_package.tools.CommonFunction import logger
 from process_package.tools.mssql_connect import MSSQL
 from process_package.old.mssql_dialog import MSSQLDialog
 
 
 class AirLeakAutomation(AirLeakAutomationUi):
-    status_signal = pyqtSignal(str, str)
+    status_signal = Signal(str, str)
 
     def __init__(self, app):
         super(AirLeakAutomation, self).__init__()
         self.app = app
 
         self.mssql = MSSQL()
-        self.mssql.timer_for_db_connect(self)
+        # self.mssql.timer_for_db_connect()
 
         # variable
         self.nfc = {}
@@ -50,14 +51,14 @@ class AirLeakAutomation(AirLeakAutomationUi):
         window_center(self)
 
     def init_serial(self, nfcs):
-
-        for nfc in nfcs:
-            nfc.previous_processes = AIR_LEAK_PREVIOUS_PROCESS
-            if re.search(f'{NFC}[1-9]', nfc.serial_name):
-                self.nfc[nfc.num] = nfc
-                nfc.signal.dm_read_done_signal.connect(self.received_nfc_read_done)
-            else:
-                nfc.close()
+        pass
+        # for nfc in nfcs:
+        #     nfc.previous_processes = AIR_LEAK_PREVIOUS_PROCESS
+        #     if re.search(f'{NFC}[1-9]', nfc.serial_name):
+        #         self.nfc[nfc.num] = nfc
+        #         nfc.signal.dm_read_done_signal.connect(self.received_nfc_read_done)
+        #     else:
+        #         nfc.close()
 
     def input_nfc_status(self):
         if self.nfc.__len__() == AIR_LEAK_NFC_COUNT:
@@ -98,19 +99,19 @@ class AirLeakAutomation(AirLeakAutomationUi):
             else:
                 nfc.power_down()
 
-    @pyqtSlot(object)
+    @Slot(object)
     def receive_machine_serial_error(self, machine):
         self.check_serial_connection()
         make_error_popup(f"{self.serial_machine.port} Connect Fail!!")
 
-    @pyqtSlot(tuple)
+    @Slot(tuple)
     def receive_machine_result(self, channel_data):
         logger.debug(channel_data)
         channel, result = channel_data
         self.slots[channel - 1].result = result
         self.update_sql(channel - 1)
 
-    @pyqtSlot(object)
+    @Slot(object)
     def received_nfc_read_done(self, nfc):
         logger.debug(nfc.num)
         self.slots[nfc.num - 1].dm = nfc.dm
@@ -120,7 +121,7 @@ class AirLeakAutomation(AirLeakAutomationUi):
         elif not self.is_even_nfc_alive():
             self.start_odd_nfc()
 
-    @pyqtSlot(str, str)
+    @Slot(str, str)
     def status_update(self, msg, color):
         self.status_label.setText(msg)
         self.status_label.set_color(color)

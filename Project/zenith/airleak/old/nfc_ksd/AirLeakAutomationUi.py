@@ -1,13 +1,13 @@
 import serial.tools.list_ports
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QWidget
+from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QWidget
 
+from process_package.resource.color import LIGHT_SKY_BLUE, RED, BLUE
+from process_package.resource.string import STR_OK, CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1
 from process_package.tools.Config import get_config_value, set_config_value
 from process_package.component.CustomComponent import Button, Label, ComboBox
 from process_package.old.SerialMachine import SerialMachine
 from process_package.check_string import check_dm
 from process_package.old.defined_serial_port import ports, get_serial_available_list
-from process_package.old.defined_variable_function import AIR_LEAK_RESULT_SIZE, COMPORT_SECTION, \
-    MACHINE_COMPORT_1, CONFIG_FILE_NAME, AIR_LEAK_KSD, OK, LIGHT_SKY_BLUE, RED, BLUE
 
 SLOT_MINIMUM_WIDTH = 300
 AIR_LEAK_NFC_COUNT = 4
@@ -39,7 +39,7 @@ class AirLeakSlot(QGroupBox):
         if isinstance(result, str):
             self._result = result
             self.result_label.setText(result)
-            if result == OK:
+            if result == STR_OK:
                 self.result_label.set_color(LIGHT_SKY_BLUE)
             else:
                 self.result_label.set_color(RED)
@@ -80,9 +80,9 @@ class AirLeakAutomationUi(QWidget):
 
         # status
         self.status_label = status_label
-        self.status_label.setMinimumWidth(AIR_LEAK_RESULT_SIZE)
+        self.status_label.setMinimumWidth(300)
 
-        self.serial_machine = SerialMachine(baudrate=38400, serial_name=AIR_LEAK_KSD)
+        self.serial_machine = SerialMachine(baudrate=38400, serial_name='ksd_air_leak')
         self.machine_port_connect_button.clicked.connect(self.connect_machine_button)
 
     def keyPressEvent(self, event):
@@ -91,7 +91,7 @@ class AirLeakAutomationUi(QWidget):
     def fill_available_ports(self):
         serial_ports = [s.device for s in serial.tools.list_ports.comports()]
         self.machine_comport.clear()
-        self.machine_comport.addItems(get_serial_available_list(serial_ports))
+        self.machine_comport.addItems(get_serial_available_list())
 
     def connect_machine_button(self, not_key=None):
         if not_key:

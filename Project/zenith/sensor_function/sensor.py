@@ -1,14 +1,13 @@
 import sys
 
-from PySide2.QtCore import QObject, Qt, QTimer, Slot, Signal
+from PySide2.QtCore import QObject, Qt, Slot, Signal
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QMenu
 
+from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, Widget
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
-from process_package.MSSqlDialog import MSSqlDialog
 from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, YELLOW
-from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_MIC, STR_NFC1, STR_NFC2, STR_NFCIN, STR_PREVIOUS_PROCESS, STR_SEN, \
     STR_DATA_MATRIX, STR_AIR, STR_OK, STR_FUN, PROCESS_OK_RESULTS, STR_GRADE, STR_A, STR_B, STR_C
 from process_package.screen.NGScreen import NGScreen
@@ -24,13 +23,14 @@ class SensorProcess(QApplication):
         self._model = SensorProcessModel()
         self._control = SensorProcessControl(self._model)
         self._view = SensorProcessView(self._model, self._control)
-        self._control.begin()
         self.load_nfc_window = SplashScreen("Sensor Process")
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
     def show_main_window(self, nfcs):
         style_sheet_setting(self)
         self._view.set_nfcs(nfcs)
+        self._control.begin()
+        self._view.begin()
         self._view.show()
         self.load_nfc_window.close()
 
@@ -45,9 +45,7 @@ class SensorProcessControl(QObject):
         self.process_name = STR_SEN
 
         self.ng_screen_opened = False
-        self.db_update_timer = QTimer(self)
-        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
-        self.db_update_timer.timeout.connect(self.update_db)
+        self.update_db = UpdateDB()
 
     @Slot(dict)
     def check_previous(self, value):
@@ -67,11 +65,11 @@ class SensorProcessControl(QObject):
     def mid_clicked(self):
         pass
 
-    def update_db(self):
-        UpdateDB()
+    # def update_db(self):
+    #     UpdateDB()
 
     def begin(self):
-        self._mssql.timer_for_db_connect()
+        pass
 
 
 class SensorProcessView(Widget):
@@ -114,19 +112,29 @@ class SensorProcessView(Widget):
         self._model.grade_changed.connect(self.grade.setText)
         self._model.grade_color_changed.connect(self.grade.set_color)
 
-        self.setWindowTitle('IR SENSOR v1.21')
+        self.setWindowTitle('IR SENSOR v1.22')
         self.setMinimumWidth(640)
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)  # | Qt.FramelessWindowHint)
 
     def set_nfcs(self, nfcs):
+        nfc_ports = []
         for port, nfc_name in nfcs.items():
             if STR_NFCIN in nfc_name:
+                nfc_ports.append(port)
                 self.nfcin.set_port(port)
             elif nfc_name == STR_NFC1:
                 self.channel1.set_port(port)
+                nfc_ports.append(port)
             elif nfc_name == STR_NFC2:
                 self.channel2.set_port(port)
+                nfc_ports.append(port)
+        self.channel1.nfc_ports(nfc_ports)
+        self.channel2.nfc_ports(nfc_ports)
+
+    def begin(self):
+        self.channel1.begin()
+        self.channel2.begin()
 
     def contextMenuEvent(self, e):
         menu = QMenu(self)

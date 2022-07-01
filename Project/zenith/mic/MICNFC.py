@@ -52,9 +52,7 @@ class MICNFCControl(QObject):
         self._model = model
         self._mssql = MSSQL(STR_MIC)
 
-        self.db_update_timer = QTimer(self)
-        self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
-        self.db_update_timer.timeout.connect(self.update_db)
+        self.update_db = UpdateDB()
 
         self.result_file_observer = Target(signal=self.file_path_signal)
 
@@ -116,9 +114,6 @@ class MICNFCControl(QObject):
 
     def mid_clicked(self):
         pass
-
-    def update_db(self):
-        UpdateDB()
 
     def begin(self):
         self._mssql.timer_for_db_connect()
