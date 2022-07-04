@@ -52,7 +52,7 @@ void loop(void) {
     }
     cmd_index++;
   }
-  if(cmd[0] == 0xff){
+  if(cmd[0] == 0x27){
     nfc.shutDown();
     Serial.println("OK");    keep_going = false;
     return;

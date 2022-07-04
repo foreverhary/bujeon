@@ -1,47 +1,119 @@
-from PySide2.QtCore import Signal, QObject
+import socket
+from threading import Thread
+
+from PySide2.QtCore import Signal, QObject, Slot
 from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import Widget, Label, LabelBlink, LabelNFC
+from process_package.component.CustomComponent import Widget, Label, LabelBlink, LabelNFC, get_time
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
+from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.color import LIGHT_SKY_BLUE, BLUE, RED
 from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, \
     AIR_LEAK_RESULT_MINIMUM_HEIGHT, AIR_LEAK_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, COMPORT_FIXED_HEIGHT, \
     AIR_LEAK_STATUS_FIXED_HEIGHT
 from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESULT, STR_UNIT, STR_AIR_LEAK, STR_NFC, \
-    STR_DATA_MATRIX, STR_OK, STR_NG
+    STR_DATA_MATRIX, STR_OK, STR_NG, STR_AIR
+from process_package.tools.CommonFunction import logger
+from process_package.tools.mssql_connect import MSSQL
 
 
 class AirLeakSlot(QGroupBox):
+    data_matrix_changed = Signal(str)
+    write_signal = Signal(str)
+    connection_signal = Signal(bool)
+
+    def set_enable(self, value):
+        self._model.enable = value
+
+    def get_on(self):
+        return self._model.enable
+
+    def set_on(self, value):
+        self._model.enable = value
+
+    def is_nfc_connect(self):
+        return self.nfc.is_nfc_connect()
+
+    def set_port(self, value):
+        self.nfc.set_port(value)
+
+    def set_result(self, value):
+        self._model.result = value
+
+    def set_dtr(self, value):
+        self.nfc.set_dtr(value)
+
+    def get_dtr(self):
+        return self.nfc.get_dtr()
+
+    def write(self, value):
+        self.nfc.write(value)
 
     def __init__(self, nfc_name):
         super(AirLeakSlot, self).__init__()
 
         self._model = AirLeakSlotModel()
+        self._mssql = MSSQL(STR_AIR_LEAK)
+
         layout = QVBoxLayout(self)
         layout.addWidget(nfc := NFCComponent(nfc_name))
-        layout.addWidget(data_magrix := GroupLabel(STR_DATA_MATRIX))
+        layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX, is_nfc=True))
         layout.addWidget(result := GroupLabel(STR_RESULT))
+
+        # size
+        nfc.setFixedHeight(NFC_FIXED_HEIGHT)
+        data_matrix.setMinimumWidth(130)
+        data_matrix.setFixedHeight(NFC_FIXED_HEIGHT)
 
         # assign
         self.nfc = nfc
-        self.data_matrix = data_magrix.label
+        self.data_matrix = data_matrix.label
         self.result = result.label
 
+        # event from out
+        self.write_signal.connect(self.write)
+
+        # event for control
+        self.nfc.nfc_data_out.connect(self.received_nfc_data)
+        self.nfc.connection_signal.connect(self.connection_signal.emit)
+
         # event from model
+        self._model.nfc_enable.connect(self.set_dtr)
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
+        self._model.data_matrix_changed.connect(self.data_matrix_changed.emit)
         self._model.result_changed.connect(self.result.setText)
+        self._model.result_changed.connect(self.update_sql)
         self._model.result_color_changed.connect(self.result.set_background_color)
         self._model.result_clean.connect(self.result.clean)
 
-    def set_port(self, value):
-        self.nfc.set_port(value)
+    @Slot(dict)
+    def received_nfc_data(self, value):
+        if not (data_matrix := value.get(STR_DATA_MATRIX)):
+            return
+
+        if self._model.data_matrix == data_matrix:
+            return
+
+        self._model.data_matrix = data_matrix
+
+    @Slot(str)
+    def update_sql(self, value):
+        if value:
+            self._mssql.start_query_thread(self._mssql.insert_pprd,
+                                           self._model.data_matrix,
+                                           get_time(),
+                                           self._model.result,
+                                           STR_AIR,
+                                           '',
+                                           socket.gethostbyname(socket.gethostname()))
 
 
 class AirLeakSlotModel(QObject):
+    nfc_enable = Signal(bool)
     data_matrix_changed = Signal(str)
     result_changed = Signal(str)
     result_color_changed = Signal(str)
@@ -49,6 +121,17 @@ class AirLeakSlotModel(QObject):
 
     def __init__(self):
         super(AirLeakSlotModel, self).__init__()
+        self.enable = False
+        self._data_matrix = ''
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = value
+        self.nfc_enable.emit(value)
 
     @property
     def data_matrix(self):
@@ -56,8 +139,10 @@ class AirLeakSlotModel(QObject):
 
     @data_matrix.setter
     def data_matrix(self, value):
-        self._data_matrix = value
-        self.data_matrix_changed.emit(value)
+        if self.enable:
+            self._data_matrix = value
+            self.data_matrix_changed.emit(value)
+            self.result = ''
 
     @property
     def result(self):
@@ -75,72 +160,112 @@ class AirLeakSlotModel(QObject):
             self.result_clean.emit()
 
 
+SLOT_COUNT = 8
+
+
 class AirLeakAutomationView(Widget):
+    open_odd_signal = Signal()
+    open_even_signal = Signal()
+
+    def begin(self):
+        self.comport.begin()
+
+    def check_all_connection(self, value):
+        for index, slot in enumerate(self.slots):
+            if slot == self.sender():
+                self.slot_enables[index] = value
+
+        if False in self.slot_enables:
+            for slot in self.slots:
+                slot.set_enable(False)
+        else:
+            self.open_odd_signal.emit()
+
+    def open_odd(self):
+        for index, slot in enumerate(self.slots):
+            if index % 2 == 0:
+                logger.debug(f"odd {index}")
+                slot.set_enable(True)
+
+    def open_even(self):
+        for index, slot in enumerate(self.slots):
+            if index % 2 != 0:
+                logger.debug(f"even {index}")
+                slot.set_enable(True)
+
+    def check_odd_even(self, value):
+        for index, slot in enumerate(self.slots):
+            if slot == self.sender():
+                slot.set_enable(False)
+                break
+
+        # odd
+        if index % 2 == 0:
+            self.check_odd_done()
+        else:
+            self.check_even_done()
+
+    def check_odd_done(self):
+        for index, slot in enumerate(self.slots):
+            if index % 2 == 0 and slot.get_on():
+                break
+        else:
+            self.open_even_signal.emit()
+
+    def check_even_done(self):
+        for index, slot in enumerate(self.slots):
+            if index % 2 != 0 and slot.get_on():
+                break
+        else:
+            self.check_all_connection(True)
+
+    def set_slots_disable(self):
+        for slot in self.slots:
+            slot.set_enable(False)
+
     def __init__(self, *args):
         super(AirLeakAutomationView, self).__init__()
         self._model, self._control = args
 
         # UI
         layout = QVBoxLayout(self)
-        layout.addWidget(nfc := NFCComponent(STR_NFC))
         layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
         comport_box.setLayout(comport := SerialComboHBoxLayout(self._model))
-        layout.addLayout(unit_layout := QHBoxLayout())
-        unit_layout.addWidget(out_group := QGroupBox("OUT"))
-        out_group.setLayout(out_grid := QGridLayout())
-        out_grid.addWidget(result_label := Label(STR_RESULT), 0, 0)
-        out_grid.addWidget(result := Label(font_size=AIR_LEAK_RESULT_FONT_SIZE), 1, 0, AIR_LEAK_UNIT_COUNT + 1, 1)
+        layout.addLayout(slot_layout1 := QGridLayout())
+        slots = []
+        for l in range(SLOT_COUNT):
+            slot_layout1.addWidget(slot := AirLeakSlot(f"NFC {l + 1}"), l // 4, l % 4)
+            slot.data_matrix_changed.connect(self.check_odd_even)
+            slot.connection_signal.connect(self.check_all_connection)
+            slots.append(slot)
 
-        out_grid.addWidget(unit_out_label := Label(STR_UNIT), 0, 1)
-        self.units = []
-        for index in range(AIR_LEAK_UNIT_COUNT):
-            out_grid.addWidget(label := LabelNFC(font_size=AIR_LEAK_UNIT_FONT_SIZE), index + 1, 1)
-            self.units.append(label)
-
-        layout.addWidget(status := LabelBlink())
-
-        nfc.setFixedHeight(NFC_FIXED_HEIGHT)
+        # size
         comport_box.setFixedHeight(COMPORT_FIXED_HEIGHT)
-        result_label.setMinimumWidth(AIR_LEAK_UNIT_MINIMUM_WIDTH)
-        unit_out_label.setMinimumWidth(AIR_LEAK_UNIT_MINIMUM_WIDTH)
-        result.setMinimumSize(AIR_LEAK_UNIT_MINIMUM_WIDTH, AIR_LEAK_RESULT_MINIMUM_HEIGHT)
-        status.setFixedHeight(AIR_LEAK_STATUS_FIXED_HEIGHT)
-
-        self.result = result
-        self.status = status
-
         self.setWindowTitle(f"{STR_AIR_LEAK} v1.11")
+
+        # assign
+        self.slots = slots
+        self.comport = comport
+        self.slot_enables = [True for l in range(SLOT_COUNT)]
+
+        # odd & even event
+        self.open_odd_signal.connect(self.open_odd)
+        self.open_even_signal.connect(self.open_even)
 
         # connect widgets to controller
         comport.comport_save.connect(self._control.comport_save)
-        comport.serial_output_data.connect(self._control.input_serial_data)
-        self._control.nfc_write.connect(nfc.write)
+        comport.serial_output_data.connect(self._control.receive_serial_data)
+
+        # listen for control event signals
+        self._control.set_result_slot.connect(lambda index, result: self.slots[index].set_result(result))
 
         # listen for model event signals
-        nfc.nfc_data_out.connect(self._control.receive_nfc_data)
-        self._model.nfc_changed.connect(nfc.set_port)
-
-        self._model.unit_input_changed.connect(lambda unit_index, text: self.units[unit_index].setText(text))
-        self._model.unit_color_changed.connect(
-            lambda unit_index: self.units[unit_index].set_background_color(LIGHT_SKY_BLUE))
-        self._model.unit_blink_changed.connect(lambda unit_index: self.units[unit_index].set_background_color(BLUE))
-        self._model.units_clean.connect(self.unit_clean)
-
-        self._model.result_changed.connect(self.result.setText)
-        self._model.result_background_color_changed.connect(self.result.set_background_color)
-        self._model.status_changed.connect(self.status.setText)
-        self._model.status_color_changed.connect(self.status.set_color)
-
-    def unit_clean(self):
-        for unit in self.units:
-            unit.clean()
+        self._model.set_nfc_port.connect(lambda index, port: self.slots[index].set_port(port))
+        self._model.set_available_ports.connect(self.comport.set_available_ports)
 
     def contextMenuEvent(self, e):
         menu = QMenu(self)
-
         db_action = menu.addAction('DB Setting')
-
         action = menu.exec_(self.mapToGlobal(e.pos()))
-
         if action == db_action:
             MSSqlDialog()

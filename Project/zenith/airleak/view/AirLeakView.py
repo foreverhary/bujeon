@@ -50,7 +50,7 @@ class AirLeakView(Widget):
 
         # connect widgets to controller
         comport.comport_save.connect(self._control.comport_save)
-        comport.serial_output_data.connect(self._control.input_serial_data)
+        comport.serial_output_data.connect(self._control.receive_serial_data)
         self._control.nfc_write.connect(nfc.write)
 
         # listen for model event signals

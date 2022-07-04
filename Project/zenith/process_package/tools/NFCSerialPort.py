@@ -9,6 +9,9 @@ class NFCSerialPort(SerialPort):
     nfc_out_signal = Signal(dict)
     connection_signal = Signal(bool)
 
+    def is_nfc_connect(self):
+        return self.is_open & self.nfc_connection
+
     def __init__(self):
         super(NFCSerialPort, self).__init__()
         self.set_baudrate(115200)
@@ -20,15 +23,17 @@ class NFCSerialPort(SerialPort):
         self.line_out_signal.connect(self.line_out)
 
         self.nfc_connection = False
+        self.nfc_connection_state = False
 
     def check_comport_connection(self):
-        if not self.is_open:
+        if not self.is_open and self.get_port():
             try:
                 self.open()
             except Exception as e:
                 pass
-
-        self.connection_signal.emit(self.is_open & self.nfc_connection)
+        if self.nfc_connection_state != self.is_open & self.nfc_connection:
+            self.nfc_connection_state = self.is_open & self.nfc_connection
+            self.connection_signal.emit(self.nfc_connection_state)
 
     @Slot(str)
     def line_out(self, value):

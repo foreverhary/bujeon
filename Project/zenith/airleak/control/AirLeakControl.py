@@ -1,9 +1,8 @@
 import socket
 
-from PySide2.QtCore import QObject, Slot, Signal, QTimer
+from PySide2.QtCore import QObject, Slot, Signal
 
 from process_package.component.CustomComponent import get_time
-from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, STR_OK, STR_NG
 from process_package.tools.CommonFunction import write_beep
 from process_package.tools.db_update_from_file import UpdateDB
@@ -30,7 +29,7 @@ class AirLeakControl(QObject):
         self._model.comport = comport
 
     @Slot(str)
-    def input_serial_data(self, value):
+    def receive_serial_data(self, value):
         if value:
             self._model.result = STR_OK if STR_OK in value else STR_NG
 

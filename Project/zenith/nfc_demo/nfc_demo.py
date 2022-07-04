@@ -7,7 +7,7 @@ from NFC import VirtualNFC
 from process_package.component.CustomComponent import LineEdit, Button, style_sheet_setting, window_bottom_left, Widget
 
 SLOT = 3
-COMPORT = ('com5', 'com7', 'com9')
+COMPORT = ('com5', 'com7', 'com9', 'com11')
 # COMPORT = ('com3', 'com5', 'com7')
 COLUMN_COUNT = 2
 
@@ -23,7 +23,7 @@ class NFCDemo(Widget):
         # layout.addWidget(groupbox := NFCSlot(2, COMPORT[2]), 0, 1)
         # self.nfcs.append(groupbox)
         for index, com in enumerate(COMPORT):
-            layout.addWidget(groupbox := NFCSlot(index, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
+            layout.addWidget(groupbox := NFCSlot(index+1, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
             self.nfcs.append(groupbox)
 
         self.show_main_window()

@@ -46,7 +46,7 @@ class TouchControl(QObject):
                                            get_time(),
                                            )
 
-    def input_serial_data(self, value):
+    def receive_serial_data(self, value):
         if "TEST RESULT" in value and self._model.data_matrix:
             self._model.machine_result = STR_OK if STR_OK in value else STR_NG
             if self._model.order_number:
@@ -62,7 +62,7 @@ class TouchControl(QObject):
                 self._model.data_matrix_waiting = ''
 
     def begin(self):
-        self._mssql.timer_for_db_connect()
+        pass
 
     def mid_clicked(self):
         pass

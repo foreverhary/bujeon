@@ -11,6 +11,19 @@ class SerialComboHBoxLayout(QHBoxLayout):
     comport_save = Signal(str)
     serial_output_data = Signal(str)
 
+    def nfc_ports(self, value):
+        available_ports = get_serial_available_list()
+        for port in value:
+            available_ports.remove(port)
+        self._model.available_comport = available_ports
+
+    def set_available_ports(self, value):
+        self._model.available_comport = value
+
+    def begin(self):
+        self._model.begin()
+        self._control.comport_clicked()
+
     def __init__(self, parent_model, button_text='CONNECT'):
         super(SerialComboHBoxLayout, self).__init__()
         self._model = SerialComboHBoxLayoutModel(parent_model)
@@ -49,16 +62,6 @@ class SerialComboHBoxLayout(QHBoxLayout):
     def serial_connection(self, connection):
         self.button.set_background_color(BLUE if connection else RED)
         self.comport.setEnabled(not connection)
-
-    def nfc_ports(self, value):
-        available_ports = get_serial_available_list()
-        for port in value:
-            available_ports.remove(port)
-        self._model.available_comport = available_ports
-
-    def begin(self):
-        self._model.begin()
-        self._control.comport_clicked()
 
 
 class SerialComboHBoxLayoutControl(QObject):

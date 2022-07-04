@@ -50,7 +50,7 @@ class TouchView(Widget):
 
         # connect widgets to controller
         comport.comport_save.connect(self._control.comport_save)
-        comport.serial_output_data.connect(self._control.input_serial_data)
+        comport.serial_output_data.connect(self._control.receive_serial_data)
 
         # listen for model event signals
         self._model.order_number_changed.connect(self.order.setText)
