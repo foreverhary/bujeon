@@ -7,9 +7,8 @@ from airleak.model.AirLeakAutomationModel import AirLeakAutomationModel
 from airleak.view.AirLeakAutomationView import AirLeakAutomationView
 from process_package.component.CustomComponent import style_sheet_setting, window_center
 from process_package.old.defined_serial_port import get_serial_available_list
-from process_package.resource.string import STR_AIR_LEAK, CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1
+from process_package.resource.string import STR_AIR_LEAK
 from process_package.screen.SplashScreen import SplashScreen
-from process_package.tools.Config import get_config_value
 
 
 class AirLeakAutomation(QApplication):
@@ -19,7 +18,6 @@ class AirLeakAutomation(QApplication):
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
     def show_main_window(self, nfcs):
-
         self._model = AirLeakAutomationModel()
         self._control = AirLeakAutomationControl(self._model)
         self._view = AirLeakAutomationView(self._model, self._control)

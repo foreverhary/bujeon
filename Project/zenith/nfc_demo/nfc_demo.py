@@ -1,7 +1,7 @@
 import sys
 
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QGridLayout, QGroupBox
+from PySide2.QtWidgets import QApplication, QVBoxLayout, QGridLayout, QGroupBox, QHBoxLayout
 
 from NFC import VirtualNFC
 from process_package.component.CustomComponent import LineEdit, Button, style_sheet_setting, window_bottom_left, Widget
@@ -23,7 +23,7 @@ class NFCDemo(Widget):
         # layout.addWidget(groupbox := NFCSlot(2, COMPORT[2]), 0, 1)
         # self.nfcs.append(groupbox)
         for index, com in enumerate(COMPORT):
-            layout.addWidget(groupbox := NFCSlot(index+1, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
+            layout.addWidget(groupbox := NFCSlot(index+5, com), index // COLUMN_COUNT, index % COLUMN_COUNT)
             self.nfcs.append(groupbox)
 
         self.show_main_window()

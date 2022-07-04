@@ -1,22 +1,17 @@
 import socket
-from threading import Thread
 
 from PySide2.QtCore import Signal, QObject, Slot
-from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout, QMenu
+from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QGridLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import Widget, Label, LabelBlink, LabelNFC, get_time
+from process_package.component.CustomComponent import Widget, get_time
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
-from process_package.old.defined_serial_port import get_serial_available_list
-from process_package.resource.color import LIGHT_SKY_BLUE, BLUE, RED
-from process_package.resource.number import AIR_LEAK_UNIT_COUNT
-from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, \
-    AIR_LEAK_RESULT_MINIMUM_HEIGHT, AIR_LEAK_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, COMPORT_FIXED_HEIGHT, \
-    AIR_LEAK_STATUS_FIXED_HEIGHT
-from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESULT, STR_UNIT, STR_AIR_LEAK, STR_NFC, \
-    STR_DATA_MATRIX, STR_OK, STR_NG, STR_AIR
+from process_package.resource.color import LIGHT_SKY_BLUE, RED
+from process_package.resource.size import NFC_FIXED_HEIGHT, COMPORT_FIXED_HEIGHT
+from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESULT, STR_AIR_LEAK, STR_DATA_MATRIX, STR_OK, \
+    STR_NG, STR_AIR
 from process_package.tools.CommonFunction import logger
 from process_package.tools.mssql_connect import MSSQL
 
@@ -241,7 +236,7 @@ class AirLeakAutomationView(Widget):
 
         # size
         comport_box.setFixedHeight(COMPORT_FIXED_HEIGHT)
-        self.setWindowTitle(f"{STR_AIR_LEAK} v1.11")
+        self.setWindowTitle(f"{STR_AIR_LEAK} AUTOMATION v1.0")
 
         # assign
         self.slots = slots
