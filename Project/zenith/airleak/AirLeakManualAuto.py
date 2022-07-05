@@ -16,7 +16,7 @@ from process_package.resource.size import COMPORT_FIXED_HEIGHT, NFC_FIXED_HEIGHT
 from process_package.resource.string import STR_AIR_LEAK, CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_NFC, \
     STR_OK, STR_NG, STR_MACHINE_COMPORT, STR_DATA_MATRIX, STR_RESULT, STR_AIR
 from process_package.screen.SplashScreen import SplashScreen
-from process_package.tools.CommonFunction import logger
+from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.Config import get_config_value, set_config_value
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
@@ -90,8 +90,13 @@ class AirLeakSlot(QGroupBox):
         self._model.result_color_changed.connect(self.result.set_background_color)
         self._model.result_clean.connect(self.result.clean)
 
+        self.delay_write_count = 0
+
     @Slot(dict)
     def received_nfc_data(self, value):
+        if self.delay_write_count:
+            self.delay_write_count -= 1
+
         if not (data_matrix := value.get(STR_DATA_MATRIX)):
             return
 
@@ -101,12 +106,17 @@ class AirLeakSlot(QGroupBox):
         if not self._model.result:
             return
 
-        self._model.data_matrix = data_matrix
-        self.update_sql(self._model.result)
+        if self._model.result != value.get(STR_AIR):
+            self.write_signal.emit(f"{data_matrix},{STR_AIR}:{self._model.result}")
+            self.delay_write_count = 2
+        else:
+            write_beep()
+            self._model.data_matrix = data_matrix
+            self.update_sql()
 
     @Slot(str)
-    def update_sql(self, value):
-        if value:
+    def update_sql(self):
+        if self._model.result and self._model.data_matrix:
             self._mssql.start_query_thread(self._mssql.insert_pprd,
                                            self._model.data_matrix,
                                            get_time(),
@@ -326,7 +336,7 @@ class AirLeakManualFourView(Widget):
 
         # size
         comport_box.setFixedHeight(COMPORT_FIXED_HEIGHT)
-        self.setWindowTitle(f"{STR_AIR_LEAK} AUTOMATION v1.0")
+        self.setWindowTitle(f"{STR_AIR_LEAK} Manual v0.1")
 
         # assign
         self.slots = slots
