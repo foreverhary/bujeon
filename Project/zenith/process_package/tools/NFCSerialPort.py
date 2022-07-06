@@ -1,7 +1,8 @@
 from PySide2.QtCore import QTimer, Signal, Slot
 
 from process_package.check_string import check_nfc_uid, check_dm
-from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_DISCONNECT, PROCESS_RESULTS
+from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_DISCONNECT, PROCESS_RESULTS, STR_C, STR_A, \
+    STR_B, STR_GRADE
 from process_package.tools.SerialPort import SerialPort
 
 
@@ -53,6 +54,9 @@ class NFCSerialPort(SerialPort):
             elif check_dm(split):
                 split_data[STR_DATA_MATRIX] = split
             else:
+                if split in [STR_A, STR_B, STR_C]:
+                    split_data[STR_GRADE] = split
+                    continue
                 result = split.split(':')
                 if len(result) != 2:
                     continue
