@@ -2,16 +2,15 @@ import csv
 import os
 import sys
 
-from PySide2.QtCore import QObject, Signal, Qt, QTimer
+from PySide2.QtCore import QObject, Signal, Qt
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QMenu
 
-from process_package.observer.FileObserver import Target
 from mic.MICNFCReader import MICNFCReader
 from mic.MICNFCWriter import MICNFCWriter
 from mic.MICNFConfig import MICNFCConfig
-from process_package.component.CustomComponent import style_sheet_setting, Widget, window_center
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.resource.number import CHECK_DB_UPDATE_TIME
+from process_package.component.CustomComponent import style_sheet_setting, Widget, window_center
+from process_package.observer.FileObserver import Target
 from process_package.resource.string import STR_OK, STR_MIC, STR_NFC1, STR_NFC2, MIC_SECTION, FILE_PATH, STR_PASS, \
     STR_NG, CONFIG_FILE_NAME, STR_NFCIN, STR_NFCIN1
 from process_package.screen.SplashScreen import SplashScreen
@@ -58,12 +57,13 @@ class MICNFCControl(QObject):
 
         self.file_path_signal.connect(self.receive_file_name)
         self.start_file_observe()
+        self.side, self.error, self.result = None, None, None
 
     def start_file_observe(self):
         if not os.path.isdir(path := get_config_value(CONFIG_FILE_NAME, MIC_SECTION, FILE_PATH)):
             return False
 
-        if self.result_file_observer.is_alive():
+        if self.__getattribute__("result_file_observer") and self.result_file_observer.is_alive():
             self.result_file_observer.observer.stop()
         self.result_file_observer = Target(path, self.file_path_signal)
         self.result_file_observer.start()
@@ -104,13 +104,15 @@ class MICNFCControl(QObject):
                         result = STR_OK
                     else:
                         result = STR_NG
-
+        if self.side == side and self.error == error and self.result == result:
+            return
+        self.side, self.error, self.result = side, error, result
         if side == 'L':
-            self.nfc1_result_changed.emit(result)
             self.nfc1_error_result_changed.emit(error)
+            self.nfc1_result_changed.emit(result)
         elif side == 'R':
-            self.nfc2_result_changed.emit(result)
             self.nfc2_error_result_changed.emit(error)
+            self.nfc2_result_changed.emit(result)
 
     def mid_clicked(self):
         pass

@@ -6,6 +6,8 @@ from threading import Thread
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+from process_package.tools.CommonFunction import logger
+
 
 class Target(Thread):
     def __init__(self, path=None, signal=None):
