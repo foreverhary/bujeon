@@ -61,7 +61,7 @@ class AirLeakSlot(QGroupBox):
 
         # size
         nfc.setFixedHeight(NFC_FIXED_HEIGHT)
-        data_matrix.setMinimumWidth(130)
+        data_matrix.setMinimumWidth(250)
         data_matrix.setFixedHeight(NFC_FIXED_HEIGHT)
 
         # assign
@@ -155,7 +155,7 @@ class AirLeakSlotModel(QObject):
             self.result_clean.emit()
 
 
-SLOT_COUNT = 4
+SLOT_COUNT = 8
 
 
 class AirLeakAutomationView(Widget):

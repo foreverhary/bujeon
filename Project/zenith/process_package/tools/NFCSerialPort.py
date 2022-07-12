@@ -32,8 +32,8 @@ class NFCSerialPort(SerialPort):
                 self.open()
             except Exception as e:
                 pass
-        if self.nfc_connection_state != self.is_open & self.nfc_connection:
-            self.nfc_connection_state = self.is_open & self.nfc_connection
+        if self.nfc_connection_state != self.is_open and self.nfc_connection and self._serial.dtr:
+            self.nfc_connection_state = self.is_open and self.nfc_connection and self._serial.dtr
             self.connection_signal.emit(self.nfc_connection_state)
 
     @Slot(str)

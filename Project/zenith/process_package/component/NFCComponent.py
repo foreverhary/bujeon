@@ -80,7 +80,6 @@ class NFCComponentControl(QObject):
         self._model.nfc_connection = connection
 
 
-
 class NFCComponentModel(QObject):
     nfc_connection_changed = Signal(str)
     nfc_changed = Signal(str)
