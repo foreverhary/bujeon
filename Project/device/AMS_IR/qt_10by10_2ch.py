@@ -1,15 +1,14 @@
 import sys
-import threading
 from threading import Thread
 
+import serial.tools.list_ports
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton, QDesktopWidget
 from serial import Serial, SerialException
-import serial.tools.list_ports
 
 # com1 = 'com8'
 # com2 = 'com10'
-from logger import make_logger
+from package.logger import make_logger
 
 com1 = '/dev/ttyUSB0'
 com2 = '/dev/ttyUSB1'
@@ -37,8 +36,8 @@ class ArrayDisplay(QWidget):
         list(map(lambda x: x.setFixedSize(80, 80), self.buttons))
         self.signalNumberDisplay.connect(self.displayButton)
         self.initUI()
-        self.check_serials()
-        self.startReadThead()
+        # self.check_serials()
+        # self.startReadThead()
 
     def check_serial(self, port):
         try:
@@ -116,7 +115,6 @@ class ArrayDisplay(QWidget):
                 elif character == 'R':
                     index = 49
                     self.inputDataParsing(character, index, ser)
-                    pass
                 elif character == '':
                     ser.close()
                 else:

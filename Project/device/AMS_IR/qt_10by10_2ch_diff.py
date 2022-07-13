@@ -1,13 +1,13 @@
 import sys
-from threading import Thread, Lock, Timer
+from threading import Thread, Lock
 
 import numpy as np
-from PyQt5.QtCore import pyqtSignal, QThreadPool, QCoreApplication
+from PyQt5.QtCore import pyqtSignal, QThreadPool
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton, QDesktopWidget
 from serial import Serial, SerialException
 import serial.tools.list_ports
 
-from logger import make_logger
+from package.logger import make_logger
 
 com1 = 'com5'
 com2 = 'com9'
