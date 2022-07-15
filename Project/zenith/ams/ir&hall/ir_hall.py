@@ -1,3 +1,4 @@
+import time
 
 import PySimpleGUI as sg
 from serial import Serial, SerialException
@@ -5,12 +6,14 @@ import serial.tools.list_ports as sp
 import os
 import threading
 
+FONT_SIZE = 30
+
 sg.theme('DarkBlack1')
 
-layout = [[sg.Text("        IR", size=(10, 1), font=('Helvetica', 50)),
-           sg.Text("      HALL", size=(10, 1), font=('Helvetica', 50), )],
-          [sg.Input(key='-IR-', size=(10, 1), font=('Helvetica', 50)),
-           sg.Input(key='-HALL-', size=(10, 1), font=('Helvetica', 50))]]
+layout = [[sg.Text("        IR", key="IR", size=(10, 1), font=('Helvetica', FONT_SIZE)),
+           sg.Text("      HALL", key="HALL" , size=(10, 1), font=('Helvetica', FONT_SIZE), )],
+          [sg.Input(key='-IR-', size=(10, 1), font=('Helvetica', FONT_SIZE)),
+           sg.Input(key='-HALL-', size=(10, 1), font=('Helvetica', FONT_SIZE))]]
 
 window = sg.Window('IR & HALL', layout).Finalize()
 hall = []
@@ -18,17 +21,27 @@ hall = []
 
 def read_ir_hall(ser):
     ser.readline()
+    input_display_color = 'white'
     while True:
         try:
+            ser.dtr = True
             raw_data = str(ser.readline().decode('utf-8'))
             if not raw_data:
-                ser.close()
-                break
+                ser.dtr = False
+                continue
+            if input_display_color == 'white':
+                input_display_color = 'lightskyblue'
+            else:
+                input_display_color = 'white'
+            window['IR'].update(text_color=input_display_color)
+            window['HALL'].update(text_color=input_display_color)
+            print(raw_data)
             raw_data = raw_data.rstrip()
             raw_data = raw_data.split(",")
             ir_display(int(raw_data[0][3:]))
             hall_background_color(int(raw_data[1][5:]))
-        except SerialException:
+        except SerialException as e:
+            print(e)
             window.close()
             os._exit(1)
         except:
@@ -53,7 +66,7 @@ def hall_background_color(value):
 
 def make_serial(com):
     try:
-        return Serial(com, 115200, timeout=3)
+        return Serial(com, 115200, timeout=2)
     except:
         return None
 
@@ -67,7 +80,6 @@ for port in sp.comports():
 
 if not count:
     os._exit(1)
-
 
 while True:
     event, values = window.read()
