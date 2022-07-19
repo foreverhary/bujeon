@@ -1,4 +1,3 @@
-import time
 
 import PySimpleGUI as sg
 from serial import Serial, SerialException
@@ -6,7 +5,7 @@ import serial.tools.list_ports as sp
 import os
 import threading
 
-FONT_SIZE = 50
+FONT_SIZE = 30
 
 sg.theme('DarkBlack1')
 

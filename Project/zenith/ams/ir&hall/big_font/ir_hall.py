@@ -1,4 +1,3 @@
-import time
 
 import PySimpleGUI as sg
 from serial import Serial, SerialException
