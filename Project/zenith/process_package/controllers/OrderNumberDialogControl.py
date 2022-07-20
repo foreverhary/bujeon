@@ -24,11 +24,11 @@ class OrderNumberDialogControl(QObject):
 
     @Slot(str)
     def change_material_keyword(self, value):
-        self._mode.material_keyword = value
+        self._model.material_keyword = value
 
     @Slot(str)
     def change_model_keyword(self, value):
-        self._mode.model_keyword = value
+        self._model.model_keyword = value
 
     @Slot(int)
     def change_order_number_index(self, value):
