@@ -4,9 +4,13 @@ from PySide2.QtWidgets import QApplication
 
 from control.TouchControl import TouchControl
 from model.TouchModel import TouchModel
+from process_package.resource.string import STR_TOUCH_PROCESS
 from view.TouchView import TouchView
 from process_package.component.CustomComponent import style_sheet_setting
 from process_package.tools.CommonFunction import logger
+
+
+TOUCH_VERSION = f"{STR_TOUCH_PROCESS} v1.30"
 
 
 class Touch(QApplication):
@@ -16,12 +20,13 @@ class Touch(QApplication):
         self._model = TouchModel()
         self._control = TouchControl(self._model)
         self._view = TouchView(self._model, self._control)
+        self._view.setWindowTitle(TOUCH_VERSION)
         self._model.begin()
         self._control.begin()
         self._view.showMaximized()
 
 
 if __name__ == '__main__':
-    logger.warn("start touch process")
+    logger.debug("start touch process")
     app = Touch(sys.argv)
     sys.exit(app.exec_())

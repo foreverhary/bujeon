@@ -6,6 +6,7 @@ from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.OrderNumberDialog import OrderNumberDialog
+from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.size import TOUCH_MACHINE_MINIMUM_WIDTH, TOUCH_DATA_MATRIX_FONT_SIZE, \
     TOUCH_MACHINE_RESULT_FONT_SIZE, TOUCH_COMPORT_MAXIMUM_HEIGHT, TOUCH_ORDER_MAXIMUM_HEIGHT, \
@@ -22,7 +23,7 @@ class TouchView(Widget):
         # ui
         layout = QVBoxLayout(self)
         layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
-        comport_box.setLayout(comport := SerialComboHBoxLayout(self._model))
+        comport_box.setLayout(comport := SerialComboHBoxLayout())
 
         layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, font_size=TOUCH_DATA_MATRIX_FONT_SIZE))
@@ -46,7 +47,9 @@ class TouchView(Widget):
         self.machine = machine.label
         self.status = status.label
 
-        self.setWindowTitle(STR_TOUCH_PROCESS)
+        # init variable
+        comport.set_available_ports(get_serial_available_list())
+        comport.begin()
 
         # connect widgets to controller
         comport.comport_save.connect(self._control.comport_save)

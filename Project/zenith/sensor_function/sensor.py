@@ -17,6 +17,9 @@ from process_package.tools.mssql_connect import MSSQL
 from sensor_function.SensorChannel import SensorChannel
 
 
+SENSOR_VERSION = 'IR SENSOR v1.30'
+
+
 class SensorProcess(QApplication):
     def __init__(self, sys_argv):
         super(SensorProcess, self).__init__(sys_argv)
@@ -65,9 +68,6 @@ class SensorProcessControl(QObject):
     def mid_clicked(self):
         pass
 
-    # def update_db(self):
-    #     UpdateDB()
-
     def begin(self):
         pass
 
@@ -78,41 +78,41 @@ class SensorProcessView(Widget):
         self._model, self._control = args
         layout = QVBoxLayout(self)
         layout.addLayout(previous_layout := QVBoxLayout())
-        previous_layout.addWidget(nfc_in := NFCComponent(STR_NFCIN))
-        previous_layout.addLayout(previous_h_layout := QHBoxLayout())
-        previous_h_layout.addWidget(previous := GroupLabel(title=STR_PREVIOUS_PROCESS, is_clean=True, clean_time=3000))
-        previous_h_layout.addWidget(grade := GroupLabel(title=STR_GRADE, is_clean=True, clean_time=3000))
+        # previous_layout.addWidget(nfc_in := NFCComponent(STR_NFCIN))
+        # previous_layout.addLayout(previous_h_layout := QHBoxLayout())
+        # previous_h_layout.addWidget(previous := GroupLabel(title=STR_PREVIOUS_PROCESS, is_clean=True, clean_time=3000))
+        # previous_h_layout.addWidget(grade := GroupLabel(title=STR_GRADE, is_clean=True, clean_time=3000))
 
         layout.addLayout(process_layout := QHBoxLayout())
         process_layout.addWidget(channel1 := SensorChannel(1))
         process_layout.addWidget(channel2 := SensorChannel(2))
 
         # size
-        nfc_in.setFixedHeight(80)
-        previous.set_font_size(80)
+        # nfc_in.setFixedHeight(80)
+        # previous.set_font_size(80)
 
-        grade.setFixedWidth(100)
-        grade.set_font_size(80)
+        # grade.setFixedWidth(100)
+        # grade.set_font_size(80)
 
         # assign
-        self.nfcin = nfc_in
-        self.previous = previous.label
-        self.grade = grade.label
+        # self.nfcin = nfc_in
+        # self.previous = previous.label
+        # self.grade = grade.label
 
         self.channel1 = channel1
         self.channel2 = channel2
 
         # component connect
-        self.nfcin.nfc_data_out.connect(self._control.check_previous)
+        # self.nfcin.nfc_data_out.connect(self._control.check_previous)
 
         # listen for model event signals
-        self._model.previous_changed.connect(self.previous.setText)
-        self._model.previous_color_changed.connect(self.previous.set_background_color)
+        # self._model.previous_changed.connect(self.previous.setText)
+        # self._model.previous_color_changed.connect(self.previous.set_background_color)
+        #
+        # self._model.grade_changed.connect(self.grade.setText)
+        # self._model.grade_color_changed.connect(self.grade.set_color)
 
-        self._model.grade_changed.connect(self.grade.setText)
-        self._model.grade_color_changed.connect(self.grade.set_color)
-
-        self.setWindowTitle('IR SENSOR v1.22')
+        self.setWindowTitle(SENSOR_VERSION)
         self.setMinimumWidth(640)
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)  # | Qt.FramelessWindowHint)
@@ -120,17 +120,17 @@ class SensorProcessView(Widget):
     def set_nfcs(self, nfcs):
         nfc_ports = []
         for port, nfc_name in nfcs.items():
-            if STR_NFCIN in nfc_name:
-                nfc_ports.append(port)
-                self.nfcin.set_port(port)
-            elif nfc_name == STR_NFC1:
+            # if STR_NFCIN in nfc_name:
+            #     nfc_ports.append(port)
+            #     self.nfcin.set_port(port)
+            if nfc_name == STR_NFC1:
                 self.channel1.set_port(port)
                 nfc_ports.append(port)
             elif nfc_name == STR_NFC2:
                 self.channel2.set_port(port)
                 nfc_ports.append(port)
-        self.channel1.nfc_ports(nfc_ports)
-        self.channel2.nfc_ports(nfc_ports)
+        self.channel1.exclude_nfc_ports(nfc_ports)
+        self.channel2.exclude_nfc_ports(nfc_ports)
 
     def begin(self):
         self.channel1.begin()

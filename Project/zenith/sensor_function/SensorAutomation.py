@@ -137,8 +137,8 @@ class SensorAutomationView(Widget):
             elif nfc_name == STR_NFC2:
                 self.channel2.set_port(port)
                 nfc_ports.append(port)
-        self.channel1.nfc_ports(nfc_ports)
-        self.channel2.nfc_ports(nfc_ports)
+        self.channel1.exclude_nfc_ports(nfc_ports)
+        self.channel2.exclude_nfc_ports(nfc_ports)
 
     def begin(self):
         self.channel1.begin()

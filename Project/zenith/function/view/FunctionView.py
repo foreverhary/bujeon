@@ -45,8 +45,6 @@ class FunctionView(Widget):
         self.nfc = nfc.label
         self.status = status.label
 
-        self.setWindowTitle(STR_FUNCTION)
-
         # connect widgets to controller
 
         # listen for component event signals

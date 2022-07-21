@@ -225,7 +225,7 @@ class AirLeakAutomationView(Widget):
         # UI
         layout = QVBoxLayout(self)
         layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
-        comport_box.setLayout(comport := SerialComboHBoxLayout(self._model))
+        comport_box.setLayout(comport := SerialComboHBoxLayout())
         layout.addLayout(slot_layout1 := QGridLayout())
         slots = []
         for l in range(SLOT_COUNT):

@@ -11,7 +11,8 @@ from process_package.resource.color import WHITE, BACK_GROUND_COLOR, RED
 from process_package.resource.size import RELEASE_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, RELEASE_DATA_MATRIX_FIXED_HEIGHT, \
     RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_RESULT_MIN_HEIGHT, RELEASE_GRADE_FONT_SIZE
 from process_package.resource.string import STR_RELEASE, STR_NFC1, STR_DATA_MATRIX, STR_RESULT, STR_NFC, STR_FUN, \
-    PROCESS_NAMES, STR_MISS, PROCESS_OK_RESULTS, PROCESS_FULL_NAMES, STR_NG, STR_A, STR_B, STR_C, grade_colors
+    PROCESS_NAMES, STR_MISS, PROCESS_OK_RESULTS, PROCESS_FULL_NAMES, STR_NG, STR_A, STR_B, STR_C, grade_colors, \
+    PROCESS_NAMES_WITHOUT_AIR_LEAK
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import read_beep, logger
 from process_package.tools.NFCSerialPort import NFCSerialPort
@@ -95,7 +96,7 @@ class ReleaseProcessControl(QObject):
         if self.check_previous_process(value):
             msg += value.get(STR_FUN)
         else:
-            for process in PROCESS_NAMES:
+            for process in PROCESS_NAMES_WITHOUT_AIR_LEAK:
                 if not (result := value.get(process)):
                     result = STR_MISS
                 if result not in PROCESS_OK_RESULTS:
@@ -109,7 +110,7 @@ class ReleaseProcessControl(QObject):
             previous_process not in value
             or value.get(previous_process)
             not in PROCESS_OK_RESULTS
-            for previous_process in PROCESS_NAMES
+            for previous_process in PROCESS_NAMES_WITHOUT_AIR_LEAK
         )
 
     def right_clicked(self):

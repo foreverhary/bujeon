@@ -24,7 +24,7 @@ class SensorChannel(QGroupBox):
         # UI
         self.setTitle(f"Channel {channel}")
         layout = QVBoxLayout(self)
-        layout.addLayout(comport := SerialComboHBoxLayout(self._model, button_text='CONN'))
+        layout.addLayout(comport := SerialComboHBoxLayout(button_text='CONN'))
         layout.addWidget(Label('DM'))
         layout.addWidget(data_matrix := LabelNFC())
         layout.addWidget(Label(STR_RESULT))
@@ -57,13 +57,14 @@ class SensorChannel(QGroupBox):
         self._model.result_clean.connect(self.result.clean)
         self._model.result_color_changed.connect(self.result.set_background_color)
 
-    def nfc_ports(self, value):
-        self.comport.nfc_ports(value)
+    def exclude_nfc_ports(self, value):
+        self.comport.exclude_nfc_ports(value)
 
     def set_port(self, value):
         self.nfc.set_port(value)
 
     def begin(self):
+        self.comport.set_comport(self._model.comport)
         self.comport.begin()
 
 

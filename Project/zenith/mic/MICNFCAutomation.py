@@ -1,11 +1,11 @@
 import sys
 
-from PySide2.QtCore import QObject, Qt
+from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QMenu
 
 from mic.MICNFC import MICNFCControl, MICNFCModel
-from mic.MICNFCAutoEach import MICNFCAutoEach
-from mic.MICNFConfig import MICNFCConfig
+from mic.component.MICNFCAutoEach import MICNFCAutoEach
+from mic.component.MICNFConfig import MICNFCConfig
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, Widget, window_center
 from process_package.resource.string import STR_MIC, STR_NFC1, STR_NFC2

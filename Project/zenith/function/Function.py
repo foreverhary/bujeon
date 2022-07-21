@@ -11,12 +11,16 @@ from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 
 
+FUNCTION_VERSION = f"{STR_FUNCTION} v1.30"
+
+
 class Function(QApplication):
     def __init__(self, sys_argv):
         super(Function, self).__init__(sys_argv)
         self._model = FunctionModel()
         self._control = FunctionControl(self._model)
         self._view = FunctionView(self._model, self._control)
+        self._view.setWindowTitle(FUNCTION_VERSION)
         self._model.begin_config_read()
         self.load_nfc_window = SplashScreen(STR_FUNCTION)
         self.load_nfc_window.start_signal.connect(self.show_main_window)

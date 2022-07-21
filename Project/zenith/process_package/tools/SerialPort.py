@@ -11,17 +11,14 @@ class SerialPort(QObject):
     serial_connection_signal = Signal(bool)
 
     def set_port_baudrate(self, port, baudrate):
-        self._serial.port = port
-        self._serial.baudrate = baudrate
-
-    def get_port(self):
-        return self._serial.port
+        self.port = port
+        self.baudrate = baudrate
 
     def set_port(self, port):
-        self._serial.port = port
+        self.port = port
 
     def set_baudrate(self, value):
-        self._serial.baudrate = value
+        self.baudrate = value
 
     def open(self):
         self._serial.open()
@@ -65,6 +62,22 @@ class SerialPort(QObject):
     @is_open.setter
     def is_open(self, value):
         self._serial.is_open = value
+
+    @property
+    def port(self):
+        return self._serial.port
+
+    @port.setter
+    def port(self, value):
+        self._serial.port = value
+
+    @property
+    def baudrate(self):
+        return self._serial.baudrate
+
+    @baudrate.setter
+    def baudrate(self, value):
+        self._serial.baudrate = value
 
     def read_line_data(self):
         while True:

@@ -1,7 +1,7 @@
 from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QVBoxLayout, QWidget
 
-from mic.MICNFCWriter import MICNFCWriterControl, MICNFCWriterModel
+from mic.component.MICNFCWriter import MICNFCWriterControl, MICNFCWriterModel
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.resource.color import LIGHT_SKY_BLUE, RED

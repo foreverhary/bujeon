@@ -21,7 +21,7 @@ class AirLeakView(Widget):
         layout = QVBoxLayout(self)
         layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
         layout.addWidget(nfc := NFCComponent(STR_NFC))
-        comport_box.setLayout(comport := SerialComboHBoxLayout(self._model))
+        comport_box.setLayout(comport := SerialComboHBoxLayout())
         layout.addLayout(unit_layout := QHBoxLayout())
         unit_layout.addWidget(out_group := QGroupBox("OUT"))
         out_group.setLayout(out_grid := QGridLayout())
