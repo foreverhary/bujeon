@@ -76,22 +76,13 @@ class AirLeakUi(Widget):
         if not_key:
             button = self.machine_port_connect_button
             self.machine_comport.setCurrentText(
-                get_config_value(
-                    CONFIG_FILE_NAME,
-                    COMPORT_SECTION,
-                    MACHINE_COMPORT_1
-                )
+                get_config_value(COMPORT_SECTION, MACHINE_COMPORT_1)
             )
         else:
             button = self.sender()
 
         if self.serial_machine.connect_serial(self.machine_comport.currentText()):
-            set_config_value(
-                CONFIG_FILE_NAME,
-                COMPORT_SECTION,
-                MACHINE_COMPORT_1,
-                self.serial_machine.port
-            )
+            set_config_value(COMPORT_SECTION, MACHINE_COMPORT_1, self.serial_machine.port)
             self.serial_machine.start_machine_read()
         self.check_serial_connection()
 

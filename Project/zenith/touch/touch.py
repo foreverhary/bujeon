@@ -21,8 +21,6 @@ class Touch(QApplication):
         self._control = TouchControl(self._model)
         self._view = TouchView(self._model, self._control)
         self._view.setWindowTitle(TOUCH_VERSION)
-        self._model.begin()
-        self._control.begin()
         self._view.showMaximized()
 
 

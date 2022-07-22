@@ -87,4 +87,4 @@ class MICNFCConfigModel(QObject):
         set_config_value(CONFIG_FILE_NAME, MIC_SECTION, FILE_PATH, self.mic_path)
 
     def begin(self):
-        self.mic_path = get_config_value(CONFIG_FILE_NAME, MIC_SECTION, FILE_PATH)
+        self.mic_path = get_config_value(MIC_SECTION, FILE_PATH)

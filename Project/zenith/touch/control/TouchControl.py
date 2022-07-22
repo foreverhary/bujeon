@@ -1,10 +1,9 @@
 import socket
 
-from PySide2.QtCore import QObject, Slot, Signal, QTimer
+from PySide2.QtCore import QObject, Slot, Signal
 
-from process_package.component.CustomComponent import get_time
 from process_package.check_string import check_dm
-from process_package.resource.number import CHECK_DB_UPDATE_TIME
+from process_package.component.CustomComponent import get_time
 from process_package.resource.string import STR_TOUCH, STR_OK, STR_NG
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
@@ -26,9 +25,6 @@ class TouchControl(QObject):
         self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
 
     @Slot(str)
-    def comport_save(self, comport):
-        self._model.comport = comport
-
     def input_keyboard_line(self, value):
         if self._model.data_matrix == value:
             return
@@ -46,6 +42,7 @@ class TouchControl(QObject):
                                            get_time(),
                                            )
 
+    @Slot(str)
     def receive_serial_data(self, value):
         if "TEST RESULT" in value and self._model.data_matrix:
             self._model.machine_result = STR_OK if STR_OK in value else STR_NG
@@ -60,9 +57,3 @@ class TouchControl(QObject):
 
                 self._model.data_matrix = self._model.data_matrix_waiting
                 self._model.data_matrix_waiting = ''
-
-    def begin(self):
-        pass
-
-    def mid_clicked(self):
-        pass

@@ -7,12 +7,16 @@ from process_package.check_string import nfc_dict_to_list
 from process_package.component.CustomComponent import get_time
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
+from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
 from process_package.resource.string import STR_NFC, STR_DATA_MATRIX, STR_MIC, STR_SPL, STR_THD, STR_IMP, STR_F0, \
     STR_R_AND_B, STR_POLARITY, STR_CURRENT, STR_SNR, STR_NOISE_LEVEL, \
     STR_FRF, STR_OK, STR_NFC1, STR_NG, STR_SEN
 from process_package.tools.CommonFunction import logger
 
+NFC_HEIGHT = 60
+NFC_FONT_SIZE = 15
+MIC_COMPONENT_WIDTH = 420
 
 class MICNFCWriter(QWidget):
 
@@ -23,17 +27,17 @@ class MICNFCWriter(QWidget):
         self._control = MICNFCWriterControl(self._model, mssql)
 
         layout = QVBoxLayout(self)
+        layout.addWidget(nfc := NFCComponent(nfc_name))
         layout.addWidget(result := GroupLabel('CH1' if nfc_name == STR_NFC1 else 'CH2', is_clean=True, clean_time=5000))
         layout.addLayout(nfc_layout := QHBoxLayout())
-        nfc_layout.addWidget(nfc := NFCComponent(nfc_name))
         nfc_layout.addWidget(nfc_status := GroupLabel(title=STR_NFC, is_nfc=True, is_clean=True, clean_time=4000))
 
         # size
-        nfc.setMaximumSize(80, 50)
-        nfc.label.set_font_size(13)
-        result.setMinimumSize(420, 150)
-        nfc_status.set_font_size(15)
-        nfc_status.setMaximumHeight(60)
+        nfc.setMaximumHeight(NFC_HEIGHT)
+        nfc.label.set_font_size(NFC_FONT_SIZE)
+        result.setMinimumSize(MIC_COMPONENT_WIDTH, 150)
+        nfc_status.setMaximumHeight(NFC_HEIGHT)
+        nfc_status.set_font_size(NFC_FONT_SIZE)
 
         self.nfc = nfc
         self.result = result.label
@@ -51,9 +55,6 @@ class MICNFCWriter(QWidget):
         self._model.nfc_status_changed.connect(self.nfc_status.setText)
         self._model.nfc_status_clean.connect(self.nfc_status.clean)
         self._model.nfc_status_color_changed.connect(self.nfc_status.set_background_color)
-
-        self._model.begin()
-        self._control.begin()
 
     def set_port(self, value):
         self.nfc.set_port(value)
@@ -89,7 +90,6 @@ class MICNFCWriterControl(QObject):
         self.delay_write_count = 0
 
     def receive_nfc_data(self, value):
-
         if self.delay_write_count:
             self.delay_write_count -= 1
             return
@@ -123,11 +123,8 @@ class MICNFCWriterControl(QObject):
                                        socket.gethostbyname(socket.gethostname())
                                        )
 
-    def begin(self):
-        pass
 
-
-class MICNFCWriterModel(QObject):
+class MICNFCWriterModel(BasicModel):
     result_changed = Signal(str)
     result_clean = Signal()
     result_color_changed = Signal(str)
@@ -150,18 +147,11 @@ class MICNFCWriterModel(QObject):
 
     def __init__(self):
         super(MICNFCWriterModel, self).__init__()
-        self.error_code_result = {}
+        self.init_error_code()
         self.data_matrix = None
         self.result = None
         self.nfc_status = None
 
-    @property
-    def data_matrix(self):
-        return self._data_matrix
-
-    @data_matrix.setter
-    def data_matrix(self, value):
-        self._data_matrix = value
 
     @property
     def result(self):
@@ -219,6 +209,3 @@ class MICNFCWriterModel(QObject):
 
     def init_error_code(self):
         self.error_code_result = {name: True for name in self.error_code}
-
-    def begin(self):
-        self.init_error_code()

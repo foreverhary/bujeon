@@ -13,7 +13,7 @@ from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, window_right, Widget, get_time
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
-from process_package.models.ConfigModel import ConfigModel
+from process_package.models.BasicModel import BasicModel
 from process_package.observer.FileObserver import Target
 from process_package.resource.color import LIGHT_SKY_BLUE, GREEN, WHITE, YELLOW, RED
 from process_package.resource.size import AUDIO_BUS_LABEL_MINIMUM_WIDTH, AUDIO_BUS_NFC_FIXED_HEIGHT, \
@@ -258,7 +258,7 @@ class FunctionAutomationControl(QObject):
         MSSqlDialog()
 
 
-class FunctionAutomationModel(ConfigModel):
+class FunctionAutomationModel(BasicModel):
     grade_changed = Signal(str)
     grade_color_changed = Signal(str)
 

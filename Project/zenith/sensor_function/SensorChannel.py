@@ -6,6 +6,7 @@ from PySide2.QtWidgets import QGroupBox, QVBoxLayout
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.component.CustomComponent import Label, get_time, LabelNFC
+from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
 from process_package.resource.string import STR_RESULT, STR_CON_OS, STR_POGO_OS, STR_LED, STR_HALL_IC, STR_VBAT_ID, \
     STR_C_TEST, STR_BATTERY, STR_PROX_TEST, STR_MIC, STR_PCM, STR_SEN, CONFIG_FILE_NAME, COMPORT_SECTION, \
@@ -14,17 +15,22 @@ from process_package.tools.CommonFunction import write_beep
 from process_package.tools.Config import get_config_value, set_config_value
 from process_package.tools.mssql_connect import MSSQL
 
+RESULT_HEIGHT = 350
+RESULT_FONT_SUZE = 100
+
 
 class SensorChannel(QGroupBox):
     def __init__(self, channel):
         super(SensorChannel, self).__init__()
-        self._model = SensorChannelModel(channel)
+        self._model = SensorChannelModel()
         self._control = SensorChannelControl(self._model)
 
         # UI
         self.setTitle(f"Channel {channel}")
         layout = QVBoxLayout(self)
-        layout.addLayout(comport := SerialComboHBoxLayout(button_text='CONN'))
+        layout.addLayout(comport := SerialComboHBoxLayout(
+            button_text='CONN',
+            port_cfg=MACHINE_COMPORT_1 if channel == 1 else MACHINE_COMPORT_2))
         layout.addWidget(Label('DM'))
         layout.addWidget(data_matrix := LabelNFC())
         layout.addWidget(Label(STR_RESULT))
@@ -32,8 +38,10 @@ class SensorChannel(QGroupBox):
         layout.addWidget(nfc := NFCComponent(f"NFC{channel}"))
 
         # size & font size
-        result.setFixedHeight(350)
-        result.set_font_size(100)
+        result.setFixedHeight(RESULT_HEIGHT)
+        result.set_font_size(RESULT_FONT_SUZE)
+
+        comport.set_baudrate(9600)
 
         # assign
         self.comport = comport
@@ -42,7 +50,6 @@ class SensorChannel(QGroupBox):
         self.nfc = nfc
 
         # view connect control
-        self.comport.comport_save.connect(self._control.comport_save)
         self.comport.serial_output_data.connect(self._control.input_serial_data)
         self.nfc.nfc_data_out.connect(self._control.receive_nfc_data)
 
@@ -51,11 +58,8 @@ class SensorChannel(QGroupBox):
 
         # model connect view
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
-        self._model.data_matrix_clean.connect(self.data_matrix.clean)
         self._model.data_matrix_color_changed.connect(self.data_matrix.set_background_color)
-        self._model.result_changed.connect(self.result.setText)
-        self._model.result_clean.connect(self.result.clean)
-        self._model.result_color_changed.connect(self.result.set_background_color)
+        self._model.machine_result_changed.connect(self.result.setText)
 
     def exclude_nfc_ports(self, value):
         self.comport.exclude_nfc_ports(value)
@@ -64,7 +68,6 @@ class SensorChannel(QGroupBox):
         self.nfc.set_port(value)
 
     def begin(self):
-        self.comport.set_comport(self._model.comport)
         self.comport.begin()
 
 
@@ -104,16 +107,16 @@ class SensorChannelControl(QObject):
         for item, key in zip(split_list, self._model.error_code_result):
             self._model.error_code_result[key] = item == STR_OK
         if False in self._model.error_code_result.values():
-            self._model.result = STR_NG
+            self._model.machine_result = STR_NG
         else:
-            self._model.result = STR_OK
+            self._model.machine_result = STR_OK
         self._model.data_matrix = ''
 
     @Slot(dict)
     def receive_nfc_data(self, value):
         self._model.data_matrix_color = LIGHT_SKY_BLUE
 
-        if not self._model.result:
+        if not self._model.machine_result:
             return
 
         if not (data_matrix := value.get(STR_DATA_MATRIX)):
@@ -123,12 +126,12 @@ class SensorChannelControl(QObject):
             self.delay_write_count -= 1
             return
 
-        if self.data_matrix != data_matrix or self._model.result != value.get(STR_SEN):
+        if self.data_matrix != data_matrix or self._model.machine_result != value.get(STR_SEN):
             self.data_matrix = data_matrix
             msg = data_matrix
             for name in PROCESS_NAMES:
                 if name == self.process_name:
-                    msg += f",{name}:{self._model.result}"
+                    msg += f",{name}:{self._model.machine_result}"
                     break
                 if result := value.get(name):
                     msg += f",{name}:{result}"
@@ -137,14 +140,14 @@ class SensorChannelControl(QObject):
         else:
             write_beep()
             self.sql_update()
-            self._model.result = ''
+            self._model.machine_result = ''
             self._model.data_matrix = data_matrix
 
     def sql_update(self):
         self._mssql.start_query_thread(self._mssql.insert_pprd,
                                        self.data_matrix,
                                        get_time(),
-                                       self._model.result,
+                                       self._model.machine_result,
                                        STR_SENSOR,
                                        self._model.get_error_code(),
                                        socket.gethostbyname(socket.gethostname()))
@@ -153,13 +156,7 @@ class SensorChannelControl(QObject):
         self._mssql.timer_for_db_connect()
 
 
-class SensorChannelModel(QObject):
-    data_matrix_changed = Signal(str)
-    data_matrix_clean = Signal()
-    data_matrix_color_changed = Signal(str)
-    result_changed = Signal(str)
-    result_clean = Signal()
-    result_color_changed = Signal(str)
+class SensorChannelModel(BasicModel):
     error_code = {
         STR_CON_OS: 1,
         STR_POGO_OS: 2,
@@ -173,59 +170,9 @@ class SensorChannelModel(QObject):
         STR_PCM: 9,
     }
 
-    def __init__(self, channel):
+    def __init__(self):
         super(SensorChannelModel, self).__init__()
-        self.name = STR_SEN
-        self.baudrate = 9600
-        self.channel = MACHINE_COMPORT_1 if channel == 1 else MACHINE_COMPORT_2
-        self.comport = get_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, self.channel)
-        self.error_code_result = {}
-
-    @property
-    def comport(self):
-        return self._comport
-
-    @comport.setter
-    def comport(self, value):
-        self._comport = value
-        set_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, self.channel, value)
-
-    @property
-    def data_matrix(self):
-        return self._data_matrix
-
-    @data_matrix.setter
-    def data_matrix(self, value):
-        self._data_matrix = value
-        if value:
-            self.data_matrix_changed.emit(value)
-        else:
-            self.data_matrix_clean.emit()
-
-    @property
-    def data_matrix_color(self):
-        return self._data_matrix_color
-
-    @data_matrix_color.setter
-    def data_matrix_color(self, value):
-        self._data_matrix_color = value
-        self.data_matrix_color_changed.emit(value)
-
-    @property
-    def result(self):
-        return self._result
-
-    @result.setter
-    def result(self, value):
-        self._result = value
-        self.result_changed.emit(value)
-        if not value:
-            self.result_clean.emit()
-            return
-        if value == STR_OK:
-            self.result_color_changed.emit(LIGHT_SKY_BLUE)
-        else:
-            self.result_color_changed.emit(RED)
+        self.init_result()
 
     def get_error_code(self):
         return ','.join([

@@ -1,7 +1,7 @@
 from PySide2.QtCore import Signal
 
 from function.model.NFCModel import NFCModel
-from process_package.models.ConfigModel import ConfigModel
+from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED, WHITE, GREEN, YELLOW
 from process_package.resource.string import STR_NFC1, \
     STR_WRITE_DONE, STR_NFCIN, STR_NFC2, STR_SPL, STR_THD, STR_IMP, STR_MIC_FRF, STR_RUB_BUZ, STR_HOHD, \
@@ -10,7 +10,7 @@ from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_audio_bus
 
 
-class FunctionModel(ConfigModel):
+class FunctionModel(BasicModel):
     comport_changed = Signal(str)
     comport_open_changed = Signal(bool)
     available_comport_changed = Signal(list)

@@ -1,9 +1,11 @@
-from PySide2.QtCore import QObject, Signal, Slot
+from PySide2.QtCore import Signal, Slot
 from PySide2.QtWidgets import QHBoxLayout, QComboBox
 
 from process_package.component.CustomComponent import Button
 from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.color import BLUE, RED
+from process_package.resource.string import MACHINE_COMPORT_1, COMPORT_SECTION
+from process_package.tools.Config import get_config_value, set_config_value
 from process_package.tools.SerialPort import SerialPort
 
 
@@ -31,8 +33,10 @@ class SerialComboHBoxLayout(QHBoxLayout):
             self.comport_index = self.available_comport.index(self.serial.port)
         self.comport_clicked()
 
-    def __init__(self, button_text='CONNECT'):
+    def __init__(self, button_text='CONNECT', port_cfg=MACHINE_COMPORT_1):
         super(SerialComboHBoxLayout, self).__init__()
+
+        self.port_cfg = port_cfg
 
         # UI
         self.addWidget(comport := QComboBox())
@@ -89,7 +93,7 @@ class SerialComboHBoxLayout(QHBoxLayout):
         self._comport_connection = bool(value)
         self.serial_connection(self._comport_connection)
         if self._comport_connection:
-            self.comport_save.emit(self.available_comport[self._comport_index])
+            set_config_value(COMPORT_SECTION, self.port_cfg, self.available_comport[self._comport_index])
         else:
             self.available_comport = get_serial_available_list()
 
@@ -103,7 +107,7 @@ class SerialComboHBoxLayout(QHBoxLayout):
         port_numbers.sort()
         ports = [f"COM{port}" for port in port_numbers]
         self._available_comport = ports
-        backup_comport = self.comport
         self.fill_combobox(ports)
-        if backup_comport and backup_comport in ports:
-            self.comport_index = ports.index(backup_comport)
+        port = get_config_value(COMPORT_SECTION, self.port_cfg)
+        if port in ports:
+            self.comport.setCurrentIndex(ports.index(port))

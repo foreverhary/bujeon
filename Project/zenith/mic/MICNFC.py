@@ -14,11 +14,9 @@ MIC_VERSION = "MIC v1.30"
 class MICNFC(QApplication):
     def __init__(self, sys_argv):
         super(MICNFC, self).__init__(sys_argv)
-        self._model = MICNFCModel()
-        self._control = MICNFCControl(self._model)
-        self._view = MICNFCView(self._model, self._control)
+        self._control = MICNFCControl()
+        self._view = MICNFCView(self._control)
         self._view.setWindowTitle(MIC_VERSION)
-        self._control.begin()
         self.load_nfc_window = SplashScreen("MIC Writer")
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 

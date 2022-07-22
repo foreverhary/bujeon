@@ -131,6 +131,15 @@ class Label(QLabel):
                            f'color: {self.color};'
                            f'background-color: {self.background_color}')
 
+    def setText(self, txt: str) -> None:
+        super().setText(txt)
+        if not txt:
+            self.clean()
+        if txt in ['OK', 'PASS']:
+            self.set_background_color(LIGHT_SKY_BLUE)
+        elif txt in ['NG', 'FAIL']:
+            self.set_background_color(RED)
+
 
 class LabelTimerClean(Label):
     def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):

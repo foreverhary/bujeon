@@ -1,6 +1,6 @@
 from PySide2.QtCore import Signal
 
-from process_package.models.ConfigModel import ConfigModel
+from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED, BACK_GROUND_COLOR, WHITE
 from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_OK, STR_NFC1, \
     NUMERAL, STR_WRITE_DONE, STR_AIR_LEAK, STR_NFC
@@ -8,7 +8,7 @@ from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import set_config_value, get_config_value
 
 
-class AirLeakModel(ConfigModel):
+class AirLeakModel(BasicModel):
     nfc_changed = Signal(str)
 
     result_changed = Signal(str)
@@ -28,7 +28,7 @@ class AirLeakModel(ConfigModel):
         self.data_matrix = ''
         self.name = STR_AIR_LEAK
         self.baudrate = 9600
-        self.comport = get_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1)
+        self.comport = get_config_value(COMPORT_SECTION, MACHINE_COMPORT_1)
 
     @property
     def comport(self):
@@ -37,7 +37,7 @@ class AirLeakModel(ConfigModel):
     @comport.setter
     def comport(self, value):
         self._comport = value
-        set_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, value)
+        set_config_value(COMPORT_SECTION, MACHINE_COMPORT_1, value)
 
     @property
     def result(self):

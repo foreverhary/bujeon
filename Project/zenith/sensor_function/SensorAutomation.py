@@ -6,7 +6,7 @@ from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, Widget, get_time
-from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, YELLOW, RED
+from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, YELLOW
 from process_package.resource.string import STR_MIC, STR_NFC1, STR_NFC2, STR_NFCIN, STR_SEN, \
     STR_DATA_MATRIX, STR_AIR, STR_OK, STR_FUN, PROCESS_OK_RESULTS, STR_A, STR_B, STR_C, STR_NG, STR_SENSOR
 from process_package.screen.NGScreen import NGScreen
@@ -39,9 +39,9 @@ class SensorChannelAutomationControl(SensorChannelControl):
         for item, key in zip(split_list, self._model.error_code_result):
             self._model.error_code_result[key] = item == STR_OK
         if False in self._model.error_code_result.values():
-            self._model.result = STR_NG
+            self._model.machine_result = STR_NG
         else:
-            self._model.result = STR_OK
+            self._model.machine_result = STR_OK
 
         self.sql_update()
 
@@ -49,7 +49,7 @@ class SensorChannelAutomationControl(SensorChannelControl):
         self._mssql.start_query_thread(self._mssql.insert_pprd,
                                        self._model.data_matrix,
                                        get_time(),
-                                       self._model.result,
+                                       self._model.machine_result,
                                        STR_SENSOR,
                                        self._model.get_error_code(),
                                        socket.gethostbyname(socket.gethostname()))
@@ -63,40 +63,11 @@ class SensorChannelAutomationControl(SensorChannelControl):
             return
 
         self._model.data_matrix = data_matrix
-        self._model.result = ''
+        self._model.machine_result = ''
 
 
 class SensorChannelAutomationModel(SensorChannelModel):
-    def __init__(self, channel):
-        super(SensorChannelAutomationModel, self).__init__(channel)
-        self.data_matrix = ''
-        self.result = ''
-
-    @property
-    def data_matrix(self):
-        return self._data_matrix
-
-    @data_matrix.setter
-    def data_matrix(self, value):
-        self._data_matrix = value
-        self.data_matrix_changed.emit(value)
-
-    @property
-    def result(self):
-        return self._result
-
-    @result.setter
-    def result(self, value):
-        self._result = value
-        if not value:
-            self.result_clean.emit()
-            return
-        if value == STR_OK:
-            self.result_color_changed.emit(LIGHT_SKY_BLUE)
-        else:
-            self.result_color_changed.emit(RED)
-
-        self.result_changed.emit(value)
+    pass
 
 
 class SensorAutomationView(Widget):
@@ -128,10 +99,10 @@ class SensorAutomationView(Widget):
     def set_nfcs(self, nfcs):
         nfc_ports = []
         for port, nfc_name in nfcs.items():
-            if STR_NFCIN in nfc_name:
-                nfc_ports.append(port)
-                self.nfcin.set_port(port)
-            elif nfc_name == STR_NFC1:
+            # if STR_NFCIN in nfc_name:
+            #     nfc_ports.append(port)
+            #     self.nfcin.set_port(port)
+            if nfc_name == STR_NFC1:
                 self.channel1.set_port(port)
                 nfc_ports.append(port)
             elif nfc_name == STR_NFC2:
@@ -194,7 +165,7 @@ class SensorAutomationModel(QObject):
 class SensorChannelAutomation(SensorChannel):
     def __init__(self, channel):
         super(SensorChannelAutomation, self).__init__(channel)
-        self._model = SensorChannelAutomationModel(channel)
+        self._model = SensorChannelAutomationModel()
         self._control = SensorChannelAutomationControl(self._model)
 
         # view connect control
@@ -207,9 +178,7 @@ class SensorChannelAutomation(SensorChannel):
 
         # model connect view
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
-        self._model.result_changed.connect(self.result.setText)
-        self._model.result_clean.connect(self.result.clean)
-        self._model.result_color_changed.connect(self.result.set_background_color)
+        self._model.machine_result_changed.connect(self.result.setText)
 
 
 class SensorAutomationControl(QObject):

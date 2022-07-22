@@ -33,7 +33,7 @@ class SerialConnectModel(QObject):
         self._comport_open = bool(value)
         self.comport_open_changed.emit(self._comport_open)
         if self._comport_open:
-            set_config_value(CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, self.comport)
+            set_config_value(COMPORT_SECTION, MACHINE_COMPORT_1, self.comport)
 
     @property
     def available_comport(self):

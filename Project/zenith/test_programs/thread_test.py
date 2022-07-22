@@ -1,34 +1,50 @@
-import sys
-from threading import Thread
-
-from PyQt5.QtCore import QTimer, QCoreApplication
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QApplication
-
-from process_package.component.CustomComponent import Button
-from process_package.old.defined_variable_function import logger
+import time, os
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 
-class TestThread(QWidget):
+class Watcher:
+    DIRECTORY_TO_WATCH = "d:/work/400.test/002.file_test"
+
     def __init__(self):
-        super(TestThread, self).__init__()
-        self.setLayout(layout := QVBoxLayout())
-        layout.addWidget(quit := Button('quit'))
-        quit.clicked.connect(QCoreApplication.instance().quit)
-        self.timer = QTimer(self)
-        self.timer.start(2000)
-        self.timer.timeout.connect(self.timeout)
-        self.show()
+        self.observer = Observer()
 
-    def timeout(self):
-        logger.debug('timer')
-        self.ok = Thread(target=self.tt)
-        self.ok.start()
+    def run(self):
+        event_handler = Handler()
+        self.observer.schedule(event_handler, self.DIRECTORY_TO_WATCH, recursive=True)
+        self.observer.start()
+        try:
+            while True:
+                time.sleep(5)
+        except:
+            self.observer.stop()
+            print("Error")
 
-    def tt(self):
-        logger.debug('ok')
+        self.observer.join()
+
+
+class Handler(FileSystemEventHandler):
+
+    @staticmethod
+    def on_any_event(event):
+        if event.is_directory:
+            return None
+
+        elif event.event_type == 'created':
+            # Take any action here when a file is first created.
+            print(
+            "Received created event - %s." % event.src_path)
+            # def update(filename):
+            # os.chmod (event.src_path, 0775)
+
+        elif event.event_type == 'modified':
+            # Taken any action here when a file is modified.
+            print(
+            "Received modified event - %s." % event.src_path)
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = TestThread()
-    sys.exit(app.exec_())
+    print(
+    'Sites folder watchdog is running...')
+    w = Watcher()
+    w.run()

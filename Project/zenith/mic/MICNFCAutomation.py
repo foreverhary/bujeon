@@ -15,10 +15,8 @@ from process_package.screen.SplashScreen import SplashScreen
 class MICNFCAutomation(QApplication):
     def __init__(self, sys_argv):
         super(MICNFCAutomation, self).__init__(sys_argv)
-        self._model = MICNFCModel()
-        self._control = MICNFCControl(self._model)
-        self._view = MICNFCAutomationView(self._model, self._control)
-        self._control.begin()
+        self._control = MICNFCControl()
+        self._view = MICNFCAutomationView(self._control)
         self.load_nfc_window = SplashScreen("MIC Writer")
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
@@ -29,17 +27,11 @@ class MICNFCAutomation(QApplication):
         window_center(self._view)
         self.load_nfc_window.close()
 
-    def mid_clicked(self):
-        pass
-
-    def begin(self):
-        self._mssql.timer_for_db_connect()
-
 
 class MICNFCAutomationView(Widget):
-    def __init__(self, *args):
-        super(MICNFCAutomationView, self).__init__(*args)
-        self._model, self._control = args
+    def __init__(self, control):
+        super(MICNFCAutomationView, self).__init__()
+        self._control = control
         layout = QHBoxLayout(self)
         layout.addWidget(nfc1 := MICNFCAutoEach(STR_NFC1, self._control._mssql))
         layout.addWidget(nfc2 := MICNFCAutoEach(STR_NFC2, self._control._mssql))

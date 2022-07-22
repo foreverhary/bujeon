@@ -43,9 +43,6 @@ class MICNFCAutoEach(QWidget):
         self._model.result_clean.connect(self.result.clean)
         self._model.result_color_changed.connect(self.result.set_background_color)
 
-        self._model.begin()
-        self._control.begin()
-
     def set_port(self, value):
         self.nfc.set_port(value)
 

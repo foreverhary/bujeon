@@ -23,38 +23,38 @@ def get_value(value):
     return value
 
 
-def get_config_value(config_filename, section, option):
-    config = Config(config_filename)
+def get_config_value(section, option):
+    config = Config(CONFIG_FILE_NAME)
     return config.get_value(section, option)
 
 
-def set_config_value(config_filename, section, option, value):
-    config = Config(config_filename)
+def set_config_value(section, option, value):
+    config = Config(CONFIG_FILE_NAME)
     return config.set_value(section, option, value)
 
 
 def get_order_number():
-    return get_config_value(CONFIG_FILE_NAME, POP_SECTION, ORDER_NUMBER)
+    return get_config_value(POP_SECTION, ORDER_NUMBER)
 
 
 def set_order_number(value):
-    set_config_value(CONFIG_FILE_NAME, POP_SECTION, ORDER_NUMBER, value)
+    set_config_value(POP_SECTION, ORDER_NUMBER, value)
 
 
 def set_config_mssql(option, value):
-    set_config_value(CONFIG_FILE_NAME, MSSQL_SECTION, option, value)
+    set_config_value(MSSQL_SECTION, option, value)
 
 
 def get_config_mssql(option):
-    return get_config_value(CONFIG_FILE_NAME, MSSQL_SECTION, option)
+    return get_config_value(MSSQL_SECTION, option)
 
 
 def get_config_audio_bus(option):
-    return get_config_value(CONFIG_FILE_NAME, AUDIO_BUS_SECTION, option)
+    return get_config_value(AUDIO_BUS_SECTION, option)
 
 
 def set_config_audio_bus(option, value):
-    set_config_value(CONFIG_FILE_NAME, AUDIO_BUS_SECTION, option, value)
+    set_config_value(AUDIO_BUS_SECTION, option, value)
 
 
 class Config:

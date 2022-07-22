@@ -19,21 +19,17 @@ class MICNFCControl(QObject):
     nfc2_result_changed = Signal(str)
     nfc2_error_result_changed = Signal(dict)
 
-    def __init__(self, model):
+    def __init__(self):
         super(MICNFCControl, self).__init__()
-        self._model = model
         self._mssql = MSSQL(STR_MIC)
-
         self.update_db = UpdateDB()
-
         self.result_file_observer = Target(signal=self.file_path_signal)
-
         self.file_path_signal.connect(self.receive_file_name)
         self.start_file_observe()
         self.side, self.error, self.result = None, None, None
 
     def start_file_observe(self):
-        if not os.path.isdir(path := get_config_value(CONFIG_FILE_NAME, MIC_SECTION, FILE_PATH)):
+        if not os.path.isdir(path := get_config_value(MIC_SECTION, FILE_PATH)):
             return False
 
         if self.__getattribute__("result_file_observer") and self.result_file_observer.is_alive():
@@ -86,9 +82,3 @@ class MICNFCControl(QObject):
         elif side == 'R':
             self.nfc2_error_result_changed.emit(error)
             self.nfc2_result_changed.emit(result)
-
-    def mid_clicked(self):
-        pass
-
-    def begin(self):
-        self._mssql.timer_for_db_connect()

@@ -115,20 +115,11 @@ class SensorChannelLayout(QGroupBox):
     def connect_machine_button(self, not_key=None):
         if not_key:
             self.serialComboBox.setCurrentText(
-                get_config_value(
-                    CONFIG_FILE_NAME,
-                    COMPORT_SECTION,
-                    f"machine_comport_{self.channel}"
-                )
+                get_config_value(COMPORT_SECTION, f"machine_comport_{self.channel}")
             )
 
         if self.serial_machine.connect_serial(self.serialComboBox.currentText()):
-            set_config_value(
-                CONFIG_FILE_NAME,
-                COMPORT_SECTION,
-                f'machine_comport_{self.channel}',
-                self.serial_machine.port
-            )
+            set_config_value(COMPORT_SECTION, f'machine_comport_{self.channel}', self.serial_machine.port)
             self.serial_machine.start_machine_read()
         self.check_serial_connection()
 

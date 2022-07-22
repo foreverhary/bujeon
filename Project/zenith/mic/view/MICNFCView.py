@@ -10,9 +10,9 @@ from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_M
 
 
 class MICNFCView(Widget):
-    def __init__(self, *args):
+    def __init__(self, control):
         super(MICNFCView, self).__init__()
-        self._model, self._control = args
+        self._control = control
         layout = QHBoxLayout(self)
         layout.addWidget(nfc1 := MICNFCWriter(STR_NFC1, self._control._mssql))
         layout.addWidget(nfcin := MICNFCReader(STR_NFCIN))
