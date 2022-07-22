@@ -65,13 +65,13 @@ def read_ir_hall(ser):
 
 def ir_display(value):
     if 140 < value < 4500:
-        result = 'OK'
+        result = f'OK({value})'
         color = 'lightskyblue'
     elif value == 65535:
         result = 'OPEN'
         color = 'gray'
     else:
-        result = 'NG'
+        result = f'NG({value})'
         color = 'red'
 
     window['-IR-'].update(result, background_color=color)
@@ -83,7 +83,7 @@ def hall_background_color(value):
         hall.pop()
 
     if any([l for l in hall if l != -1]):
-        window['-HALL-'].update('OK', background_color='lightskyblue')
+        window['-HALL-'].update(f'OK({hall[0]})', background_color='lightskyblue')
     else:
         window['-HALL-'].update('OPEN', background_color='gray')
 

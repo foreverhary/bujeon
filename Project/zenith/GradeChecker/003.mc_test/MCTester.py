@@ -40,10 +40,12 @@ class MCTester(Widget):
         test_layout = QGridLayout(send_write)
         test_layout.addWidget(Label('ADDRESS'), 0, 0)
         test_layout.addWidget(Label('VALUE'), 1, 0)
+        test_layout.addWidget(Label('RESULT'), 2, 0)
         test_layout.addWidget(addr := QComboBox(), 0, 1)
-        test_layout.addWidget(value := LineEdit(), 1, 1)
-        test_layout.addWidget(read := Button('READ'), 2, 0)
-        test_layout.addWidget(write := Button('WRITE'), 2, 1)
+        test_layout.addWidget(value := QComboBox(), 1, 1)
+        test_layout.addWidget(result := LineEdit(), 2, 1)
+        test_layout.addWidget(read := Button('READ'), 3, 0)
+        test_layout.addWidget(write := Button('WRITE'), 3, 1)
 
         # option
         ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"
@@ -54,7 +56,9 @@ class MCTester(Widget):
         port.setMaxLength(5)
         mode.addItems(['binary', 'ascii'])
         addr.addItems(['B20', 'B21', 'B22', 'B2A', 'B2B', 'B2C'])
+        value.addItems(['0', '1'])
         write.setDisabled(True)
+        result.setDisabled(True)
 
         ip.setText('192.168.0.1')
         port.setText('4001')
@@ -65,6 +69,8 @@ class MCTester(Widget):
         self.addr = addr
         self.value = value
         self.mode = mode
+        self.value = value
+        self.result = result
         self.read_button = read
         self.write_button = write
 
@@ -86,19 +92,19 @@ class MCTester(Widget):
         try:
             self._connect()
             value = self.pymc3e.batchread_bitunits(headdevice=self.addr.currentText(), readsize=1)
-            self.value.setText(str(value[0]))
-        except TimeoutError:
-            self.value.setText("Read TimeoutError")
+            self.result.setText(str(value[0]))
+        except Exception as e:
+            self.result.setText(str(type(e)))
         self.pymc3e.close()
 
     @debug_log
     def _write(self):
         try:
             self._connect()
-            self.pymc3e.batchwrite_bitunits(headdevice=self.addr.currentText(), values=[1])
-            self.value.setText(f"{self.addr.currentText()} write ok")
-        except TimeoutError:
-            self.value.setText("Write TimeoutError")
+            self.pymc3e.batchwrite_bitunits(headdevice=self.addr.currentText(), values=[int(self.value.currentText())])
+            self.result.setText(f"{self.addr.currentText()}, {self.value.currentText()} : write ok")
+        except Exception as e:
+            self.result.setText(str(type(e)))
         self.pymc3e.close()
 
     def _change_addr(self, index):

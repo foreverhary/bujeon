@@ -16,6 +16,7 @@ class NGScreen(QDialog):
         self.setLayout(layout := QVBoxLayout())
         layout.addWidget(ng_label := Label())
         ng_label.set_background_color(RED)
+        ng_label.setText(parent_control.error_msg)
 
         self.close_timer = QTimer(self)
         self.close_timer.timeout.connect(self.close)
@@ -23,27 +24,12 @@ class NGScreen(QDialog):
         self.ng_label = ng_label
         ng_label.set_font_size(100)
 
-        self.set_text(self._parent_control.previous)
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.show_modal()
 
     def closeEvent(self, e):
         self.close_timer.stop()
         self._parent_control.ng_screen_opened = False
-
-    def set_text(self, previous):
-        msg = ''
-        if data_matrix := previous.get(STR_DATA_MATRIX):
-            msg += data_matrix
-        for name, full_name in PROCESS_FULL_NAMES_NEW_VERSION.items():
-            if name == self._parent_control.process_name:
-                break
-            msg += '\n'
-            if process_result := previous.get(name):
-                msg += f"{full_name}:{process_result}"
-            else:
-                msg += f"{full_name}:MISS"
-        self.ng_label.setText(msg)
 
     def show_modal(self):
         return super().exec_()

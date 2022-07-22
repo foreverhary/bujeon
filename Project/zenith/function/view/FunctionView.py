@@ -6,11 +6,12 @@ from process_package.component.CustomComponent import Widget
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.MSSqlDialog import MSSqlDialog
+from process_package.component.PreviousCheckGroupLabel import PreviousCheckerGroupLabelWithNGScreen
 from process_package.resource.size import AIR_LEAK_STATUS_FIXED_HEIGHT, AUDIO_BUS_LABEL_MINIMUM_WIDTH, \
     AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT, \
     AUDIO_BUS_NFC_FIXED_HEIGHT, AUDIO_BUS_NFC_FONT_SIZE
 from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_PREVIOUS_PROCESS, STR_GRADE, STR_STATUS, \
-    STR_WRITE_STATUS, STR_FUNCTION
+    STR_WRITE_STATUS, STR_FUNCTION, STR_FUN
 
 
 class FunctionView(Widget):
@@ -24,8 +25,10 @@ class FunctionView(Widget):
         nfc_layout.addWidget(nfc_in := NFCComponent(STR_NFCIN))
         nfc_layout.addWidget(nfc1 := NFCComponent(STR_NFC1))
         nfc_layout.addWidget(nfc2 := NFCComponent(STR_NFC2))
-        layout.addWidget(previous_process := GroupLabel(STR_PREVIOUS_PROCESS,
-                                                        is_clean=True, clean_time=3000))
+        layout.addWidget(previous_process := PreviousCheckerGroupLabelWithNGScreen(STR_PREVIOUS_PROCESS,
+                                                                                   is_clean=True,
+                                                                                   clean_time=3000,
+                                                                                   process_name=STR_FUN))
         layout.addWidget(grade := GroupLabel(STR_GRADE))
         layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS, is_nfc=True))
         layout.addWidget(status := GroupLabel(STR_STATUS))
@@ -48,7 +51,8 @@ class FunctionView(Widget):
         # connect widgets to controller
 
         # listen for component event signals
-        nfc_in.nfc_data_out.connect(self._control.check_previous)
+        nfc_in.nfc_data_out.connect(previous_process.check_previous)
+        # nfc_in.nfc_data_out.connect(self._control.check_previous)
         nfc1.nfc_data_out.connect(self._control.receive_nfc_data)
         nfc2.nfc_data_out.connect(self._control.receive_nfc_data)
 
