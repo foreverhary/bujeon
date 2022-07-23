@@ -32,7 +32,6 @@ def read_ir_hall(ser):
     count = 0
     while True:
         try:
-
             raw_data = str(ser.readline().decode('utf-8'))
             if not raw_data:
                 ser.dtr = False
@@ -82,8 +81,11 @@ def hall_background_color(value):
     if len(hall) > 10:
         hall.pop()
 
-    if any([l for l in hall if l != -1]):
-        window['-HALL-'].update(f'OK({hall[0]})', background_color='lightskyblue')
+    if any(l for l in hall if l != -1):
+        if -5000 < hall[0] < -500:
+            window['-HALL-'].update(f'OK({hall[0]})', background_color='lightskyblue')
+        else:
+            window['-HALL-'].update(f'NG({hall[0]})', background_color='red')
     else:
         window['-HALL-'].update('OPEN', background_color='gray')
 
