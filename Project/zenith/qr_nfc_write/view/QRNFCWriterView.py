@@ -30,8 +30,8 @@ class QRNFCWriterView(Widget):
                 process_name=STR_MIC
             ))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, is_nfc=True))
-        layout.addWidget(status := GroupLabel(STR_STATUS))
-
+        # layout.addWidget(status := GroupLabel(STR_STATUS))
+        status = GroupLabel(STR_STATUS)
         nfc.setFixedHeight(NFC_FIXED_HEIGHT)
         # order.label.set_font_size(MATCHING_PREVIOUS_PROCESS_FONT_SIZE)
         # order.setMaximumHeight(MATCHING_PREVIOUS_PROCESS_MINIMUM_HEIGHT)

@@ -8,6 +8,7 @@ from qr_nfc_write.control.QRNFCWriterControl import QRNFCWriterControl
 from qr_nfc_write.model.QRNFCWriterModel import QRNFCWriterModel
 from qr_nfc_write.view.QRNFCWriterView import QRNFCWriterView
 
+QR_MATCHING_VERSION = 'v1.30'
 
 class QRNFCWriter(QApplication):
     def __init__(self, sys_argv):
@@ -15,6 +16,7 @@ class QRNFCWriter(QApplication):
         self._model = QRNFCWriterModel()
         self._control = QRNFCWriterControl(self._model)
         self._view = QRNFCWriterView(self._model, self._control)
+        self._view.setWindowTitle(f"QR Matching {QR_MATCHING_VERSION}")
         self.load_nfc_window = SplashScreen("QR MATCHING")
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
