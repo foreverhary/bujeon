@@ -9,13 +9,14 @@ from process_package.component.CustomComponent import get_time
 from process_package.resource.string import STR_NULL, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_mssql
-from process_package.tools.sqlite3_connect import sqlite_init, insert, up
+from process_package.tools.sqlite3_connect import sqlite_init, insert, up, insert_group, up_gruop
 
 
 class MSSQL(QObject):
     connection_status_changed = Signal(bool)
     pre_process_result_signal = Signal(str)
     order_list_changed = Signal(list)
+    data_matrix_with_air_touch_result_signal = Signal(list)
 
     def __init__(self, keyword=''):
         super(MSSQL, self).__init__()
@@ -40,6 +41,17 @@ class MSSQL(QObject):
         logger.debug(sql)
         cur.execute(sql)
         return cur.fetchone()
+
+    def insert_pprd_with_data_matrixs(self, dms, itime, result=None, pcode='', ecode='', ip=''):
+        cur = self.con.cursor()
+        sql = "INSERT INTO PPRD (DM, ITIME, RESULT, PCODE, ECODE, IP) VALUES "
+        for dm in dms:
+            sql += f"('{dm}','{itime}','{result}','{pcode or STR_NULL}','{ecode or STR_NULL}','{ip}'),"
+        sql = sql[:-1]
+        logger.debug(sql)
+        cur.execute(sql)
+        self.con.commit()
+        return True
 
     def insert_pprd(self, dm, itime, result=None, pcode='', ecode='', ip=''):
         cur = self.con.cursor()
@@ -109,21 +121,11 @@ class MSSQL(QObject):
         Thread(target=self.start_sql_func, args=(*args,), daemon=True).start()
 
     def start_sql_func(self, *args):
-        if "insert" in args[0].__name__:
+        if "insert_pprd_with_data_matrixs" in args[0].__name__:
+            insert_group(*args)
+        elif "insert" in args[0].__name__:
             insert(*args)
         self(*args)
-
-    def check_connect_db(self):
-        if self.con:
-            self.start_query_thread(self.get_time)
-        else:
-            self.start_query_thread(self.get_mssql_conn)
-
-    def timer_for_db_connect(self):
-        pass
-        # self.db_connect_timer = QTimer(self)
-        # self.db_connect_timer.start(CHECK_DB_TIME)
-        # self.db_connect_timer.timeout.connect(self.check_connect_db)
 
     def __call__(self, func, *args, **kwargs):
         try:
@@ -139,7 +141,9 @@ class MSSQL(QObject):
             logger.error(f"{type(e)} : {e}")
             logger.error(f"{func.__name__} To Do error proces")
         else:
-            if 'insert' in func.__name__:
+            if "insert_pprd_with_data_matrixs" in func.__name__:
+                up_gruop(args[0], args[1])
+            elif 'insert' in func.__name__:
                 up(func, *args)
             self.con.close()
             return return_value
@@ -168,6 +172,14 @@ class MSSQL(QObject):
     def select_pprd_with_data_matrix(self, dm):
         self.cur.execute(f"select DM, ITIME, RESULT, PCODE, ECODE, IP from PPRD where DM = '{dm}' order by ITIME desc")
         return self.cur.fetchall()
+
+    def select_pprd_with_data_matrix_and_air_touch(self, dm):
+        self.cur.execute(
+            f"select DM, ITIME, RESULT, PCODE, ECODE, IP "
+            f"from PPRD "
+            f"where DM = '{dm}' and (PCODE = 'AIR' or PCODE = 'TOUCH')"
+            f"order by PCODE asc, ITIME desc")
+        self.data_matrix_with_air_touch_result_signal.emit(self.cur.fetchall())
 
 
 if __name__ == '__main__':

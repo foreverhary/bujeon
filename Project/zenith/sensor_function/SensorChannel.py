@@ -58,7 +58,7 @@ class SensorChannel(QGroupBox):
 
         # model connect view
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
-        self._model.data_matrix_color_changed.connect(self.data_matrix.set_background_color)
+        self._model.data_matrix_background_color_changed.connect(self.data_matrix.set_background_color)
         self._model.machine_result_changed.connect(self.result.setText)
 
     def exclude_nfc_ports(self, value):
@@ -114,7 +114,7 @@ class SensorChannelControl(QObject):
 
     @Slot(dict)
     def receive_nfc_data(self, value):
-        self._model.data_matrix_color = LIGHT_SKY_BLUE
+        self._model.data_matrix_background_color = LIGHT_SKY_BLUE
 
         if not self._model.machine_result:
             return

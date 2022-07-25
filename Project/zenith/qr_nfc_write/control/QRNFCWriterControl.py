@@ -1,13 +1,12 @@
 import socket
 
-from PySide2.QtCore import QObject, Signal, QTimer
+from PySide2.QtCore import QObject, Signal
 
-from process_package.component.CustomComponent import get_time
 from process_package.check_string import check_dm
+from process_package.component.CustomComponent import get_time
 from process_package.component.SearchDataMatrixLocal import SearchDataMatrixLocal
 from process_package.resource.color import LIGHT_SKY_BLUE
-from process_package.resource.number import CHECK_DB_UPDATE_TIME
-from process_package.resource.string import STR_OK, STR_DATA_MATRIX, STR_TOUCH
+from process_package.resource.string import STR_OK, STR_DATA_MATRIX, STR_TOUCH, STR_AIR
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
@@ -23,6 +22,7 @@ class QRNFCWriterControl(QObject):
 
         self.keyboard_listener = LineReadKeyboard()
         self._mssql = MSSQL(STR_TOUCH)
+        self._mssql.data_matrix_with_air_touch_result_signal.connect(self.receive_previous_result)
         self.update_db = UpdateDB()
 
         # controller event connect
@@ -67,14 +67,24 @@ class QRNFCWriterControl(QObject):
         if not self._model.data_matrix:
             return
 
-        if self._model.order_number:
-            self._mssql.start_query_thread(self._mssql.insert_pprh,
-                                           self._model.data_matrix,
-                                           self._model.order_number,
-                                           get_time())
+        self._mssql.start_query_thread(
+            self._mssql.select_pprd_with_data_matrix_and_air_touch,
+            self._model.data_matrix
+        )
 
-    def begin(self):
-        pass
+    def receive_previous_result(self, value):
+        db_result_to_dict = {STR_DATA_MATRIX: self._model.data_matrix}
+        for fetch in value:
+            if fetch[3] == 'AIR':
+                if not db_result_to_dict.get(STR_AIR):
+                    db_result_to_dict[STR_AIR] = fetch[2]
+            if fetch[3] == 'TOUCH':
+                if not db_result_to_dict.get(STR_TOUCH):
+                    db_result_to_dict[STR_TOUCH] = fetch[2]
+        self._model.previous_result = db_result_to_dict
+
+
+
 
     def mid_clicked(self):
         self.keyboard_disabled = True

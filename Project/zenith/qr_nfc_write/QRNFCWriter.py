@@ -15,8 +15,6 @@ class QRNFCWriter(QApplication):
         self._model = QRNFCWriterModel()
         self._control = QRNFCWriterControl(self._model)
         self._view = QRNFCWriterView(self._model, self._control)
-        self._model.begin()
-        self._control.begin()
         self.load_nfc_window = SplashScreen("QR MATCHING")
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 

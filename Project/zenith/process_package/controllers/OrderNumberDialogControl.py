@@ -33,6 +33,7 @@ class OrderNumberDialogControl(QObject):
     @Slot(int)
     def change_order_number_index(self, value):
         self._model.order_number_index = value
+        self._model.temp_index_reset.emit()
 
     @Slot(int)
     def change_order_number(self, value):
@@ -46,6 +47,10 @@ class OrderNumberDialogControl(QObject):
                                        self._model.order_keyword,
                                        self._model.material_keyword,
                                        self._model.model_keyword)
+
+    def set_temp_order(self, value):
+        if value:
+            self._model.order_number = ('000014311427', '000014311387')[value - 1]
 
     @Slot(bool)
     def change_connection_status(self, connection):

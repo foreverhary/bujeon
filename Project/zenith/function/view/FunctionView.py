@@ -2,16 +2,16 @@ from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu
 
 from function.FunctionConfig import FunctionConfig
+from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import Widget
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
-from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.PreviousCheckGroupLabel import PreviousCheckerGroupLabelWithNGScreen
 from process_package.resource.size import AIR_LEAK_STATUS_FIXED_HEIGHT, AUDIO_BUS_LABEL_MINIMUM_WIDTH, \
     AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT, \
     AUDIO_BUS_NFC_FIXED_HEIGHT, AUDIO_BUS_NFC_FONT_SIZE
 from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_PREVIOUS_PROCESS, STR_GRADE, STR_STATUS, \
-    STR_WRITE_STATUS, STR_FUNCTION, STR_FUN
+    STR_WRITE_STATUS, STR_FUN
 
 
 class FunctionView(Widget):
@@ -25,10 +25,14 @@ class FunctionView(Widget):
         nfc_layout.addWidget(nfc_in := NFCComponent(STR_NFCIN))
         nfc_layout.addWidget(nfc1 := NFCComponent(STR_NFC1))
         nfc_layout.addWidget(nfc2 := NFCComponent(STR_NFC2))
-        layout.addWidget(previous_process := PreviousCheckerGroupLabelWithNGScreen(STR_PREVIOUS_PROCESS,
-                                                                                   is_clean=True,
-                                                                                   clean_time=3000,
-                                                                                   process_name=STR_FUN))
+        layout.addWidget(
+            previous_process := PreviousCheckerGroupLabelWithNGScreen(
+                STR_PREVIOUS_PROCESS,
+                is_clean=True,
+                clean_time=3000,
+                process_name=STR_FUN
+            )
+        )
         layout.addWidget(grade := GroupLabel(STR_GRADE))
         layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS, is_nfc=True))
         layout.addWidget(status := GroupLabel(STR_STATUS))
@@ -43,7 +47,7 @@ class FunctionView(Widget):
         previous_process.setFixedHeight(AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT)
         status.setFixedHeight(AIR_LEAK_STATUS_FIXED_HEIGHT)
 
-        self.previous_process = previous_process.label
+        self.previous_process = previous_process
         self.grade = grade.label
         self.nfc = nfc.label
         self.status = status.label
@@ -52,7 +56,6 @@ class FunctionView(Widget):
 
         # listen for component event signals
         nfc_in.nfc_data_out.connect(previous_process.check_previous)
-        # nfc_in.nfc_data_out.connect(self._control.check_previous)
         nfc1.nfc_data_out.connect(self._control.receive_nfc_data)
         nfc2.nfc_data_out.connect(self._control.receive_nfc_data)
 
@@ -62,12 +65,9 @@ class FunctionView(Widget):
         self._control.nfc2_write.connect(nfc2.write)
 
         # listen for model event signals
-        self._model.nfc_in.nfc_changed.connect(nfc_in.set_port)
-        self._model.nfc1.nfc_changed.connect(nfc1.set_port)
-        self._model.nfc2.nfc_changed.connect(nfc2.set_port)
-
-        self._model.previous_changed.connect(self.previous_process.setText)
-        self._model.previous_color_changed.connect(self.previous_process.set_background_color)
+        self._model.nfc_in_change_port.connect(nfc_in.set_port)
+        self._model.nfc1_change_port.connect(nfc1.set_port)
+        self._model.nfc2_change_port.connect(nfc2.set_port)
 
         self._model.grade_changed.connect(self.grade.setText)
         self._model.grade_color_changed.connect(self.grade.set_color)

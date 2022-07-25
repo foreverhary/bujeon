@@ -3,19 +3,22 @@ import sys
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QApplication, QVBoxLayout
 
+from process_package.check_string import check_dm
 from process_package.component.CustomComponent import style_sheet_setting, window_center, Widget
 from process_package.component.CustomMixComponent import GroupLabel
-from process_package.check_string import check_dm
 from process_package.component.NFCComponent import NFCComponent
+from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import WHITE, BACK_GROUND_COLOR, RED
 from process_package.resource.size import RELEASE_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, RELEASE_DATA_MATRIX_FIXED_HEIGHT, \
     RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_RESULT_MIN_HEIGHT, RELEASE_GRADE_FONT_SIZE
 from process_package.resource.string import STR_RELEASE, STR_NFC1, STR_DATA_MATRIX, STR_RESULT, STR_NFC, STR_FUN, \
-    PROCESS_NAMES, STR_MISS, PROCESS_OK_RESULTS, PROCESS_FULL_NAMES, STR_NG, STR_A, STR_B, STR_C, grade_colors, \
+    STR_MISS, PROCESS_OK_RESULTS, PROCESS_FULL_NAMES, STR_NG, STR_A, STR_B, STR_C, grade_colors, \
     PROCESS_NAMES_WITHOUT_AIR_LEAK
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import read_beep, logger
 from process_package.tools.NFCSerialPort import NFCSerialPort
+
+RELEASE_PROCESS_VERSION = "v1.30"
 
 
 class ReleaseProcess(QApplication):
@@ -24,6 +27,7 @@ class ReleaseProcess(QApplication):
         self._model = ReleaseProcessModel()
         self._control = ReleaseProcessControl(self._model)
         self._view = ReleaseProcessView(self._model, self._control)
+        self._view.setWindowTitle(f"Release Process {RELEASE_PROCESS_VERSION}")
         self.load_nfc_window = SplashScreen(STR_RELEASE)
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
@@ -117,27 +121,14 @@ class ReleaseProcessControl(QObject):
         self.close_signal.emit()
 
 
-class ReleaseProcessModel(QObject):
+class ReleaseProcessModel(BasicModel):
     nfc_changed = Signal(str)
     nfc_connection_changed = Signal(str)
-
-    data_matrix_changed = Signal(str)
 
     result_changed = Signal(str)
     result_font_size_changed = Signal(int)
     result_font_color_changed = Signal(str)
     result_background_color_changed = Signal(str)
-
-    status_changed = Signal(str)
-
-    @property
-    def data_matrix(self):
-        return self._data_matrix
-
-    @data_matrix.setter
-    def data_matrix(self, value):
-        self._data_matrix = data_matrix if (data_matrix := check_dm(value)) else ''
-        self.data_matrix_changed.emit(self._data_matrix)
 
     @property
     def result(self):

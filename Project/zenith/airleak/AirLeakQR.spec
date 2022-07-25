@@ -4,8 +4,8 @@
 block_cipher = None
 
 
-a = Analysis(['ir_hall.py'],
-             pathex=[''],
+a = Analysis(['AirLeakQR.py'],
+             pathex=['../'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='ir_hall',
+          name='AirLeakQR',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

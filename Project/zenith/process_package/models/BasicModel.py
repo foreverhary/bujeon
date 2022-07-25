@@ -9,7 +9,7 @@ class BasicModel(QObject):
     order_number_changed = Signal(str)
 
     data_matrix_changed = Signal(str)
-    data_matrix_color_changed = Signal(str)
+    data_matrix_background_color_changed = Signal(str)
 
     machine_result_changed = Signal(str)
     machine_result_background_color_changed = Signal(str)
@@ -41,15 +41,15 @@ class BasicModel(QObject):
         self.data_matrix_changed.emit(value)
 
     @property
-    def data_matrix_color(self):
+    def data_matrix_background_color(self):
         if not hasattr(self, '_data_matrix_color'):
             self._data_matrix_color = ''
         return self._data_matrix_color
 
-    @data_matrix_color.setter
-    def data_matrix_color(self, value):
+    @data_matrix_background_color.setter
+    def data_matrix_background_color(self, value):
         self._data_matrix_color = value
-        self.data_matrix_color_changed.emit(value)
+        self.data_matrix_background_color_changed.emit(value)
 
     @property
     def machine_result(self):

@@ -10,6 +10,7 @@ class OrderNumberDialogModel(QObject):
     model_name_changed = Signal(str)
     order_number_changed = Signal(str)
     connection_changed = Signal(bool)
+    temp_index_reset = Signal()
 
     @property
     def date(self):

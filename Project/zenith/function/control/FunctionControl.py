@@ -2,18 +2,16 @@ import csv
 import os
 import socket
 
-from PySide2.QtCore import QObject, Slot, Signal, QTimer
+from PySide2.QtCore import QObject, Slot, Signal
 from xlrd import open_workbook
 
 from function.FunctionConfig import FunctionConfig
-from process_package.observer.FileObserver import Target
-from process_package.component.CustomComponent import get_time
 from process_package.MSSqlDialog import MSSqlDialog
+from process_package.component.CustomComponent import get_time
+from process_package.observer.FileObserver import Target
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
-from process_package.resource.number import CHECK_DB_UPDATE_TIME
-from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, STR_AIR, GRADE_FILE_PATH, \
-    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_MIC, STR_OK, STR_FUNCTION, STR_NG, PROCESS_NAMES, STR_SEN
-from process_package.screen.NGScreen import NGScreen
+from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, GRADE_FILE_PATH, \
+    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_FUNCTION, STR_NG, PROCESS_NAMES
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.db_update_from_file import UpdateDB
@@ -49,19 +47,6 @@ class FunctionControl(QObject):
         self.summary_signal.connect(self.summary_process)
 
         self.data_matrix = None
-
-    @Slot(dict)
-    def check_previous(self, value):
-        if self.ng_screen_opened:
-            return
-        if (data_matrix := value.get(STR_DATA_MATRIX)) \
-                and (value.get(STR_SEN) == STR_OK) \
-                and (value.get(STR_MIC) == STR_OK):
-            self._model.previous = data_matrix
-        else:
-            self.previous = value
-            self.ng_screen_opened = True
-            NGScreen(self)
 
     @Slot(dict)
     def receive_nfc_data(self, value):

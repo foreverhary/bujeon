@@ -1,4 +1,4 @@
-
+import time
 import PySimpleGUI as sg
 from serial import Serial, SerialException
 import serial.tools.list_ports as sp
@@ -58,19 +58,17 @@ def read_ir_hall(ser):
             print(e)
             window.close()
             os._exit(1)
-        except:
-            pass
 
 
 def ir_display(value):
     if 140 < value < 4500:
-        result = f'OK({value})'
+        result = 'OK'
         color = 'lightskyblue'
     elif value == 65535:
         result = 'OPEN'
         color = 'gray'
     else:
-        result = f'NG({value})'
+        result = 'NG'
         color = 'red'
 
     window['-IR-'].update(result, background_color=color)
@@ -82,10 +80,10 @@ def hall_background_color(value):
         hall.pop()
 
     if any(l for l in hall if l != -1):
-        if -5000 < hall[0] < -500:
-            window['-HALL-'].update(f'OK({hall[0]})', background_color='lightskyblue')
+        if -5000 < hall[0] < -1000:
+            window['-HALL-'].update('OK', background_color='lightskyblue')
         else:
-            window['-HALL-'].update(f'NG({hall[0]})', background_color='red')
+            window['-HALL-'].update('NG', background_color='red')
     else:
         window['-HALL-'].update('OPEN', background_color='gray')
 

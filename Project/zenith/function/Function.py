@@ -21,7 +21,6 @@ class Function(QApplication):
         self._control = FunctionControl(self._model)
         self._view = FunctionView(self._model, self._control)
         self._view.setWindowTitle(FUNCTION_VERSION)
-        self._model.begin_config_read()
         self.load_nfc_window = SplashScreen(STR_FUNCTION)
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 

@@ -1,65 +1,27 @@
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import Signal
 
-from process_package.resource.color import LIGHT_SKY_BLUE, WHITE
-from process_package.resource.string import STR_NFC1, STR_TAG_NFC_JIG, STR_DONE, STR_READY, STR_INSERT_ORDER_NUMBER, \
-    STR_NFC
+from process_package.models.BasicModel import BasicModel
+from process_package.resource.string import STR_NFC
 from process_package.tools.CommonFunction import logger
-from process_package.tools.Config import set_order_number, get_order_number
 
 
-class QRNFCWriterModel(QObject):
+class QRNFCWriterModel(BasicModel):
     nfc_changed = Signal(str)
-    order_changed = Signal(str)
-    data_matrix_changed = Signal(str)
-    data_matrix_background_changed = Signal(str)
+    previous_result_changed = Signal(dict)
     status_changed = Signal(str)
     status_color_changed = Signal(str)
 
     def __init__(self):
         super(QRNFCWriterModel, self).__init__()
-        self.data_matrix = ''
 
     @property
-    def order_number(self):
-        return self._order
+    def previous_result(self):
+        return self._previous_result
 
-    @order_number.setter
-    def order_number(self, value):
-        self.status = STR_READY if value else STR_INSERT_ORDER_NUMBER
-        self._order = value
-        self.order_changed.emit(value)
-        set_order_number(value)
-
-    @property
-    def data_matrix(self):
-        return self._data_matrix
-
-    @data_matrix.setter
-    def data_matrix(self, value):
-        self._data_matrix = value
-        self.data_matrix_changed.emit(self._data_matrix)
-        if value:
-            self.status = STR_TAG_NFC_JIG
-
-    @property
-    def data_matrix_background(self):
-        return self._data_matrix_background
-
-    @data_matrix_background.setter
-    def data_matrix_background(self, value):
-        self._data_matrix_background = value
-        self.data_matrix_background_changed.emit(value)
-
-    @property
-    def status(self):
-        return self._status
-
-    @status.setter
-    def status(self, value):
-        self._status = value
-        self.status_changed.emit(value)
-
-        self.status_color = LIGHT_SKY_BLUE if STR_DONE in value else WHITE
+    @previous_result.setter
+    def previous_result(self, value):
+        self._previous_result = value
+        self.previous_result_changed.emit(value)
 
     @property
     def status_color(self):
@@ -86,5 +48,3 @@ class QRNFCWriterModel(QObject):
                 self.nfc_changed.emit(port)
                 break
 
-    def begin(self):
-        self.order_number = get_order_number()

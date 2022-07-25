@@ -36,11 +36,13 @@ class OrderNumberDialogView(QDialog):
         setting_layout.addWidget(LeftAlignLabel('Order Number'), 0, 0)
         setting_layout.addWidget(LeftAlignLabel('Material Code'), 1, 0)
         setting_layout.addWidget(LeftAlignLabel('Model Name'), 2, 0)
-        setting_layout.addWidget(LeftAlignLabel('Order Edit'), 3, 0)
+        setting_layout.addWidget(LeftAlignLabel('Order Temp'), 3, 0)
+        setting_layout.addWidget(LeftAlignLabel('Order Edit'), 4, 0)
         setting_layout.addWidget(orderNumberComboBox := ComboBox(), 0, 1)
         setting_layout.addWidget(material := LeftAlignLabel(''), 1, 1)
         setting_layout.addWidget(model := LeftAlignLabel(''), 2, 1)
-        setting_layout.addWidget(orderNumberEdit := LineEdit(), 3, 1)
+        setting_layout.addWidget(orderTempComboBox := ComboBox(), 3, 1)
+        setting_layout.addWidget(orderNumberEdit := LineEdit(), 4, 1)
 
         layout.addLayout(button_layout := QHBoxLayout())
         button_layout.addWidget(saveButton := Button('SAVE'))
@@ -55,6 +57,8 @@ class OrderNumberDialogView(QDialog):
 
         saveButton.setMinimumWidth(150)
         cancelButton.setMinimumWidth(150)
+
+        orderTempComboBox.addItems(["Not Used", "Temp Left", "Temp Right"])
 
         self.calendar = calendar
         self.order_keyword = order_keyword
@@ -80,6 +84,7 @@ class OrderNumberDialogView(QDialog):
 
         self.order_number_combo.currentIndexChanged.connect(self._control.change_order_number_index)
         self.search_button.clicked.connect(self._control.get_order_list)
+        orderTempComboBox.currentIndexChanged.connect(self._control.set_temp_order)
 
         self.order_number_edit.textChanged.connect(self._control.change_order_number)
         self.saveButton.clicked.connect(self.save)
@@ -91,6 +96,7 @@ class OrderNumberDialogView(QDialog):
         self._model.model_name_changed.connect(self.model_name.setText)
         self._model.order_number_changed.connect(self.order_number_edit.setText)
         self._model.connection_changed.connect(self.search_button.setEnabled)
+        self._model.temp_index_reset.connect(lambda: orderTempComboBox.setCurrentIndex(0))
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 

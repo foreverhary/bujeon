@@ -1,6 +1,5 @@
 from PySide2.QtCore import Signal
 
-from function.model.NFCModel import NFCModel
 from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED, WHITE, GREEN, YELLOW
 from process_package.resource.string import STR_NFC1, \
@@ -11,13 +10,9 @@ from process_package.tools.Config import get_config_audio_bus
 
 
 class FunctionModel(BasicModel):
-    comport_changed = Signal(str)
-    comport_open_changed = Signal(bool)
-    available_comport_changed = Signal(list)
-
-    previous_changed = Signal(str)
-    previous_color_changed = Signal(str)
-
+    nfc_in_change_port = Signal(str)
+    nfc1_change_port = Signal(str)
+    nfc2_change_port = Signal(str)
     grade_changed = Signal(str)
     grade_color_changed = Signal(str)
 
@@ -39,24 +34,13 @@ class FunctionModel(BasicModel):
 
     def __init__(self):
         super(FunctionModel, self).__init__()
-        self.nfc_in = NFCModel()
-        self.nfc1 = NFCModel()
-        self.nfc2 = NFCModel()
         self.result = ''
-        self.error_code_result = {}
-
-    @property
-    def previous(self):
-        return self._previous
-
-    @previous.setter
-    def previous(self, value):
-        self._previous = value
-        self.previous_changed.emit(value)
-        self.previous_color_changed.emit(LIGHT_SKY_BLUE)
+        self.init_result()
 
     @property
     def grade(self):
+        if not hasattr(self, '_grade'):
+            self._grade = ''
         return self._grade
 
     @grade.setter
@@ -83,6 +67,8 @@ class FunctionModel(BasicModel):
 
     @property
     def grade_color(self):
+        if not hasattr(self, '_grade_color'):
+            self._grade_color = ''
         return self._grade_color
 
     @grade_color.setter
@@ -92,6 +78,8 @@ class FunctionModel(BasicModel):
 
     @property
     def result(self):
+        if not hasattr(self, '_result'):
+            self._result = ''
         return self._result
 
     @result.setter
@@ -100,6 +88,8 @@ class FunctionModel(BasicModel):
 
     @property
     def status(self):
+        if not hasattr(self, '_result'):
+            self._status = ''
         return self._status
 
     @status.setter
@@ -147,11 +137,11 @@ class FunctionModel(BasicModel):
         for port, nfc in value.items():
             logger.debug(f"{port}:{nfc}")
             if STR_NFCIN in nfc:
-                self.nfc_in.nfc_changed.emit(port)
+                self.nfc_in_change_port.emit(port)
             if nfc == STR_NFC1:
-                self.nfc1.nfc_changed.emit(port)
+                self.nfc1_change_port.emit(port)
             if nfc == STR_NFC2:
-                self.nfc2.nfc_changed.emit(port)
+                self.nfc2_change_port.emit(port)
 
     def get_error_code(self):
         return ','.join([
@@ -160,6 +150,3 @@ class FunctionModel(BasicModel):
 
     def init_result(self):
         self.error_code_result = {name: True for name in self.error_code}
-
-    def begin_config_read(self):
-        self.init_result()

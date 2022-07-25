@@ -36,6 +36,14 @@ def insert(func, *args):
         insert_pprd(*args)
 
 
+@deco_sqlite3
+def insert_group(cur, func, dms, itime, result, pcode='', ecode='', ip=''):
+    sql = "INSERT INTO PPRD VALUES "
+    for dm in dms:
+        sql += f"('{dm}','{itime}','{result}','{pcode or STR_NULL}','{ecode or STR_NULL}','{ip}', 0, 0),"
+    cur.execute(sql[:-1])
+
+
 def up(func, *args):
     if 'pprh' in func.__name__:
         update_pprh_up(args[0], args[2])
@@ -72,6 +80,10 @@ def select_pprd_not_update(cur):
     cur.execute("select DM, ITIME, RESULT, PCODE, ECODE, IP from PPRD where UP=0")
     return cur.fetchall()
 
+@deco_sqlite3
+def up_gruop(cur, dms, itime):
+    for dm in dms:
+        cur.execute(f"update PPRH SET UP = 1 where DM='{dm}' and ITIME='{itime}'")
 
 @deco_sqlite3
 def update_pprh_up(cur, dm, itime):
