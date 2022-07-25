@@ -29,7 +29,8 @@ class TouchView(Widget):
         layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
         comport_box.setLayout(comport := SerialComboHBoxLayout())
 
-        layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
+        # layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
+        order = GroupLabel(STR_ORDER_NUMBER)
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX,
                                                    font_size=TOUCH_DATA_MATRIX_FONT_SIZE))
         layout.addWidget(data_matrix_waiting := GroupLabel(title=STR_DATA_MATRIX_WAITING,
@@ -73,7 +74,7 @@ class TouchView(Widget):
         db_action = menu.addAction('DB Setting')
 
         action = menu.exec_(self.mapToGlobal(e.pos()))
-        if action == order_action:
-            OrderNumberDialog(self._model)
-        elif action == db_action:
+        # if action == order_action:
+        #     OrderNumberDialog(self.order)
+        if action == db_action:
             MSSqlDialog()

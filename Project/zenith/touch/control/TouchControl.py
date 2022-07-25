@@ -35,12 +35,12 @@ class TouchControl(QObject):
             self._model.data_matrix_waiting = data_matrix
         else:
             self._model.data_matrix = data_matrix
-        if data_matrix and self._model.order_number:
-            self._mssql.start_query_thread(self._mssql.insert_pprh,
-                                           data_matrix,
-                                           self._model.order_number,
-                                           get_time(),
-                                           )
+        # if data_matrix and self._model.order_number:
+        #     self._mssql.start_query_thread(self._mssql.insert_pprh,
+        #                                    data_matrix,
+        #                                    self._model.order_number,
+        #                                    get_time(),
+        #                                    )
 
     @Slot(str)
     def receive_serial_data(self, value):
