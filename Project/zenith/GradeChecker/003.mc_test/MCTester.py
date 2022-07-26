@@ -1,11 +1,11 @@
 import sys
-
-from PySide2.QtCore import QRegExp
-from PySide2.QtGui import QIntValidator, QRegExpValidator
-from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QGridLayout, QApplication, QComboBox
+import time
+from threading import Thread
 
 import pymcprotocol
-import socket
+from PySide2.QtCore import QRegExp, Signal
+from PySide2.QtGui import QIntValidator, QRegExpValidator
+from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QGridLayout, QApplication, QComboBox
 
 from component.CustomComponent import Widget, Label, LineEdit, Button
 from tools.CommonFunction import logger
@@ -15,14 +15,17 @@ def debug_log(func):
     def inner(*args, **kwargs):
         logger.debug(func.__name__)
         try:
-            logger.debug(f"{func.__name__} : {func(*args, **kwargs)}")
+            re_value = func(*args, **kwargs)
+            logger.debug(f"{func.__name__} : {re_value}")
         except Exception as e:
             logger.debug(f"{type(e)} : {e}")
-
+        return re_value
     return inner
 
 
 class MCTester(Widget):
+    status_changed = Signal(str)
+
     def __init__(self):
         super(MCTester, self).__init__()
 
@@ -31,21 +34,17 @@ class MCTester(Widget):
         ip_layout = QGridLayout(ip_setter)
         ip_layout.addWidget(Label('IP'), 0, 0)
         ip_layout.addWidget(Label('PORT'), 1, 0)
-        ip_layout.addWidget(Label('Mode'), 2, 0)
+        ip_layout.addWidget(Label('Grade'), 2, 0)
         ip_layout.addWidget(ip := LineEdit(), 0, 1)
         ip_layout.addWidget(port := LineEdit(), 1, 1)
-        ip_layout.addWidget(mode := QComboBox(), 2, 1)
+        ip_layout.addWidget(grade := QComboBox(), 2, 1)
 
         layout.addWidget(send_write := QGroupBox("Test Send Write"))
         test_layout = QGridLayout(send_write)
-        test_layout.addWidget(Label('ADDRESS'), 0, 0)
-        test_layout.addWidget(Label('VALUE'), 1, 0)
-        test_layout.addWidget(Label('RESULT'), 2, 0)
-        test_layout.addWidget(addr := QComboBox(), 0, 1)
-        test_layout.addWidget(value := QComboBox(), 1, 1)
-        test_layout.addWidget(result := LineEdit(), 2, 1)
-        test_layout.addWidget(read := Button('READ'), 3, 0)
-        test_layout.addWidget(write := Button('WRITE'), 3, 1)
+        test_layout.addWidget(Label('STATUS'), 0, 0)
+        test_layout.addWidget(status := LineEdit(), 0, 1)
+        test_layout.addWidget(start := Button('START'), 3, 0)
+        test_layout.addWidget(stop := Button('STOP'), 3, 1)
 
         # option
         ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"
@@ -54,11 +53,8 @@ class MCTester(Widget):
         ip.setValidator(ip_validator)
         port.setValidator(QIntValidator())
         port.setMaxLength(5)
-        mode.addItems(['binary', 'ascii'])
-        addr.addItems(['B20', 'B21', 'B22', 'B2A', 'B2B', 'B2C'])
-        value.addItems(['0', '1'])
-        write.setDisabled(True)
-        result.setDisabled(True)
+        grade.addItems(['A', 'B', 'C'])
+        status.setDisabled(True)
 
         ip.setText('192.168.0.1')
         port.setText('4001')
@@ -66,54 +62,75 @@ class MCTester(Widget):
         # assign
         self.ip = ip
         self.port = port
-        self.addr = addr
-        self.value = value
-        self.mode = mode
-        self.value = value
-        self.result = result
-        self.read_button = read
-        self.write_button = write
+        self.grade = grade
+        self.result = status
+        self.read_button = start
+        self.write_button = stop
 
         # event
-        read.clicked.connect(self._read)
-        write.clicked.connect(self._write)
-        addr.currentIndexChanged.connect(self._change_addr)
+        start.clicked.connect(self._start_plc)
+        stop.clicked.connect(self._stop_plc)
+
+        self.status_changed.connect(self.result.setText)
+        self.run_plc = False
 
         self.show()
 
         self.pymc3e = pymcprotocol.Type3E()
 
+    def _start_plc(self):
+        self.run_plc = True
+        Thread(target=self._plc_process, daemon=True).start()
+
+    def _stop_plc(self):
+        self.run_plc = False
+
     def _connect(self):
-        self.pymc3e.setaccessopt(commtype=self.mode.currentText())
+        self.pymc3e.setaccessopt(commtype='binary')
         self.pymc3e.connect(self.ip.text(), int(self.port.text()))
 
-    @debug_log
-    def _read(self):
+    def _plc_process(self):
+        while self.run_plc:
+            while not self._read('B20')[0]:
+                if not self.run_plc:
+                    break
+                time.sleep(0.1)
+
+            self._write('B21', [1])
+            time.sleep(0.2)
+            self._write('B21', [0])
+
+            self._write('B22', [1])
+            self._write(f'B2{self.grade.currentText()}', [1])
+            while not self._read('B23')[0]:
+                if not self.run_plc:
+                    break
+                time.sleep(0.1)
+
+            self._write('B22', [0])
+            self._write(f'B2{self.grade.currentText()}', [0])
+
+    # @debug_log
+    def _read(self, addr):
         try:
             self._connect()
-            value = self.pymc3e.batchread_bitunits(headdevice=self.addr.currentText(), readsize=1)
-            self.result.setText(str(value[0]))
+            value = self.pymc3e.batchread_bitunits(headdevice=addr, readsize=1)
+            self.pymc3e.close()
+            self.status_changed.emit(f"read : {addr}")
+            return value
         except Exception as e:
-            self.result.setText(str(type(e)))
-        self.pymc3e.close()
+            print(e)
+            return [0]
 
-    @debug_log
-    def _write(self):
+    # @debug_log
+    def _write(self, addr, value):
         try:
             self._connect()
-            self.pymc3e.batchwrite_bitunits(headdevice=self.addr.currentText(), values=[int(self.value.currentText())])
-            self.result.setText(f"{self.addr.currentText()}, {self.value.currentText()} : write ok")
+            self.pymc3e.batchwrite_bitunits(headdevice=addr, values=value)
+            self.pymc3e.close()
+            self.status_changed.emit(f"write : {addr}, {value}")
         except Exception as e:
-            self.result.setText(str(type(e)))
-        self.pymc3e.close()
-
-    def _change_addr(self, index):
-        if self.addr.currentText() == 'B20':
-            self.read_button.setEnabled(True)
-            self.write_button.setDisabled(True)
-        else:
-            self.read_button.setDisabled(True)
-            self.write_button.setEnabled(True)
+            pass
 
 
 if __name__ == '__main__':

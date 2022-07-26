@@ -1,5 +1,6 @@
 import logging
 import sys
+import time
 from threading import Thread
 
 import pymcprotocol as pm
@@ -12,7 +13,7 @@ from process_package.component.CustomComponent import Widget, style_sheet_settin
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.resource.string import STR_NFC, STR_DATA_MATRIX, STR_GRADE, grade_colors, STR_A, STR_B, STR_C, \
-    MSSQL_IP, MSSQL_PORT
+    MSSQL_IP, MSSQL_PORT, STR_STATUS
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_mssql
@@ -49,24 +50,25 @@ class GradeCheckerControl(QObject):
             if not self._model.grade:
                 continue
 
-            if not (value := self.read_plc('B20', 1)):
-                continue
+            while not self.read_plc('B20', 1)[0]:
+                time.sleep(0.1)
 
-            if value[0] != 1:
-                continue
+            self.write_plc('B21', [1])
+            time.sleep(0.2)
+            self.write_plc('B21', [0])
+            self.write_plc('B22', [1])
+            self.write_plc(f'B2{self._model.grade}', [1])
+            time.sleep(0.2)
 
-            if not self.write_plc('B21', [1]):
-                continue
-            if not self.write_plc('B22', [1]):
-                continue
-            if not self.write_plc(f'B2{self._model.grade}', [1]):
-                continue
+            self.write_plc('B22', [0])
+            self.write_plc(f'B2{self._model.grade}', [0])
 
     def read_plc(self, addr, size):
         try:
             self.pymc.connect(get_config_mssql(MSSQL_IP), int(get_config_mssql(MSSQL_PORT)))
             return_value = self.pymc.batchread_bitunits(headdevice=addr, readsize=size)
             self.pymc.close()
+            self._model.status = f"read : {addr}"
         except TimeoutError:
             return_value = None
         return return_value
@@ -76,6 +78,7 @@ class GradeCheckerControl(QObject):
             self.pymc.connect(get_config_mssql(MSSQL_IP), int(get_config_mssql(MSSQL_PORT)))
             self.pymc.batchwrite_bitunits(headdevice=addr, values=value)
             self.pymc.close()
+            self._model.status = f"write : {addr}, {value}"
             return True
         except TimeoutError:
             return False
@@ -98,6 +101,7 @@ class GradeCheckerModel(QObject):
     data_matrix_changed = Signal(str)
     grade_changed = Signal(str)
     grade_color_changed = Signal(str)
+    status_changed = Signal(str)
 
     @property
     def data_matrix(self):
@@ -135,6 +139,15 @@ class GradeCheckerModel(QObject):
                 self.nfc_set_port.emit(port)
                 break
 
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        self._status = value
+        self.status_changed.emit(value)
+
     def __init__(self):
         super(GradeCheckerModel, self).__init__()
         self.data_matrix = ''
@@ -151,6 +164,7 @@ class GradeCheckerView(Widget):
         layout.addWidget(nfc := NFCComponent(STR_NFC))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX))
         layout.addWidget(grade := GroupLabel(title=STR_GRADE))
+        layout.addWidget(status := GroupLabel(title=STR_STATUS))
 
         self.setWindowTitle("Grade Checker v0.1")
 
@@ -164,6 +178,7 @@ class GradeCheckerView(Widget):
         self.nfc = nfc
         self.data_matrix = data_matrix.label
         self.grade = grade.label
+        self.status = status
 
         # signal from component
         self.nfc.nfc_data_out.connect(self._control.receive_nfc_data)
@@ -173,6 +188,7 @@ class GradeCheckerView(Widget):
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
         self._model.grade_changed.connect(self.grade.setText)
         self._model.grade_color_changed.connect(self.grade.set_color)
+        self._model.status_changed.connect(self.status.setText)
 
     def contextMenuEvent(self, e):
         menu = QMenu(self)
