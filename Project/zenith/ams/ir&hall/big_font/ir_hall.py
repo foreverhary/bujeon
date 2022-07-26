@@ -6,6 +6,7 @@ import os
 import threading
 
 FONT_SIZE = 50
+SETTING_FILE = 'config.csv'
 
 sg.theme('DarkBlack1')
 
@@ -17,6 +18,37 @@ layout = [[sg.Button("RESET", key='RESET', size=(20, 1), font=('Helvetica', FONT
 
 window = sg.Window('IR & HALL', layout).Finalize()
 hall = []
+
+ir_min = 100
+ir_max = 6000
+hall_min = -5000
+hall_max = -1000
+
+
+def init_cfg():
+    global ir_min, ir_max, hall_min, hall_max
+    with open(SETTING_FILE, 'w') as f:
+        wr = csv.writer(f)
+        wr.writerow(['IR', ir_min, ir_max])
+        wr.writerow(['HALL', hall_min, hall_max])
+
+
+def read_cfg():
+    global ir_min, ir_max, hall_min, hall_max
+    if not os.path.isfile(SETTING_FILE):
+        init_cfg()
+        return
+
+    with open(SETTING_FILE, 'r') as f:
+        rd = csv.reader(f)
+
+        for line in rd:
+            if not line:
+                continue
+            if line[0] == 'IR':
+                ir_min, ir_max = list(map(int, line[1:3]))
+            if line[0] == 'HALL':
+                hall_min, hall_max = list(map(int, line[1:3]))
 
 
 def dtr_brige(ser):
@@ -58,10 +90,13 @@ def read_ir_hall(ser):
             print(e)
             window.close()
             os._exit(1)
+        except Exception as e:
+            print(e)
 
 
 def ir_display(value):
-    if 140 < value < 4500:
+    global ir_min, ir_max
+    if ir_min < value < ir_max:
         result = 'OK'
         color = 'lightskyblue'
     elif value == 65535:
@@ -75,12 +110,13 @@ def ir_display(value):
 
 
 def hall_background_color(value):
+    global hall_min, hall_max
     hall.insert(0, value)
     if len(hall) > 10:
         hall.pop()
 
     if any(l for l in hall if l != -1):
-        if -5000 < hall[0] < -1000:
+        if hall_min < hall[0] < hall_max:
             window['-HALL-'].update('OK', background_color='lightskyblue')
         else:
             window['-HALL-'].update('NG', background_color='red')
@@ -94,6 +130,8 @@ def make_serial(com):
     except:
         return None
 
+
+read_cfg()
 
 count = 0
 ser_list = []
