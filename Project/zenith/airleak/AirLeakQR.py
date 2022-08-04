@@ -143,6 +143,9 @@ class AirLeakChannel(QGroupBox):
             self.result_label.set_background_color(LIGHT_SKY_BLUE)
 
     def received_serial(self, value):
+        if not value:
+            return
+
         self.result.setText(STR_OK if STR_OK in value else STR_NG)
         self._mssql.start_query_thread(
             self._mssql.insert_pprd_with_data_matrixs,
