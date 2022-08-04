@@ -42,7 +42,7 @@ class NFCBox(QGroupBox):
         self.in_label = in_label.label
 
         self.id_edit.setText("BT6001000")
-        self.result_label.setText("AIR:OK,MIC:OK,FUN:B,SEN:OK")
+        self.result_label.setText("SEN:OK,MIC:OK,FUN:B")
 
         button.clicked.connect(lambda: self.nfc_write.emit(f"{self.id_edit.text()},"
                                                            f"{self.result_label.text()}"))

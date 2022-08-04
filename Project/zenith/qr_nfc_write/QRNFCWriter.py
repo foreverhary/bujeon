@@ -10,6 +10,7 @@ from qr_nfc_write.view.QRNFCWriterView import QRNFCWriterView
 
 QR_MATCHING_VERSION = 'v1.30'
 
+
 class QRNFCWriter(QApplication):
     def __init__(self, sys_argv):
         super(QRNFCWriter, self).__init__(sys_argv)

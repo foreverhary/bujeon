@@ -44,6 +44,9 @@ class PreviousCheckerGroupLabelWithNGScreen(PreviousCheckerGroupLabel):
             self.error_msg = f"{data_matrix}\n{error_msg[:-1]}"
             self.ng_screen_opened = True
             NGScreen(self)
+        else:
+            self.setText(f"{data_matrix}")
+            self.set_background_color(LIGHT_SKY_BLUE)
 
 
 class PreviousCheckerGroupLabelAirTouch(PreviousCheckerGroupLabel):

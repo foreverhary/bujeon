@@ -70,7 +70,7 @@ class TouchView(Widget):
     def contextMenuEvent(self, e):
         menu = QMenu(self)
 
-        order_action = menu.addAction('Order Number Setting')
+        # order_action = menu.addAction('Order Number Setting')
         db_action = menu.addAction('DB Setting')
 
         action = menu.exec_(self.mapToGlobal(e.pos()))

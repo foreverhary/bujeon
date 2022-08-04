@@ -16,13 +16,13 @@ layout = [[sg.Button("RESET", key='RESET', size=(20, 1), font=('Helvetica', FONT
           [sg.Input(key='-IR-', size=(10, 1), font=('Helvetica', FONT_SIZE)),
            sg.Input(key='-HALL-', size=(10, 1), font=('Helvetica', FONT_SIZE))]]
 
-window = sg.Window('IR & HALL', layout).Finalize()
+window = sg.Window('IR : 100 ~ 6000, HALL : -6000 ~ -100', layout).Finalize()
 hall = []
 
 ir_min = 100
 ir_max = 6000
-hall_min = -5000
-hall_max = -1000
+hall_min = -6000
+hall_max = -100
 
 
 def init_cfg():
@@ -88,8 +88,8 @@ def read_ir_hall(ser):
             hall_background_color(int(raw_data[1][5:]))
         except SerialException as e:
             print(e)
-            window.close()
-            os._exit(1)
+            # window.close()
+            # os._exit(1)
         except Exception as e:
             print(e)
 
@@ -131,7 +131,7 @@ def make_serial(com):
         return None
 
 
-read_cfg()
+# read_cfg()
 
 count = 0
 ser_list = []

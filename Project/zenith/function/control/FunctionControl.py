@@ -168,7 +168,6 @@ class FunctionControl(QObject):
 
     def begin(self):
         self.start_file_observe()
-        self._mssql.timer_for_db_connect()
 
     def right_clicked(self):
         FunctionConfig(self._model)

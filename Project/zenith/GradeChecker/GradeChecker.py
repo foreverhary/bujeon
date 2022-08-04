@@ -1,17 +1,17 @@
 import logging
 import sys
 import time
-from threading import Thread
+from threading import Thread, Timer
 
 import pymcprotocol as pm
-
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QApplication, QVBoxLayout, QMenu
 
+from NFCForGradeChecker import NFCComponentGradeChecker
 from PLCDialog import PLCDialog
 from process_package.component.CustomComponent import Widget, style_sheet_setting, window_center
 from process_package.component.CustomMixComponent import GroupLabel
-from process_package.component.NFCComponent import NFCComponent
+from process_package.models.BasicModel import BasicModel
 from process_package.resource.string import STR_NFC, STR_DATA_MATRIX, STR_GRADE, grade_colors, STR_A, STR_B, STR_C, \
     MSSQL_IP, MSSQL_PORT, STR_STATUS
 from process_package.screen.SplashScreen import SplashScreen
@@ -45,23 +45,41 @@ class GradeCheckerControl(QObject):
         self.plc_thread = Thread(target=self.plc_process, daemon=True)
         self.plc_thread.start()
 
+    def start_timer(self, func):
+        timer = Timer(0.1, func)
+        timer.daemon = True
+        timer.start()
+
+    def read_process(self):
+        if self.read_plc('B20', 1)[0]:
+            try:
+                self.write_plc('B21', [1])
+                self.write_plc('B22', [1])
+                self.write_plc(f'B2{self._model.grade}', [1])
+            except Exception as e:
+                logger.error(e)
+            self.start_timer(self.end_process)
+        else:
+            self.start_timer(self.read_process)
+
+    def end_process(self):
+        if self.read_plc('B23', 1)[0]:
+            try:
+                self.write_plc('B21', [0])
+                self.write_plc('B22', [0])
+                self.write_plc(f'B2{self._model.grade}', [0])
+                self._model.grade = ''
+            except Exception as e:
+                logger.error(e)
+            self.start_timer(self.plc_process)
+        else:
+            self.start_timer(self.end_process)
+
     def plc_process(self):
-        while True:
-            if not self._model.grade:
-                continue
-
-            while not self.read_plc('B20', 1)[0]:
-                time.sleep(0.1)
-
-            self.write_plc('B21', [1])
-            time.sleep(0.2)
-            self.write_plc('B21', [0])
-            self.write_plc('B22', [1])
-            self.write_plc(f'B2{self._model.grade}', [1])
-            time.sleep(0.2)
-
-            self.write_plc('B22', [0])
-            self.write_plc(f'B2{self._model.grade}', [0])
+        if self._model.grade:
+            self.start_timer(self.read_process)
+        else:
+            self.start_timer(self.plc_process)
 
     def read_plc(self, addr, size):
         try:
@@ -96,21 +114,10 @@ class GradeCheckerControl(QObject):
         logger.debug(value)
 
 
-class GradeCheckerModel(QObject):
+class GradeCheckerModel(BasicModel):
     nfc_set_port = Signal(str)
-    data_matrix_changed = Signal(str)
     grade_changed = Signal(str)
     grade_color_changed = Signal(str)
-    status_changed = Signal(str)
-
-    @property
-    def data_matrix(self):
-        return self._data_matrix
-
-    @data_matrix.setter
-    def data_matrix(self, value):
-        self._data_matrix = value
-        self.data_matrix_changed.emit(value)
 
     @property
     def grade(self):
@@ -139,15 +146,6 @@ class GradeCheckerModel(QObject):
                 self.nfc_set_port.emit(port)
                 break
 
-    @property
-    def status(self):
-        return self._status
-
-    @status.setter
-    def status(self, value):
-        self._status = value
-        self.status_changed.emit(value)
-
     def __init__(self):
         super(GradeCheckerModel, self).__init__()
         self.data_matrix = ''
@@ -161,7 +159,7 @@ class GradeCheckerView(Widget):
 
         # UI
         layout = QVBoxLayout(self)
-        layout.addWidget(nfc := NFCComponent(STR_NFC))
+        layout.addWidget(nfc := NFCComponentGradeChecker(STR_NFC))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX))
         layout.addWidget(grade := GroupLabel(title=STR_GRADE))
         layout.addWidget(status := GroupLabel(title=STR_STATUS))
