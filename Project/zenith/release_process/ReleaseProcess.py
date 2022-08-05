@@ -3,7 +3,6 @@ import sys
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QApplication, QVBoxLayout
 
-from process_package.check_string import check_dm
 from process_package.component.CustomComponent import style_sheet_setting, window_center, Widget
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
