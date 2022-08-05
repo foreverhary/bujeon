@@ -9,7 +9,7 @@ from process_package.resource.string import STR_NFC1, STR_NFC2, STR_SEN
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
-from sensor_function.SensorChannel import SensorChannel
+from SensorChannel import SensorChannel
 
 SENSOR_VERSION = 'IR SENSOR v1.30'
 

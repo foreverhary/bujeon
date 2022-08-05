@@ -3,16 +3,15 @@ import socket
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QGroupBox, QVBoxLayout
 
+from process_package.component.CustomComponent import Label, get_time, LabelNFC
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
-from process_package.component.CustomComponent import Label, get_time, LabelNFC
 from process_package.models.BasicModel import BasicModel
-from process_package.resource.color import LIGHT_SKY_BLUE, RED
+from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.string import STR_RESULT, STR_CON_OS, STR_POGO_OS, STR_LED, STR_HALL_IC, STR_VBAT_ID, \
-    STR_C_TEST, STR_BATTERY, STR_PROX_TEST, STR_MIC, STR_PCM, STR_SEN, CONFIG_FILE_NAME, COMPORT_SECTION, \
-    MACHINE_COMPORT_1, MACHINE_COMPORT_2, STR_DATA_MATRIX, PROCESS_NAMES, STR_SENSOR, STR_OK, STR_NG
+    STR_C_TEST, STR_BATTERY, STR_PROX_TEST, STR_MIC, STR_PCM, STR_SEN, MACHINE_COMPORT_1, MACHINE_COMPORT_2, \
+    STR_DATA_MATRIX, PROCESS_NAMES, STR_SENSOR, STR_OK, STR_NG
 from process_package.tools.CommonFunction import write_beep
-from process_package.tools.Config import get_config_value, set_config_value
 from process_package.tools.mssql_connect import MSSQL
 
 RESULT_HEIGHT = 350
@@ -29,8 +28,8 @@ class SensorChannel(QGroupBox):
         self.setTitle(f"Channel {channel}")
         layout = QVBoxLayout(self)
         layout.addLayout(comport := SerialComboHBoxLayout(
-            button_text='CONN',
-            port_cfg=MACHINE_COMPORT_1 if channel == 1 else MACHINE_COMPORT_2))
+                button_text='CONN',
+                port_cfg=MACHINE_COMPORT_1 if channel == 1 else MACHINE_COMPORT_2))
         layout.addWidget(Label('DM'))
         layout.addWidget(data_matrix := LabelNFC())
         layout.addWidget(Label(STR_RESULT))
