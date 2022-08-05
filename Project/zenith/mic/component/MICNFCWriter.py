@@ -18,6 +18,7 @@ NFC_HEIGHT = 60
 NFC_FONT_SIZE = 15
 MIC_COMPONENT_WIDTH = 420
 
+
 class MICNFCWriter(QWidget):
 
     def __init__(self, nfc_name, mssql):
@@ -151,7 +152,6 @@ class MICNFCWriterModel(BasicModel):
         self.data_matrix = None
         self.result = None
         self.nfc_status = None
-
 
     @property
     def result(self):

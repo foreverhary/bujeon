@@ -30,4 +30,3 @@ class MICNFCReader(QWidget):
 
     def set_port(self, value):
         self.nfc.set_port(value)
-

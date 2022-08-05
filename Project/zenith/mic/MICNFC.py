@@ -2,9 +2,8 @@ import sys
 
 from PySide2.QtWidgets import QApplication
 
-from mic.control.MICNFCControl import MICNFCControl
-from mic.model.MICNFCModel import MICNFCModel
-from mic.view.MICNFCView import MICNFCView
+from control.MICNFCControl import MICNFCControl
+from view.MICNFCView import MICNFCView
 from process_package.component.CustomComponent import style_sheet_setting, window_center
 from process_package.screen.SplashScreen import SplashScreen
 

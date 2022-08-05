@@ -6,7 +6,7 @@ from mic.component.MICNFCWriter import MICNFCWriter
 from mic.component.MICNFConfig import MICNFCConfig
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import Widget
-from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_MIC, STR_NFCIN1
+from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_NFCIN1
 
 
 class MICNFCView(Widget):

@@ -4,7 +4,7 @@ import os
 from PySide2.QtCore import QObject, Signal
 
 from process_package.observer.FileObserver import Target
-from process_package.resource.string import STR_MIC, CONFIG_FILE_NAME, MIC_SECTION, FILE_PATH, STR_OK, STR_PASS, STR_NG
+from process_package.resource.string import STR_MIC, MIC_SECTION, FILE_PATH, STR_OK, STR_PASS, STR_NG
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_value
 from process_package.tools.db_update_from_file import UpdateDB
@@ -54,6 +54,8 @@ class MICNFCControl(QObject):
         except IndexError:
             return
         error = {}
+        side = ''
+        result = ''
         for first, second in zip(*lines):
             if first == second:
                 if 'CH' in first:
