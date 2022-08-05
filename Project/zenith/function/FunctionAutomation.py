@@ -7,26 +7,28 @@ from PySide2.QtCore import Qt, QObject, Signal, Slot
 from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QMenu
 from xlrd import open_workbook
 
-from function.FunctionConfig import FunctionConfig
-from function.model.NFCModel import NFCModel
+from FunctionConfig import FunctionConfig
+from model.NFCModel import NFCModel
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, window_right, Widget, get_time
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.models.BasicModel import BasicModel
 from process_package.observer.FileObserver import Target
-from process_package.resource.color import LIGHT_SKY_BLUE, GREEN, WHITE, YELLOW, RED
+from process_package.resource.color import GREEN, WHITE, YELLOW, RED
 from process_package.resource.size import AUDIO_BUS_LABEL_MINIMUM_WIDTH, AUDIO_BUS_NFC_FIXED_HEIGHT, \
     AUDIO_BUS_NFC_FONT_SIZE
-from process_package.resource.string import STR_FUNCTION, STR_NFC1, STR_NFC2, STR_GRADE, STR_WRITE_STATUS, STR_STATUS, \
-    STR_AIR_LEAK, STR_FUN, STR_DATA_MATRIX, STR_SPL, STR_THD, STR_IMP, STR_MIC_FRF, STR_RUB_BUZ, \
+from process_package.resource.string import STR_FUNCTION, STR_NFC1, STR_NFC2, STR_GRADE, STR_AIR_LEAK, STR_FUN, \
+    STR_DATA_MATRIX, STR_SPL, STR_THD, STR_IMP, STR_MIC_FRF, STR_RUB_BUZ, \
     STR_HOHD, STR_POLARITY, B_GRADE_MAX, STR_NG, A_GRADE_MAX, STR_B, C_GRADE_MAX, STR_A, C_GRADE_MIN, STR_C, \
-    STR_WRITE_DONE, SUMMARY_FILE_PATH, GRADE_FILE_PATH
+    SUMMARY_FILE_PATH, GRADE_FILE_PATH
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
+
+FUNCTION_AUTOMATION_VERSION = f"{STR_FUNCTION} Automation v.0.2"
 
 
 class FunctionAutomation(QApplication):
@@ -35,6 +37,7 @@ class FunctionAutomation(QApplication):
         self._model = FunctionAutomationModel()
         self._control = FunctionAutomationControl(self._model)
         self._view = FunctionAutomationView(self._model, self._control)
+        self._view.setWindowTitle(FUNCTION_AUTOMATION_VERSION)
         self._model.begin_config_read()
         self.load_nfc_window = SplashScreen(STR_FUNCTION)
         self.load_nfc_window.start_signal.connect(self.show_main_window)
@@ -69,8 +72,6 @@ class FunctionAutomationView(Widget):
 
         self.grade = grade.label
         self.data_matrix = data_matrix.label
-
-        self.setWindowTitle(f"{STR_FUNCTION} Automation v.0.1")
 
         # connect widgets to controller
 
@@ -153,7 +154,7 @@ class FunctionAutomationControl(QObject):
         if not self._model.grade:
             return
 
-        if not (grade := value.get(STR_GRADE)):
+        if (grade := value.get(STR_GRADE)) != self._model.grade:
             self.nfc1_write.emit(f"{data_matrix},{self._model.grade}")
             self.nfc2_write.emit(f"{data_matrix},{self._model.grade}")
             self.delay_write_count = 3
@@ -164,7 +165,7 @@ class FunctionAutomationControl(QObject):
         self._mssql.start_query_thread(self._mssql.insert_pprd,
                                        self._model.data_matrix,
                                        get_time(),
-                                       self._model.result,
+                                       self._model.machine_result,
                                        STR_FUNCTION,
                                        self._model.get_error_code(),
                                        socket.gethostbyname(socket.gethostname()))
@@ -195,7 +196,7 @@ class FunctionAutomationControl(QObject):
             sheet = open_workbook(file_path).sheet_by_name('Summary')
             self.parse_and_check_result(sheet)
             self.sql_update()
-            self._model.status = 'NFC TAG'
+            self._model.grade = ''
         except ValueError as e:
             logger.error(type(e))
         except Exception as e:
@@ -219,8 +220,7 @@ class FunctionAutomationControl(QObject):
             for key in self._model.error_code_result:
                 if key in name and 'Failed' in result_value:
                     self._model.error_code_result[key] = False
-        self._model.result = self._model.grade
-        self._model.result = STR_NG if False in self._model.error_code_result.values() else self._model.grade
+        self._model.machine_result = STR_NG if False in self._model.error_code_result.values() else self._model.grade
 
     def start_file_observe(self):
         if self.start_grade_file_observe() and self.start_summary_file_observe():
@@ -249,20 +249,11 @@ class FunctionAutomationControl(QObject):
 
     def begin(self):
         self.start_file_observe()
-        self._mssql.timer_for_db_connect()
-
-    def right_clicked(self):
-        FunctionConfig(self._model)
-
-    def mid_clicked(self):
-        MSSqlDialog()
 
 
 class FunctionAutomationModel(BasicModel):
     grade_changed = Signal(str)
     grade_color_changed = Signal(str)
-
-    data_matrix_changed = Signal(str)
 
     error_code = {
         STR_SPL: 1,
@@ -278,12 +269,12 @@ class FunctionAutomationModel(BasicModel):
         super(FunctionAutomationModel, self).__init__()
         self.nfc1 = NFCModel()
         self.nfc2 = NFCModel()
-        self.data_matrix = ''
-        self.result = ''
-        self.error_code_result = {}
+        self.init_result()
 
     @property
     def grade(self):
+        if not hasattr(self, '_grade'):
+            self._grade = ''
         return self._grade
 
     @grade.setter
@@ -304,8 +295,10 @@ class FunctionAutomationModel(BasicModel):
                 self._grade = ''
             self.grade_changed.emit(f"{self._grade} : {value:.2f}")
             self.grade_color = color
+            self.data_matrix = ''
         elif isinstance(value, str):
             self._grade = value
+            self.grade_changed.emit('')
 
     @property
     def grade_color(self):
@@ -315,24 +308,6 @@ class FunctionAutomationModel(BasicModel):
     def grade_color(self, value):
         self._grade_color = value
         self.grade_color_changed.emit(value)
-
-    @property
-    def result(self):
-        return self._result
-
-    @result.setter
-    def result(self, value):
-        self.grade = ''
-        self._result = value
-
-    @property
-    def data_matrix(self):
-        return self._data_matrix
-
-    @data_matrix.setter
-    def data_matrix(self, value):
-        self._data_matrix = value
-        self.data_matrix_changed.emit(value)
 
     @property
     def nfcs(self):

@@ -7,13 +7,15 @@ from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QMenu
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, Widget, get_time
 from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, YELLOW
-from process_package.resource.string import STR_MIC, STR_NFC1, STR_NFC2, STR_NFCIN, STR_SEN, \
+from process_package.resource.string import STR_MIC, STR_NFC1, STR_NFC2, STR_SEN, \
     STR_DATA_MATRIX, STR_AIR, STR_OK, STR_FUN, PROCESS_OK_RESULTS, STR_A, STR_B, STR_C, STR_NG, STR_SENSOR
 from process_package.screen.NGScreen import NGScreen
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 from sensor_function.SensorChannel import SensorChannel, SensorChannelModel, SensorChannelControl
+
+TITLE = 'IR SENSOR Automation v0.2'
 
 
 class SensorChannelAutomationControl(SensorChannelControl):
@@ -91,7 +93,6 @@ class SensorAutomationView(Widget):
 
         # listen for model event signals
 
-        self.setWindowTitle('IR SENSOR Automation v0.1')
         self.setMinimumWidth(640)
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)  # | Qt.FramelessWindowHint)
@@ -193,26 +194,8 @@ class SensorAutomationControl(QObject):
         self.ng_screen_opened = False
         self.update_db = UpdateDB()
 
-    @Slot(dict)
-    def check_previous(self, value):
-        if self.ng_screen_opened:
-            return
-        if (data_matrix := value.get(STR_DATA_MATRIX)) \
-                and (value.get(STR_AIR) == STR_OK) \
-                and (value.get(STR_MIC) == STR_OK) \
-                and (value.get(STR_FUN) in PROCESS_OK_RESULTS):
-            self._model.previous = data_matrix
-            self._model.grade = value.get(STR_FUN)
-        else:
-            self.previous = value
-            self.ng_screen_opened = True
-            NGScreen(self)
-
     def mid_clicked(self):
         pass
-
-    # def update_db(self):
-    #     UpdateDB()
 
     def begin(self):
         pass
@@ -224,6 +207,7 @@ class SensorAutomation(QApplication):
         self._model = SensorAutomationModel()
         self._control = SensorAutomationControl(self._model)
         self._view = SensorAutomationView(self._model, self._control)
+        self._view.setWindowTitle(TITLE)
         self.load_nfc_window = SplashScreen("Sensor Process")
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
