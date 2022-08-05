@@ -5,8 +5,6 @@ import socket
 from PySide2.QtCore import QObject, Slot, Signal
 from xlrd import open_workbook
 
-from function.FunctionConfig import FunctionConfig
-from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import get_time
 from process_package.observer.FileObserver import Target
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
@@ -168,9 +166,3 @@ class FunctionControl(QObject):
 
     def begin(self):
         self.start_file_observe()
-
-    def right_clicked(self):
-        FunctionConfig(self._model)
-
-    def mid_clicked(self):
-        MSSqlDialog()
