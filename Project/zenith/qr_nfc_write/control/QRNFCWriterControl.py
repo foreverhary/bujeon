@@ -45,13 +45,13 @@ class QRNFCWriterControl(QObject):
         if self._model.data_matrix == value.get(STR_DATA_MATRIX):
             logger.debug("DONE!!!")
             write_beep()
-            self._mssql.start_query_thread(self._mssql.insert_pprd,
-                                           self._model.data_matrix,
-                                           get_time(),
-                                           STR_OK,
-                                           STR_TOUCH,
-                                           '',
-                                           socket.gethostbyname(socket.gethostname()))
+            # self._mssql.start_query_thread(self._mssql.insert_pprd,
+            #                                self._model.data_matrix,
+            #                                get_time(),
+            #                                STR_OK,
+            #                                STR_TOUCH,
+            #                                '',
+            #                                socket.gethostbyname(socket.gethostname()))
             self._model.status = f"{self._model.data_matrix} IS WRITTEN DONE"
             self._model.data_matrix = ''
         else:

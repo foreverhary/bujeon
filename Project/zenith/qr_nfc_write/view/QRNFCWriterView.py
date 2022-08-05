@@ -64,11 +64,8 @@ class QRNFCWriterView(Widget):
     def contextMenuEvent(self, e):
         menu = QMenu(self)
 
-        order_action = menu.addAction('Order Number Setting')
         db_action = menu.addAction('DB Setting')
 
         action = menu.exec_(self.mapToGlobal(e.pos()))
-        if action == order_action:
-            OrderNumberDialog(self._model)
-        elif action == db_action:
+        if action == db_action:
             MSSqlDialog()
