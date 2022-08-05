@@ -46,14 +46,14 @@ class TouchControl(QObject):
     def receive_serial_data(self, value):
         if "TEST RESULT" in value and self._model.data_matrix:
             self._model.machine_result = STR_OK if STR_OK in value else STR_NG
-            if self._model.order_number:
-                self._mssql.start_query_thread(self._mssql.insert_pprd,
-                                               self._model.data_matrix,
-                                               get_time(),
-                                               self._model.machine_result,
-                                               STR_TOUCH,
-                                               '',
-                                               socket.gethostbyname(socket.gethostname()))
+            # if self._model.order_number:
+            self._mssql.start_query_thread(self._mssql.insert_pprd,
+                                           self._model.data_matrix,
+                                           get_time(),
+                                           self._model.machine_result,
+                                           STR_TOUCH,
+                                           '',
+                                           socket.gethostbyname(socket.gethostname()))
 
-                self._model.data_matrix = self._model.data_matrix_waiting
-                self._model.data_matrix_waiting = ''
+            self._model.data_matrix = self._model.data_matrix_waiting
+            self._model.data_matrix_waiting = ''
