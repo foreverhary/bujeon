@@ -122,6 +122,7 @@ NFC_COMPORT_1 = 'nfc_comport_1'
 NFC_COMPORT_2 = 'nfc_comport_2'
 MACHINE_COMPORT_1 = 'machine_comport_1'
 MACHINE_COMPORT_2 = 'machine_comport_2'
+MACHINE_COMPORT = 'machine_comport_'
 
 ORDER_NUMBER = 'order_number'
 
