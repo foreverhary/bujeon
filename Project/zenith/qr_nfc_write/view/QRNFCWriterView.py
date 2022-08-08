@@ -1,7 +1,6 @@
 from PySide2.QtWidgets import QVBoxLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.OrderNumberDialog import OrderNumberDialog
 from process_package.component.CustomComponent import Widget
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
@@ -41,6 +40,7 @@ class QRNFCWriterView(Widget):
         status.setMaximumHeight(MATCHING_STATUS_MAXIMUM_HEIGHT)
 
         self.nfc = nfc
+        self.previous = previous
         # self.order = order.label
         self.data_matrix = data_matrix.label
         self.status = status.label

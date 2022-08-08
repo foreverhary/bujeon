@@ -46,14 +46,6 @@ class QRNFCWriterControl(QObject):
         if self._model.data_matrix == value.get(STR_DATA_MATRIX):
             logger.debug("DONE!!!")
             write_beep()
-            # self._mssql.start_query_thread(self._mssql.insert_pprd,
-            #                                self._model.data_matrix,
-            #                                get_time(),
-            #                                STR_OK,
-            #                                STR_TOUCH,
-            #                                '',
-            #                                socket.gethostbyname(socket.gethostname()))
-            self._model.status = f"{self._model.data_matrix} IS WRITTEN DONE"
             self._model.data_matrix = ''
         else:
             logger.debug("WRITE!!")
@@ -83,9 +75,6 @@ class QRNFCWriterControl(QObject):
                 if not db_result_to_dict.get(STR_TOUCH):
                     db_result_to_dict[STR_TOUCH] = fetch[2]
         self._model.previous_result = db_result_to_dict
-
-
-
 
     def mid_clicked(self):
         self.keyboard_disabled = True

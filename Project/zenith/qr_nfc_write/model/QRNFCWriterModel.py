@@ -61,4 +61,3 @@ class QRNFCWriterModel(BasicModel):
                 self._nfc = port
                 self.nfc_changed.emit(port)
                 break
-
