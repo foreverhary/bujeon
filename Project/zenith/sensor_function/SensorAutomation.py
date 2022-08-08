@@ -7,9 +7,8 @@ from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QMenu
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, Widget, get_time
 from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, YELLOW
-from process_package.resource.string import STR_MIC, STR_NFC1, STR_NFC2, STR_SEN, \
-    STR_DATA_MATRIX, STR_AIR, STR_OK, STR_FUN, PROCESS_OK_RESULTS, STR_A, STR_B, STR_C, STR_NG, STR_SENSOR
-from process_package.screen.NGScreen import NGScreen
+from process_package.resource.string import STR_NFC1, STR_NFC2, STR_SEN, \
+    STR_DATA_MATRIX, STR_OK, STR_A, STR_B, STR_C, STR_NG, STR_SENSOR
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
@@ -100,9 +99,6 @@ class SensorAutomationView(Widget):
     def set_nfcs(self, nfcs):
         nfc_ports = []
         for port, nfc_name in nfcs.items():
-            # if STR_NFCIN in nfc_name:
-            #     nfc_ports.append(port)
-            #     self.nfcin.set_port(port)
             if nfc_name == STR_NFC1:
                 self.channel1.set_port(port)
                 nfc_ports.append(port)
