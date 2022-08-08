@@ -9,7 +9,7 @@ from process_package.component.CustomComponent import get_time
 from process_package.observer.FileObserver import Target
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, GRADE_FILE_PATH, \
-    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_FUNCTION, STR_NG, PROCESS_NAMES
+    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_FUNCTION, STR_NG, PROCESS_NAMES_WITHOUT_AIR_LEAK
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.db_update_from_file import UpdateDB
@@ -62,7 +62,7 @@ class FunctionControl(QObject):
         if self.data_matrix != data_matrix or self._model.result != value.get(STR_FUN):
             self.data_matrix = data_matrix
             msg = data_matrix
-            for name in PROCESS_NAMES:
+            for name in PROCESS_NAMES_WITHOUT_AIR_LEAK:
                 if result := value.get(name):
                     msg += f",{name}:{result}"
                 if name == self.process_name:
