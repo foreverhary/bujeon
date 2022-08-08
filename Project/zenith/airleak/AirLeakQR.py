@@ -22,7 +22,7 @@ from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-AIR_LEAK_VERSION = 'v1.30'
+AIR_LEAK_VERSION = 'v1.31'
 
 
 class AirLeakQR(QApplication):
@@ -65,10 +65,17 @@ class AirLeakQRView(Widget):
         self.left_air_leak = left_air_leak
         self.right_air_leak = right_air_leak
 
+        self.left_air_leak.dm_full.connect(self.receive_dm_full)
+        self.right_air_leak.dm_full.connect(self.receive_dm_full)
+
         self.keyboard_listener = LineReadKeyboard()
         self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
 
         self.left_qr_enable = True
+
+    def receive_dm_full(self, value):
+        if value:
+            self.change_channel()
 
     def receive_serial_data(self, value):
         if self.left_qr_enable:
@@ -78,15 +85,18 @@ class AirLeakQRView(Widget):
 
     def input_keyboard_line(self, value):
         if STR_CHANGE in value:
-            self.left_qr_enable = False if self.left_qr_enable else True
-            self.left_air_leak.qr_enable.emit(self.left_qr_enable)
-            self.right_air_leak.qr_enable.emit(not self.left_qr_enable)
+            self.change_channel()
             return
 
         if self.left_qr_enable:
             self.left_air_leak.receive_keyboard.emit(value)
         else:
             self.right_air_leak.receive_keyboard.emit(value)
+
+    def change_channel(self):
+        self.left_qr_enable = False if self.left_qr_enable else True
+        self.left_air_leak.qr_enable.emit(self.left_qr_enable)
+        self.right_air_leak.qr_enable.emit(not self.left_qr_enable)
 
     def contextMenuEvent(self, e):
 
@@ -105,6 +115,7 @@ class AirLeakQRView(Widget):
 
 class AirLeakChannel(QGroupBox):
     qr_enable = Signal(bool)
+    dm_full = Signal(bool)
     receive_serial = Signal(str)
     receive_keyboard = Signal(str)
 
@@ -138,6 +149,7 @@ class AirLeakChannel(QGroupBox):
         if value:
             self.unit_label.set_background_color(LIGHT_SKY_BLUE)
             self.result_label.set_background_color()
+            self.result.clean()
         else:
             self.unit_label.set_background_color()
             self.result_label.set_background_color(LIGHT_SKY_BLUE)
@@ -148,15 +160,16 @@ class AirLeakChannel(QGroupBox):
 
         self.result.setText(STR_OK if STR_OK in value else STR_NG)
         self._mssql.start_query_thread(
-            self._mssql.insert_pprd_with_data_matrixs,
-            [unit.text() for unit in self.units if unit.text()],
-            get_time(),
-            self.result.text(),
-            STR_AIR,
-            '',
-            socket.gethostbyname(socket.gethostname())
+                self._mssql.insert_pprd_with_data_matrixs,
+                [unit.text() for unit in self.units if unit.text()],
+                get_time(),
+                self.result.text(),
+                STR_AIR,
+                '',
+                socket.gethostbyname(socket.gethostname())
         )
-        self.clean_units()
+        if STR_OK in value:
+            self.clean_units()
 
     def received_keyboard(self, value):
         if STR_RESET in value:
@@ -170,12 +183,20 @@ class AirLeakChannel(QGroupBox):
                 if not unit.text():
                     unit.setText(data_matrix)
                     self._mssql.start_query_thread(
-                        self._mssql.insert_pprh,
-                        data_matrix,
-                        get_order_number(),
-                        get_time()
+                            self._mssql.insert_pprh,
+                            data_matrix,
+                            get_order_number(),
+                            get_time()
                     )
+                    self.dm_full.emit(self.is_dm_full())
                     break
+
+    def is_dm_full(self):
+        for unit in self.units:
+            if not unit.text():
+                return False
+        else:
+            return True
 
     def clean_units(self):
         for unit in self.units:
