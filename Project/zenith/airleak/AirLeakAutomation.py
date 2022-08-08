@@ -11,6 +11,9 @@ from process_package.resource.string import STR_AIR_LEAK
 from process_package.screen.SplashScreen import SplashScreen
 
 
+AIR_LEAK_AUTOMATION_VERSION = f"{STR_AIR_LEAK} AUTOMATION v0.2"
+
+
 class AirLeakAutomation(QApplication):
     def __init__(self, sys_argv):
         super(AirLeakAutomation, self).__init__(sys_argv)
@@ -21,12 +24,13 @@ class AirLeakAutomation(QApplication):
         self._model = AirLeakAutomationModel()
         self._control = AirLeakAutomationControl(self._model)
         self._view = AirLeakAutomationView(self._model, self._control)
+        self._view.setWindowTitle(AIR_LEAK_AUTOMATION_VERSION)
         style_sheet_setting(self)
         self._model.nfcs = nfcs
         self._model.available_ports = get_serial_available_list()
-        self._view.show()
+        self._view.showMaximized()
         self._view.begin()
-        window_center(self._view)
+        # window_center(self._view)
         self.load_nfc_window.close()
 
 

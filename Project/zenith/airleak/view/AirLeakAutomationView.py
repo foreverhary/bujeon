@@ -8,11 +8,13 @@ from process_package.component.CustomComponent import Widget, get_time
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
+from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
 from process_package.resource.size import NFC_FIXED_HEIGHT, COMPORT_FIXED_HEIGHT
 from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESULT, STR_AIR_LEAK, STR_DATA_MATRIX, STR_OK, \
-    STR_NG, STR_AIR
+    STR_NG, STR_AIR, MACHINE_COMPORT, COMPORT_SECTION
 from process_package.tools.CommonFunction import logger
+from process_package.tools.Config import set_config_value
 from process_package.tools.mssql_connect import MSSQL
 
 
@@ -37,7 +39,7 @@ class AirLeakSlot(QGroupBox):
         self.nfc.set_port(value)
 
     def set_result(self, value):
-        self._model.result = value
+        self._model.machine_result = value
 
     def set_dtr(self, value):
         self.nfc.set_dtr(value)
@@ -48,13 +50,19 @@ class AirLeakSlot(QGroupBox):
     def write(self, value):
         self.nfc.write(value)
 
+    def set_available_ports(self, value):
+        self.comport.set_available_ports(value)
+
     def __init__(self, nfc_name):
         super(AirLeakSlot, self).__init__()
 
         self._model = AirLeakSlotModel()
         self._mssql = MSSQL(STR_AIR_LEAK)
+        self.setTitle(f"{MACHINE_COMPORT}{nfc_name[-1]}")
 
         layout = QVBoxLayout(self)
+        layout.addLayout(comport := SerialComboHBoxLayout(button_text='CONN',
+                                                          port_cfg=f"{MACHINE_COMPORT}{nfc_name[-1]}"))
         layout.addWidget(nfc := NFCComponent(nfc_name))
         layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX, is_nfc=True))
         layout.addWidget(result := GroupLabel(STR_RESULT))
@@ -65,11 +73,13 @@ class AirLeakSlot(QGroupBox):
         data_matrix.setFixedHeight(NFC_FIXED_HEIGHT)
 
         # assign
+        self.comport = comport
         self.nfc = nfc
         self.data_matrix = data_matrix.label
         self.result = result.label
 
         # event from out
+        self.comport.serial_output_data.connect(self.receive_serial_data)
         self.write_signal.connect(self.write)
 
         # event for control
@@ -80,10 +90,17 @@ class AirLeakSlot(QGroupBox):
         self._model.nfc_enable.connect(self.set_dtr)
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
         self._model.data_matrix_changed.connect(self.data_matrix_changed.emit)
-        self._model.result_changed.connect(self.result.setText)
-        self._model.result_changed.connect(self.update_sql)
-        self._model.result_color_changed.connect(self.result.set_background_color)
-        self._model.result_clean.connect(self.result.clean)
+        self._model.machine_result_changed.connect(self.result.setText)
+        self._model.machine_result_changed.connect(self.update_sql)
+        self._model.machine_result_background_color_changed.connect(self.result.set_background_color)
+        self._model.machine_result_clean.connect(self.result.clean)
+
+    @Slot(str)
+    def receive_serial_data(self, value):
+        if not value:
+            return
+
+        self._model.machine_result = STR_OK if STR_OK in value else STR_NG
 
     @Slot(dict)
     def received_nfc_data(self, value):
@@ -101,18 +118,15 @@ class AirLeakSlot(QGroupBox):
             self._mssql.start_query_thread(self._mssql.insert_pprd,
                                            self._model.data_matrix,
                                            get_time(),
-                                           self._model.result,
+                                           self._model.machine_result,
                                            STR_AIR,
                                            '',
                                            socket.gethostbyname(socket.gethostname()))
 
 
-class AirLeakSlotModel(QObject):
+class AirLeakSlotModel(BasicModel):
     nfc_enable = Signal(bool)
-    data_matrix_changed = Signal(str)
-    result_changed = Signal(str)
-    result_color_changed = Signal(str)
-    result_clean = Signal()
+    machine_result_clean = Signal()
 
     def __init__(self):
         super(AirLeakSlotModel, self).__init__()
@@ -137,25 +151,25 @@ class AirLeakSlotModel(QObject):
         if self.enable:
             self._data_matrix = value
             self.data_matrix_changed.emit(value)
-            self.result = ''
+            self.machine_result = ''
 
     @property
-    def result(self):
-        return self._result
+    def machine_result(self):
+        return self._machine_result
 
-    @result.setter
-    def result(self, value):
-        self._result = value
-        self.result_changed.emit(value)
+    @machine_result.setter
+    def machine_result(self, value):
+        self._machine_result = value
+        self.machine_result_changed.emit(value)
         if value == STR_OK:
-            self.result_color_changed.emit(LIGHT_SKY_BLUE)
+            self.machine_result_background_color_changed.emit(LIGHT_SKY_BLUE)
         elif value == STR_NG:
-            self.result_color_changed.emit(RED)
+            self.machine_result_background_color_changed.emit(RED)
         else:
-            self.result_clean.emit()
+            self.machine_result_clean.emit()
 
 
-SLOT_COUNT = 8
+SLOT_COUNT = 4
 
 
 class AirLeakAutomationView(Widget):
@@ -163,7 +177,8 @@ class AirLeakAutomationView(Widget):
     open_even_signal = Signal()
 
     def begin(self):
-        self.comport.begin()
+        for slot in self.slots:
+            slot.comport.begin()
 
     def check_all_connection(self, value):
         for index, slot in enumerate(self.slots):
@@ -224,23 +239,23 @@ class AirLeakAutomationView(Widget):
 
         # UI
         layout = QVBoxLayout(self)
-        layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
-        comport_box.setLayout(comport := SerialComboHBoxLayout())
+        # layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
+        # comport_box.setLayout(comport := SerialComboHBoxLayout())
         layout.addLayout(slot_layout1 := QGridLayout())
         slots = []
         for l in range(SLOT_COUNT):
-            slot_layout1.addWidget(slot := AirLeakSlot(f"NFC {l + 1}"), l // 4, l % 4)
+            slot_layout1.addWidget(slot := AirLeakSlot(f"NFC {l + 1}"), l // 2, l % 2)
             slot.data_matrix_changed.connect(self.check_odd_even)
             slot.connection_signal.connect(self.check_all_connection)
+            self._model.set_available_ports.connect(slot.set_available_ports)
             slots.append(slot)
 
         # size
-        comport_box.setFixedHeight(COMPORT_FIXED_HEIGHT)
-        self.setWindowTitle(f"{STR_AIR_LEAK} AUTOMATION v1.0")
+        # comport_box.setFixedHeight(COMPORT_FIXED_HEIGHT)
 
         # assign
         self.slots = slots
-        self.comport = comport
+        # self.comport = comport
         self.slot_enables = [True for l in range(SLOT_COUNT)]
 
         # odd & even event
@@ -248,15 +263,15 @@ class AirLeakAutomationView(Widget):
         self.open_even_signal.connect(self.open_even)
 
         # connect widgets to controller
-        comport.comport_save.connect(self._control.comport_save)
-        comport.serial_output_data.connect(self._control.receive_serial_data)
+        # comport.comport_save.connect(self._control.comport_save)
+        # comport.serial_output_data.connect(self._control.receive_serial_data)
 
         # listen for control event signals
         self._control.set_result_slot.connect(lambda index, result: self.slots[index].set_result(result))
 
         # listen for model event signals
         self._model.set_nfc_port.connect(lambda index, port: self.slots[index].set_port(port))
-        self._model.set_available_ports.connect(self.comport.set_available_ports)
+        # self._model.set_available_ports.connect(self.comport.set_available_ports)
 
     def contextMenuEvent(self, e):
         menu = QMenu(self)
