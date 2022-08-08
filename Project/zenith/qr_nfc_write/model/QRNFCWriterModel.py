@@ -1,7 +1,8 @@
 from PySide2.QtCore import Signal
 
 from process_package.models.BasicModel import BasicModel
-from process_package.resource.string import STR_NFC
+from process_package.resource.string import STR_NFC, PROCESS_NAMES_FROM_DATABASE, STR_NG, PROCESS_FULL_NAMES, STR_MISS, \
+    STR_MIC, STR_DATA_MATRIX
 from process_package.tools.CommonFunction import logger
 
 
@@ -22,6 +23,19 @@ class QRNFCWriterModel(BasicModel):
     def previous_result(self, value):
         self._previous_result = value
         self.previous_result_changed.emit(value)
+        error_msg = ''
+        for process_name in PROCESS_NAMES_FROM_DATABASE:
+            if STR_MIC == process_name:
+                break
+            if process := value.get(process_name):
+                if process == STR_NG:
+                    error_msg += f"{PROCESS_FULL_NAMES[process_name]} : {STR_NG}\n"
+            else:
+                error_msg += f"{PROCESS_FULL_NAMES[process_name]} : {STR_MISS}\n"
+        if not error_msg:
+            self.data_matrix = value.get(STR_DATA_MATRIX)
+        else:
+            self.data_matrix = ''
 
     @property
     def status_color(self):

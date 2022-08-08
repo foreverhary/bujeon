@@ -26,7 +26,7 @@ class QRNFCWriterView(Widget):
             previous := PreviousCheckerGroupLabelAirTouch(
                 STR_PREVIOUS_PROCESS,
                 is_clean=True,
-                clean_time=3000,
+                clean_time=1000,
                 process_name=STR_MIC
             ))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, is_nfc=True))

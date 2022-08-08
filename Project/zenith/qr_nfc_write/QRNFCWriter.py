@@ -8,7 +8,7 @@ from qr_nfc_write.control.QRNFCWriterControl import QRNFCWriterControl
 from qr_nfc_write.model.QRNFCWriterModel import QRNFCWriterModel
 from qr_nfc_write.view.QRNFCWriterView import QRNFCWriterView
 
-QR_MATCHING_VERSION = 'v1.30'
+QR_MATCHING_VERSION = 'v1.31'
 
 
 class QRNFCWriter(QApplication):

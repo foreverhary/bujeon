@@ -30,6 +30,7 @@ class QRNFCWriterControl(QObject):
 
         self.keyboard_disabled = False
         self.delay_write_count = 0
+        self.temp_data_matrix = ''
 
     def receive_nfc_data(self, value):
         if not value:
@@ -62,18 +63,18 @@ class QRNFCWriterControl(QObject):
     def input_keyboard_line(self, value):
         if self.keyboard_disabled:
             return
-        self._model.data_matrix = data_matrix if (data_matrix := check_dm(value)) else ''
+        self.temp_data_matrix = data_matrix if (data_matrix := check_dm(value)) else ''
 
-        if not self._model.data_matrix:
+        if not self.temp_data_matrix:
             return
 
         self._mssql.start_query_thread(
             self._mssql.select_pprd_with_data_matrix_and_air_touch,
-            self._model.data_matrix
+            self.temp_data_matrix
         )
 
     def receive_previous_result(self, value):
-        db_result_to_dict = {STR_DATA_MATRIX: self._model.data_matrix}
+        db_result_to_dict = {STR_DATA_MATRIX: self.temp_data_matrix}
         for fetch in value:
             if fetch[3] == 'AIR':
                 if not db_result_to_dict.get(STR_AIR):
