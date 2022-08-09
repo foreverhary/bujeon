@@ -192,80 +192,8 @@ class LabelNFC(LabelTimerClean):
         timer.start()
 
 
-class LabelTirClean(QLabel):
-    def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):
-        super(LabelTimerClean, self).__init__(txt, font_size)
-        self.fontSize = font_size
-        self.is_clean = is_clean
-        self.color = WHITE
-        self.background_color = BACK_GROUND_COLOR
-        self.clean_time = clean_time
-        self.timer_color = QTimer(self)
-        self.timer_color.start(100)
-        self.timer_color.timeout.connect(self.change_color_in_msec)
-
-        self.timer_clean = QTimer(self)
-        self.timer_clean.timeout.connect(self.clean)
-        self.timer_clean.stop()
-
-        self.timer_nfc_tag = QTimer(self)
-        self.timer_nfc_tag.start(200)
-        self.timer_nfc_tag.timeout.connect(self.blink_background)
-        self.nfc_tag = False
-
-        self.setAlignment(Qt.AlignCenter)
-        self.setStyleSheet('font-weight: bold;'
-                           f'font-size: {self.fontSize}px;')
-        self.change_color_in_msec()
-
-    def setText(self, txt):
-        super().setText(txt)
-        self.timer_clean.stop()
-        if self.is_clean:
-            self.timer_clean.start(self.clean_time)
-
-    def clean(self):
-        self.set_background_color()
-        self.set_color(WHITE)
-        self.clear()
-
-    def set_background_color(self, color=BACK_GROUND_COLOR):
-        self.background_color = color
-        self.set_style_sheet()
-
-    def blink_background(self):
-        if self.background_color == LIGHT_BLUE:
-            self.set_background_color()
-
-    def keyPressEvent(self, event):
-        pass
-
-    def set_font_size(self, size=None):
-        self.fontSize = size or self.fontSize
-        self.set_style_sheet()
-
-    def change_color_in_msec(self):
-        if self.color in (RED, LIGHT_YELLOW):
-            self.color = RED if self.color == LIGHT_YELLOW else LIGHT_YELLOW
-            self.set_style_sheet()
-
-    def set_style_sheet(self):
-        self.setStyleSheet('font-weight: bold;'
-                           f'font-size: {self.fontSize}px;'
-                           f'color: {self.color};'
-                           f'background-color: {self.background_color}')
-
-    def set_color(self, color):
-        self.color = color
-        self.set_style_sheet()
-
-
 class LeftAlignLabel(Label):
     def __init__(self, text):
-        """
-
-        :rtype: object
-        """
         super(LeftAlignLabel, self).__init__(text)
         self.setMinimumHeight(50)
         self.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -326,7 +254,7 @@ def window_top_left(window):
 
 def style_sheet_setting(app):
     app.setStyleSheet(STYLE)
-    a = qdarkstyle.load_stylesheet_pyqt5()
+    a = qdarkstyle.load_stylesheet_pyside2()
     fontDB = QFontDatabase()
     fontDB.addApplicationFont("./font/D2Coding-Ver1.3.2-20180524-all.ttc")
     app.setFont(QFont('D2Coding-Ver1.3.2-20180524-all'))

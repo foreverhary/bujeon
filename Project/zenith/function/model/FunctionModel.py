@@ -1,9 +1,9 @@
 from PySide2.QtCore import Signal
 
 from process_package.models.BasicModel import BasicModel
-from process_package.resource.color import LIGHT_SKY_BLUE, RED, WHITE, GREEN, YELLOW
+from process_package.resource.color import RED, WHITE, GREEN, YELLOW
 from process_package.resource.string import STR_NFC1, \
-    STR_WRITE_DONE, STR_NFCIN, STR_NFC2, STR_SPL, STR_THD, STR_IMP, STR_MIC_FRF, STR_RUB_BUZ, STR_HOHD, \
+    STR_NFCIN, STR_NFC2, STR_SPL, STR_THD, STR_IMP, STR_MIC_FRF, STR_RUB_BUZ, STR_HOHD, \
     STR_POLARITY, B_GRADE_MAX, STR_NG, A_GRADE_MAX, STR_B, C_GRADE_MAX, STR_A, C_GRADE_MIN, STR_C
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_audio_bus
@@ -19,9 +19,6 @@ class FunctionModel(BasicModel):
     nfc_input_changed = Signal(str)
     nfc_color_changed = Signal(str)
 
-    status_changed = Signal(str)
-    status_color_changed = Signal(str)
-
     error_code = {
         STR_SPL: 1,
         STR_THD: 2,
@@ -34,7 +31,6 @@ class FunctionModel(BasicModel):
 
     def __init__(self):
         super(FunctionModel, self).__init__()
-        self.result = ''
         self.init_result()
 
     @property
@@ -85,27 +81,6 @@ class FunctionModel(BasicModel):
     @result.setter
     def result(self, value):
         self._result = value
-
-    @property
-    def status(self):
-        if not hasattr(self, '_result'):
-            self._status = ''
-        return self._status
-
-    @status.setter
-    def status(self, value):
-        self._status = value
-        self.status_changed.emit(value)
-        self.status_color = LIGHT_SKY_BLUE if STR_WRITE_DONE in value else WHITE
-
-    @property
-    def status_color(self):
-        return self._status_color
-
-    @status_color.setter
-    def status_color(self, value):
-        self._status_color = value
-        self.status_color_changed.emit(value)
 
     @property
     def nfc_input(self):
