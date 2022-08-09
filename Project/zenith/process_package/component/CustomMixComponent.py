@@ -1,9 +1,18 @@
 from PySide2.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QComboBox
 
 from process_package.component.CustomComponent import Label, Button, LabelTimerClean, LabelBlink, LabelNFC
+from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.size import DEFAULT_FONT_SIZE
-from process_package.resource.string import STR_NG
+from process_package.resource.string import STR_NG, MACHINE_COMPORT_1
+
+
+class SerialComportGroupBox(QGroupBox):
+    def __init__(self, *argv, **kwargs):
+        super(SerialComportGroupBox, self).__init__()
+        self.setTitle(kwargs.pop('title'))
+        self.setLayout(comport := SerialComboHBoxLayout(*argv, **kwargs))
+        self.comport = comport
 
 
 class GroupLabelNumber(QGroupBox):

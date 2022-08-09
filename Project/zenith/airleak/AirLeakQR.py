@@ -134,6 +134,8 @@ class AirLeakChannel(QGroupBox):
 
         unit_label.setMinimumWidth(AIR_LEAK_UNIT_MINIMUM_WIDTH)
         result_label.setMinimumWidth(AIR_LEAK_UNIT_MINIMUM_WIDTH)
+        unit_label.setMaximumHeight(50)
+        result_label.setMaximumHeight(50)
 
         self.unit_label = unit_label
         self.result_label = result_label
