@@ -1,10 +1,13 @@
+import socket
+
+from PySide2.QtCore import QTimer
 from PySide2.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QComboBox
 
 from process_package.component.CustomComponent import Label, Button, LabelTimerClean, LabelBlink, LabelNFC
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.size import DEFAULT_FONT_SIZE
-from process_package.resource.string import STR_NG, MACHINE_COMPORT_1
+from process_package.resource.string import STR_NG
 
 
 class SerialComportGroupBox(QGroupBox):
@@ -96,3 +99,17 @@ class HBoxComboButton(QHBoxLayout):
     def serial_connection(self, connection):
         self.button.set_connect_color(connection)
         self.comport.setEnabled(not connection)
+
+
+class NetworkStatusGroupLabel(GroupLabel):
+    def __init__(self, *args, **kwargs):
+        super(NetworkStatusGroupLabel, self).__init__(*args, **kwargs)
+        self.network_check_timer = QTimer(self)
+        self.network_check_timer.timeout.connect(self.check_network)
+        self.network_check_timer.start(1000)
+
+    def check_network(self):
+        if socket.gethostbyname(socket.gethostname()) == '127.0.0.1':
+            self.label.set_background_color(RED)
+        else:
+            self.label.set_background_color(LIGHT_SKY_BLUE)
