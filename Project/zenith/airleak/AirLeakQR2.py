@@ -7,14 +7,14 @@ from process_package.MSSqlDialog import MSSqlDialog
 from process_package.OrderNumberDialog import OrderNumberDialog
 from process_package.check_string import check_dm
 from process_package.component.CustomComponent import style_sheet_setting, window_center, Widget, get_time
-from process_package.component.CustomMixComponent import GroupLabel, SerialComportGroupBox
+from process_package.component.CustomMixComponent import GroupLabel, SerialComportGroupBox, NetworkStatusGroupLabel
 from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.string import STR_ORDER_NUMBER, MACHINE_COMPORT, STR_MACHINE_COMPORT, STR_SCANNER_COMPORT, \
-    STR_RESET
+    STR_RESET, STR_NETWORK
 from process_package.tools.Config import get_order_number
 from process_package.tools.db_update_from_file import UpdateDB
 
-AIR_LEAK_QR_2_VERSION = "Air Leak QR 2 v1.0"
+AIR_LEAK_QR_2_VERSION = "Air Leak QR 2 v1.1"
 
 
 class AirLeakQR2(QApplication):
@@ -36,7 +36,9 @@ class AirLeakQR2View(Widget):
 
         # UI
         layout = QVBoxLayout(self)
-        layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
+        layout.addLayout(order_network_status_layout := QHBoxLayout())
+        order_network_status_layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
+        order_network_status_layout.addWidget(NetworkStatusGroupLabel(title=STR_NETWORK))
         layout.addLayout(channel_layout := QHBoxLayout())
         channel_layout.addWidget(left_air_leak := AirLeakQRChannel(1))
         channel_layout.addWidget(right_air_leak := AirLeakQRChannel(2))
