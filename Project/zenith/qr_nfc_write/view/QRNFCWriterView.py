@@ -2,14 +2,14 @@ from PySide2.QtWidgets import QVBoxLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import Widget
-from process_package.component.CustomMixComponent import GroupLabel
+from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.PreviousCheckGroupLabel import PreviousCheckerGroupLabelAirTouch
 from process_package.resource.size import MATCHING_DATA_MATRIX_FONT_SIZE, MATCHING_DATA_MATRIX_MINIMUM_WIDTH, \
     MATCHING_STATUS_FONT_SIZE, \
     MATCHING_STATUS_MAXIMUM_HEIGHT, NFC_FIXED_HEIGHT
 from process_package.resource.string import STR_DATA_MATRIX, STR_STATUS, STR_QR_MATCHING, \
-    STR_NFC, STR_PREVIOUS_PROCESS, STR_MIC
+    STR_NFC, STR_PREVIOUS_PROCESS, STR_MIC, STR_NETWORK
 
 
 class QRNFCWriterView(Widget):
@@ -19,6 +19,7 @@ class QRNFCWriterView(Widget):
 
         # UI
         layout = QVBoxLayout(self)
+        layout.addWidget(NetworkStatusGroupLabel(STR_NETWORK))
         layout.addWidget(nfc := NFCComponent(STR_NFC))
         # layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
         layout.addWidget(
