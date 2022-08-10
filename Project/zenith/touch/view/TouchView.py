@@ -3,11 +3,11 @@ from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QMenu
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.OrderNumberDialog import OrderNumberDialog
 from process_package.component.CustomComponent import Widget
-from process_package.component.CustomMixComponent import GroupLabel
+from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.string import STR_ORDER_NUMBER, STR_DATA_MATRIX, STR_MACHINE_RESULT, STR_MACHINE_COMPORT, \
-    STR_DATA_MATRIX_WAITING
+    STR_DATA_MATRIX_WAITING, STR_NETWORK
 
 # size
 TOUCH_COMPORT_MAXIMUM_HEIGHT = 68
@@ -26,6 +26,7 @@ class TouchView(Widget):
 
         # ui
         layout = QVBoxLayout(self)
+        layout.addWidget(NetworkStatusGroupLabel(STR_NETWORK))
         layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
         comport_box.setLayout(comport := SerialComboHBoxLayout())
 
