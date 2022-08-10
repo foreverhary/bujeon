@@ -4,14 +4,14 @@ from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu
 from function.FunctionConfig import FunctionConfig
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import Widget
-from process_package.component.CustomMixComponent import GroupLabel
+from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.PreviousCheckGroupLabel import PreviousCheckerGroupLabelWithNGScreen
 from process_package.resource.size import AIR_LEAK_STATUS_FIXED_HEIGHT, AUDIO_BUS_LABEL_MINIMUM_WIDTH, \
     AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT, \
     AUDIO_BUS_NFC_FIXED_HEIGHT, AUDIO_BUS_NFC_FONT_SIZE
 from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_PREVIOUS_PROCESS, STR_GRADE, STR_STATUS, \
-    STR_WRITE_STATUS, STR_FUN
+    STR_WRITE_STATUS, STR_FUN, STR_NETWORK
 
 
 class FunctionView(Widget):
@@ -21,6 +21,7 @@ class FunctionView(Widget):
 
         # UI
         layout = QVBoxLayout(self)
+        layout.addWidget(NetworkStatusGroupLabel(STR_NETWORK))
         layout.addLayout(nfc_layout := QHBoxLayout())
         nfc_layout.addWidget(nfc_in := NFCComponent(STR_NFCIN))
         nfc_layout.addWidget(nfc1 := NFCComponent(STR_NFC1))

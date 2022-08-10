@@ -11,7 +11,7 @@ from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 
 
-FUNCTION_VERSION = f"{STR_FUNCTION} v1.31"
+FUNCTION_VERSION = f"{STR_FUNCTION} v1.32"
 
 
 class Function(QApplication):
