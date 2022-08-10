@@ -1,19 +1,22 @@
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QHBoxLayout, QMenu
+from PySide2.QtWidgets import QHBoxLayout, QMenu, QVBoxLayout
 
 from mic.component.MICNFCReader import MICNFCReader
 from mic.component.MICNFCWriter import MICNFCWriter
 from mic.component.MICNFConfig import MICNFCConfig
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import Widget
-from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_NFCIN1
+from process_package.component.CustomMixComponent import NetworkStatusGroupLabel
+from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_NFCIN1, STR_NETWORK
 
 
 class MICNFCView(Widget):
     def __init__(self, control):
         super(MICNFCView, self).__init__()
         self._control = control
-        layout = QHBoxLayout(self)
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(NetworkStatusGroupLabel(STR_NETWORK))
+        main_layout.addLayout(layout := QHBoxLayout())
         layout.addWidget(nfc1 := MICNFCWriter(STR_NFC1, self._control._mssql))
         layout.addWidget(nfcin := MICNFCReader(STR_NFCIN))
         layout.addWidget(nfc2 := MICNFCWriter(STR_NFC2, self._control._mssql))

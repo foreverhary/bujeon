@@ -7,7 +7,7 @@ from view.MICNFCView import MICNFCView
 from process_package.component.CustomComponent import style_sheet_setting, window_center
 from process_package.screen.SplashScreen import SplashScreen
 
-MIC_VERSION = "MIC v1.30"
+MIC_VERSION = "MIC v1.31"
 
 
 class MICNFC(QApplication):
