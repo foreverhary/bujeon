@@ -5,13 +5,14 @@ from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, Widget
-from process_package.resource.string import STR_NFC1, STR_NFC2, STR_SEN
+from process_package.component.CustomMixComponent import NetworkStatusGroupLabel
+from process_package.resource.string import STR_NFC1, STR_NFC2, STR_SEN, STR_NETWORK
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 from SensorChannel import SensorChannel
 
-SENSOR_VERSION = 'IR SENSOR v1.30'
+SENSOR_VERSION = 'IR SENSOR v1.31'
 
 
 class SensorProcess(QApplication):
@@ -48,6 +49,7 @@ class SensorProcessView(Widget):
         self._control = control
         layout = QVBoxLayout(self)
 
+        layout.addWidget(NetworkStatusGroupLabel(STR_NETWORK))
         layout.addLayout(process_layout := QHBoxLayout())
         process_layout.addWidget(channel1 := SensorChannel(1))
         process_layout.addWidget(channel2 := SensorChannel(2))
