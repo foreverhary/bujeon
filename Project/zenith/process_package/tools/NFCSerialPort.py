@@ -15,7 +15,7 @@ class NFCSerialPort(SerialPort):
 
     def __init__(self):
         super(NFCSerialPort, self).__init__()
-        self.set_baudrate(115200)
+        self.baudrate = 115200
 
         self.check_connection_timer = QTimer()
         self.check_connection_timer.start(1000)

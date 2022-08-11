@@ -1,13 +1,13 @@
 import serial.tools.list_ports
 from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QWidget
 
-from process_package.resource.color import LIGHT_SKY_BLUE, RED, BLUE
-from process_package.resource.string import STR_OK, CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1
-from process_package.tools.Config import get_config_value, set_config_value
+from process_package.check_string import check_dm
 from process_package.component.CustomComponent import Button, Label, ComboBox
 from process_package.old.SerialMachine import SerialMachine
-from process_package.check_string import check_dm
 from process_package.old.defined_serial_port import ports, get_serial_available_list
+from process_package.resource.color import LIGHT_SKY_BLUE, RED, BLUE
+from process_package.resource.string import STR_OK, COMPORT_SECTION, MACHINE_COMPORT_1
+from process_package.tools.Config import get_config_value, set_config_value
 
 SLOT_MINIMUM_WIDTH = 300
 AIR_LEAK_NFC_COUNT = 4

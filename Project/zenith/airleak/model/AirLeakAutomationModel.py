@@ -1,7 +1,7 @@
 from PySide2.QtCore import Signal
 
 from process_package.models.BasicModel import BasicModel
-from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_AIR_LEAK, STR_NFC
+from process_package.resource.string import COMPORT_SECTION, MACHINE_COMPORT_1, STR_AIR_LEAK, STR_NFC
 from process_package.tools.Config import set_config_value, get_config_value
 
 

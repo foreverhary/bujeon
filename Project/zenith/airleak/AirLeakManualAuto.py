@@ -13,7 +13,7 @@ from process_package.models.BasicModel import BasicModel
 from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
 from process_package.resource.size import COMPORT_FIXED_HEIGHT, NFC_FIXED_HEIGHT
-from process_package.resource.string import STR_AIR_LEAK, CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1, STR_NFC, \
+from process_package.resource.string import STR_AIR_LEAK, COMPORT_SECTION, MACHINE_COMPORT_1, STR_NFC, \
     STR_OK, STR_NG, STR_MACHINE_COMPORT, STR_DATA_MATRIX, STR_RESULT, STR_AIR
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger, write_beep

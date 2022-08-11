@@ -1,6 +1,5 @@
 import logging
 import sys
-import time
 from threading import Thread, Timer
 
 import pymcprotocol as pm

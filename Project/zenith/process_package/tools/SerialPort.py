@@ -10,10 +10,6 @@ class SerialPort(QObject):
     line_out_signal = Signal(str)
     serial_connection_signal = Signal(bool)
 
-    def set_port_baudrate(self, port, baudrate):
-        self.port = port
-        self.baudrate = baudrate
-
     def set_port(self, port):
         self.port = port
 

@@ -23,10 +23,10 @@ class SerialComboHBoxLayout(QHBoxLayout):
         self.available_comport = value
 
     def set_baudrate(self, value):
-        self.serial.set_baudrate(value)
+        self.serial.baudrate = value
 
     def set_comport(self, value):
-        self.serial.set_port(value)
+        self.serial.port = value
 
     def begin(self):
         if self.serial.port:

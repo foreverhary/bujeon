@@ -1,12 +1,9 @@
-import os
-from threading import Thread, Lock
+from threading import Thread
 
 from PySide2.QtCore import QObject, QTimer
-from pymssql._pymssql import OperationalError
 
-from process_package.resource.number import CHECK_DB_UPDATE_TIME, CHECK_DB_TIME
+from process_package.resource.number import CHECK_DB_UPDATE_TIME
 from process_package.tools.CommonFunction import logger
-from process_package.resource.string import SAVE_DB_RETRY_FILE_NAME, SAVE_DB_FILE_NAME
 from process_package.tools.mssql_connect import MSSQL
 from process_package.tools.sqlite3_connect import select_pprh_not_update, update_pprh_tryup, update_pprh_up, \
     update_pprd_tryup, update_pprd_up, select_pprd_not_update

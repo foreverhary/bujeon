@@ -1,6 +1,6 @@
 from PySide2.QtCore import QObject, Signal
 
-from process_package.resource.string import CONFIG_FILE_NAME, COMPORT_SECTION, MACHINE_COMPORT_1
+from process_package.resource.string import COMPORT_SECTION, MACHINE_COMPORT_1
 from process_package.tools.Config import set_config_value
 
 
