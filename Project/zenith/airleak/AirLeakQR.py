@@ -81,9 +81,9 @@ class AirLeakQRView(Widget):
 
     def receive_serial_data(self, value):
         if self.channel_count == 2 and not self.left_qr_enable:
-            self.right_air_leak.receive_serial.emit(value)
-        else:
             self.left_air_leak.receive_serial.emit(value)
+        else:
+            self.right_air_leak.receive_serial.emit(value)
 
     def input_keyboard_line(self, value):
         if STR_CHANGE in value and self.channel_count == 2:
