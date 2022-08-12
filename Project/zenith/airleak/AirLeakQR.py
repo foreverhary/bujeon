@@ -22,7 +22,7 @@ from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-AIR_LEAK_VERSION = 'v1.32'
+AIR_LEAK_VERSION = 'v1.33'
 
 
 class AirLeakQR(QApplication):
@@ -76,11 +76,11 @@ class AirLeakQRView(Widget):
         self.channel_count = self.channel_count
 
     def receive_dm_full(self, value):
-        if value:
+        if value and self.channel_count == 2:
             self.change_channel()
 
     def receive_serial_data(self, value):
-        if self.channel_count == 2 and not self.left_qr_enable:
+        if self.channel_count == 1 or not self.left_qr_enable:
             self.left_air_leak.receive_serial.emit(value)
         else:
             self.right_air_leak.receive_serial.emit(value)
