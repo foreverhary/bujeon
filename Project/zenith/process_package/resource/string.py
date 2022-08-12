@@ -100,10 +100,13 @@ STR_TAG_NFC_JIG = "TAG NFC JIG"
 
 # config string
 POP_SECTION = 'pop'
+AIR_LEAK_SECTION = 'air_leak'
 MSSQL_SECTION = 'mssql'
 COMPORT_SECTION = 'com_port'
 AUDIO_BUS_SECTION = 'audio_bus'
 MIC_SECTION = 'mic'
+
+CHANNEL = 'channel'
 
 FILE_PATH = 'file_path'
 

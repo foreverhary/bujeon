@@ -1,28 +1,28 @@
 import socket
 import sys
+from threading import Timer
 
-from PySide2.QtCore import Signal
+from PySide2.QtCore import Signal, QTimer
 from PySide2.QtWidgets import QApplication, QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.OrderNumberDialog import OrderNumberDialog
 from process_package.check_string import check_dm
 from process_package.component.CustomComponent import style_sheet_setting, Widget, Label, get_time, window_center
-from process_package.component.CustomMixComponent import GroupLabel
-from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
+from process_package.component.CustomMixComponent import GroupLabel, SerialComportGroupBox, NetworkStatusGroupLabel
 from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, COMPORT_FIXED_HEIGHT, \
     AIR_LEAK_RESULT_FONT_SIZE
 from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESET, STR_CHANGE, STR_UNIT, STR_RESULT, \
-    STR_ORDER_NUMBER, STR_OK, STR_NG, STR_AIR
-from process_package.tools.Config import get_order_number
+    STR_ORDER_NUMBER, STR_OK, STR_NG, STR_AIR, STR_NETWORK, CHANNEL, AIR_LEAK_SECTION
+from process_package.tools.Config import get_order_number, get_config_value, set_config_value
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-AIR_LEAK_VERSION = 'v1.31'
+AIR_LEAK_VERSION = 'v1.32'
 
 
 class AirLeakQR(QApplication):
@@ -47,21 +47,22 @@ class AirLeakQRView(Widget):
         # UI
         layout = QVBoxLayout(self)
         layout.addLayout(option_layout := QHBoxLayout())
-        option_layout.addWidget(comport_box := QGroupBox(STR_MACHINE_COMPORT))
         option_layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
-        comport_box.setLayout(comport := SerialComboHBoxLayout())
-        comport.serial_output_data.connect(self.receive_serial_data)
+        option_layout.addWidget(network := NetworkStatusGroupLabel(title=STR_NETWORK))
+        layout.addWidget(comport := SerialComportGroupBox(title=STR_MACHINE_COMPORT))
+        comport.comport.serial_output_data.connect(self.receive_serial_data)
         layout.addLayout(channel_layout := QHBoxLayout())
-        channel_layout.addWidget(left_air_leak := AirLeakChannel("LEFT"))
-        channel_layout.addWidget(right_air_leak := AirLeakChannel("RIGHT"))
+        channel_layout.addWidget(left_air_leak := AirLeakChannel("CH 1"))
+        channel_layout.addWidget(right_air_leak := AirLeakChannel("CH 2"))
 
         order.setFixedHeight(COMPORT_FIXED_HEIGHT)
-        comport_box.setFixedHeight(COMPORT_FIXED_HEIGHT)
+        network.setFixedHeight(COMPORT_FIXED_HEIGHT)
+        comport.setFixedHeight(COMPORT_FIXED_HEIGHT)
         left_air_leak.qr_enable.emit(True)
         right_air_leak.qr_enable.emit(False)
 
         self.order = order
-        self.comport = comport
+        self.comport = comport.comport
         self.left_air_leak = left_air_leak
         self.right_air_leak = right_air_leak
 
@@ -72,26 +73,40 @@ class AirLeakQRView(Widget):
         self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
 
         self.left_qr_enable = True
+        self.channel_count = self.channel_count
 
     def receive_dm_full(self, value):
         if value:
             self.change_channel()
 
     def receive_serial_data(self, value):
-        if self.left_qr_enable:
+        if self.channel_count == 2 and not self.left_qr_enable:
             self.right_air_leak.receive_serial.emit(value)
         else:
             self.left_air_leak.receive_serial.emit(value)
 
     def input_keyboard_line(self, value):
-        if STR_CHANGE in value:
+        if STR_CHANGE in value and self.channel_count == 2:
             self.change_channel()
             return
 
-        if self.left_qr_enable:
-            self.left_air_leak.receive_keyboard.emit(value)
+        if self.channel_count == 2 and not self.left_qr_enable:
+            if self.is_allowed_unit4(self.right_air_leak, self.left_air_leak):
+                self.right_air_leak.receive_keyboard.emit(value)
         else:
-            self.right_air_leak.receive_keyboard.emit(value)
+            if self.is_allowed_unit4(self.left_air_leak, self.right_air_leak):
+                self.left_air_leak.receive_keyboard.emit(value)
+
+    def is_allowed_unit4(self, enabled_slot, disabled_slot):
+        return not (self.check_unit_count(enabled_slot) == 3 and self.check_unit_count(disabled_slot))
+
+    def check_unit_count(self, slot):
+        count = 0
+        for unit in slot.units:
+            if not unit.text():
+                break
+            count += 1
+        return count
 
     def change_channel(self):
         self.left_qr_enable = False if self.left_qr_enable else True
@@ -104,6 +119,8 @@ class AirLeakQRView(Widget):
 
         order_action = menu.addAction('Order Number Setting')
         db_action = menu.addAction('DB Setting')
+        use_one_slot = menu.addAction('USE 1 Slot')
+        use_two_slot = menu.addAction('USE 2 Slots')
 
         action = menu.exec_(self.mapToGlobal(e.pos()))
 
@@ -111,6 +128,34 @@ class AirLeakQRView(Widget):
             OrderNumberDialog(self.order)
         elif action == db_action:
             MSSqlDialog()
+        elif action == use_one_slot:
+            self.channel_count = 1
+        elif action == use_two_slot:
+            self.channel_count = 2
+
+    @property
+    def channel_count(self):
+        if not (get_config_value(AIR_LEAK_SECTION, CHANNEL)):
+            set_config_value(AIR_LEAK_SECTION, CHANNEL, '2')
+        return int(get_config_value(AIR_LEAK_SECTION, CHANNEL))
+
+    @channel_count.setter
+    def channel_count(self, value):
+        set_config_value(AIR_LEAK_SECTION, CHANNEL, str(value))
+
+        if value == 1:
+            self.right_air_leak.setHidden(True)
+            self.left_air_leak.unit_label.set_background_color()
+            self.left_air_leak.result_label.set_background_color()
+        else:
+            self.right_air_leak.setHidden(False)
+            self.left_qr_enable = False
+            self.change_channel()
+
+        self.left_air_leak.clean_units()
+        self.left_air_leak.result.clean()
+        self.right_air_leak.clean_units()
+        self.right_air_leak.result.clean()
 
 
 class AirLeakChannel(QGroupBox):
@@ -147,6 +192,9 @@ class AirLeakChannel(QGroupBox):
 
         self._mssql = MSSQL(STR_AIR)
 
+        self.timer_result_clean = QTimer(self)
+        self.timer_result_clean.timeout.connect(self.result.clean)
+
     def received_change(self, value):
         if value:
             self.unit_label.set_background_color(LIGHT_SKY_BLUE)
@@ -170,12 +218,15 @@ class AirLeakChannel(QGroupBox):
                 '',
                 socket.gethostbyname(socket.gethostname())
         )
+        self.timer_result_clean.stop()
         if STR_OK in value:
+            self.timer_result_clean.start(4000)
             self.clean_units()
 
     def received_keyboard(self, value):
         if STR_RESET in value:
             self.clean_units()
+            self.result.clean()
             return
 
         if data_matrix := check_dm(value):
