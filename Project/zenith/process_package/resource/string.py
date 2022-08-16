@@ -6,6 +6,8 @@ CONFIG_FILE_NAME = 'config.ini'
 # simple string upper
 STR_CHANGE = "CHANGE"
 STR_RESET = "RESET"
+STR_AIR_LEAK_SLOT1 = "SLOT1"
+STR_AIR_LEAK_SLOT2 = "SLOT2"
 
 STR_TOUCH = "TOUCH"
 STR_AIR = "AIR"
@@ -125,6 +127,7 @@ MACHINE_COMPORT = 'machine_comport_'
 ORDER_NUMBER = 'order_number'
 
 GRADE_FILE_PATH = 'grade_file_path'
+GRADE_FILE_PATH_2 = 'grade_file_path_2'
 SUMMARY_FILE_PATH = 'summary_file_path'
 A_GRADE_MIN = 'a_min'
 A_GRADE_MAX = 'a_max'
