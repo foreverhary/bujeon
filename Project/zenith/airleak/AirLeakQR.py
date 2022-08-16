@@ -1,6 +1,5 @@
 import socket
 import sys
-from threading import Timer
 
 from PySide2.QtCore import Signal, QTimer
 from PySide2.QtWidgets import QApplication, QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout, QMenu
@@ -16,13 +15,14 @@ from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, COMPORT_FIXED_HEIGHT, \
     AIR_LEAK_RESULT_FONT_SIZE
 from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESET, STR_CHANGE, STR_UNIT, STR_RESULT, \
-    STR_ORDER_NUMBER, STR_OK, STR_NG, STR_AIR, STR_NETWORK, CHANNEL, AIR_LEAK_SECTION
+    STR_ORDER_NUMBER, STR_OK, STR_NG, STR_AIR, STR_NETWORK, CHANNEL, AIR_LEAK_SECTION, STR_AIR_LEAK_SLOT1, \
+    STR_AIR_LEAK_SLOT2
 from process_package.tools.Config import get_order_number, get_config_value, set_config_value
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-AIR_LEAK_VERSION = 'v1.33'
+AIR_LEAK_VERSION = 'v1.34'
 
 
 class AirLeakQR(QApplication):
@@ -86,6 +86,10 @@ class AirLeakQRView(Widget):
             self.right_air_leak.receive_serial.emit(value)
 
     def input_keyboard_line(self, value):
+        if STR_AIR_LEAK_SLOT1 == value:
+            self.channel_count = 1
+        if STR_AIR_LEAK_SLOT2 == value:
+            self.channel_count = 2
         if STR_CHANGE in value and self.channel_count == 2:
             self.change_channel()
             return
