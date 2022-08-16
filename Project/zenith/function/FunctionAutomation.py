@@ -4,31 +4,30 @@ import socket
 import sys
 
 from PySide2.QtCore import Qt, QObject, Signal, Slot
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QMenu
+from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QMenu, QGroupBox
 from xlrd import open_workbook
 
-from FunctionConfig import FunctionConfig
-from model.NFCModel import NFCModel
+from FunctionConfig2Grade import FunctionConfig2Grade
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.component.CustomComponent import style_sheet_setting, window_right, Widget, get_time
-from process_package.component.CustomMixComponent import GroupLabel
+from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.models.BasicModel import BasicModel
 from process_package.observer.FileObserver import Target
 from process_package.resource.color import GREEN, WHITE, YELLOW, RED
-from process_package.resource.size import AUDIO_BUS_LABEL_MINIMUM_WIDTH, AUDIO_BUS_NFC_FIXED_HEIGHT, \
-    AUDIO_BUS_NFC_FONT_SIZE
-from process_package.resource.string import STR_FUNCTION, STR_NFC1, STR_NFC2, STR_GRADE, STR_AIR_LEAK, STR_FUN, \
-    STR_DATA_MATRIX, STR_SPL, STR_THD, STR_IMP, STR_MIC_FRF, STR_RUB_BUZ, \
+from process_package.resource.size import FUNCTION_LABEL_MINIMUM_WIDTH, FUNCTION_NFC_FIXED_HEIGHT, \
+    FUNCTION_NFC_FONT_SIZE, COMPORT_FIXED_HEIGHT
+from process_package.resource.string import STR_FUNCTION, STR_NFC1, STR_NFC2, STR_GRADE, STR_AIR_LEAK, STR_DATA_MATRIX, \
+    STR_SPL, STR_THD, STR_IMP, STR_MIC_FRF, STR_RUB_BUZ, \
     STR_HOHD, STR_POLARITY, B_GRADE_MAX, STR_NG, A_GRADE_MAX, STR_B, C_GRADE_MAX, STR_A, C_GRADE_MIN, STR_C, \
-    SUMMARY_FILE_PATH, GRADE_FILE_PATH
+    SUMMARY_FILE_PATH, GRADE_FILE_PATH, STR_NETWORK, GRADE_FILE_PATH_2
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-FUNCTION_AUTOMATION_VERSION = f"{STR_FUNCTION} Automation v.0.2"
+FUNCTION_AUTOMATION_VERSION = f"{STR_FUNCTION} Automation v0.3"
 
 
 class FunctionAutomation(QApplication):
@@ -38,17 +37,18 @@ class FunctionAutomation(QApplication):
         self._control = FunctionAutomationControl(self._model)
         self._view = FunctionAutomationView(self._model, self._control)
         self._view.setWindowTitle(FUNCTION_AUTOMATION_VERSION)
-        self._model.begin_config_read()
         self.load_nfc_window = SplashScreen(STR_FUNCTION)
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
     def show_main_window(self, nfcs):
         style_sheet_setting(self)
-        self._model.nfcs = nfcs
+        self._view.set_nfc(nfcs)
+        self._view.start_file_observe()
         self._view.show()
-        self._control.begin()
+        # self._control.begin()
         window_right(self._view)
         self.load_nfc_window.close()
+        self.update_db = UpdateDB()
 
 
 class FunctionAutomationView(Widget):
@@ -58,41 +58,32 @@ class FunctionAutomationView(Widget):
 
         # UI
         layout = QVBoxLayout(self)
-        layout.addLayout(nfc_layout := QHBoxLayout())
-        nfc_layout.addWidget(nfc1 := NFCComponent(STR_NFC1))
-        nfc_layout.addWidget(nfc2 := NFCComponent(STR_NFC2))
-        layout.addWidget(grade := GroupLabel(STR_GRADE))
-        layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX, is_nfc=True))
+        layout.addWidget(network := NetworkStatusGroupLabel(STR_NETWORK))
+        layout.addLayout(channel_layout := QHBoxLayout())
+        channel_layout.addWidget(channel1 := FunctionAutomationChannel('LEFT'))
+        channel_layout.addWidget(channel2 := FunctionAutomationChannel('RIGHT'))
 
-        nfc1.setFixedHeight(AUDIO_BUS_NFC_FIXED_HEIGHT)
-        nfc1.label.set_font_size(AUDIO_BUS_NFC_FONT_SIZE)
-        nfc2.setFixedHeight(AUDIO_BUS_NFC_FIXED_HEIGHT)
-        nfc2.label.set_font_size(AUDIO_BUS_NFC_FONT_SIZE)
-        data_matrix.setMinimumWidth(AUDIO_BUS_LABEL_MINIMUM_WIDTH)
-
-        self.grade = grade.label
-        self.data_matrix = data_matrix.label
+        network.setFixedHeight(COMPORT_FIXED_HEIGHT)
+        self.channel1 = channel1
+        self.channel2 = channel2
 
         # connect widgets to controller
 
-        # listen for component event signals
-        nfc1.nfc_data_out.connect(self._control.receive_nfc_data)
-        nfc2.nfc_data_out.connect(self._control.receive_nfc_data)
-
-        # listen for control event signals
-        self._control.nfc1_write.connect(nfc1.write)
-        self._control.nfc2_write.connect(nfc2.write)
-
         # listen for model event signals
-        self._model.nfc1.nfc_changed.connect(nfc1.set_port)
-        self._model.nfc2.nfc_changed.connect(nfc2.set_port)
-
-        self._model.grade_changed.connect(self.grade.setText)
-        self._model.grade_color_changed.connect(self.grade.set_color)
-
-        self._model.data_matrix_changed.connect(self.data_matrix.setText)
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
+
+    def start_file_observe(self):
+        self.channel1.start_file_observe()
+        self.channel2.start_file_observe()
+
+    def set_nfc(self, value):
+        for port, nfc in value.items():
+            logger.debug(f"{port}:{nfc}")
+            if nfc == STR_NFC1:
+                self.channel1.nfc.set_port(port)
+            if nfc == STR_NFC2:
+                self.channel2.nfc.set_port(port)
 
     def contextMenuEvent(self, e):
         menu = QMenu(self)
@@ -103,40 +94,61 @@ class FunctionAutomationView(Widget):
         action = menu.exec_(self.mapToGlobal(e.pos()))
 
         if action == file_action:
-            FunctionConfig(self._model, self._control)
+            FunctionConfig2Grade(self)
+            # FunctionConfig(self)
         if action == db_action:
             MSSqlDialog()
 
 
 class FunctionAutomationControl(QObject):
-    nfc_in_write = Signal(str)
-    nfc1_write = Signal(str)
-    nfc2_write = Signal(str)
+    pass
+    #
+
+
+class FunctionAutomationModel(BasicModel):
+    pass
+
+
+class FunctionAutomationChannel(QGroupBox):
     grade_signal = Signal(str)
     summary_signal = Signal(str)
 
-    def __init__(self, model):
-        super(FunctionAutomationControl, self).__init__()
-        self._model = model
+    def __init__(self, title=''):
+        super(FunctionAutomationChannel, self).__init__()
+
+        self.grade_file_path_option = GRADE_FILE_PATH if title == 'LEFT' else GRADE_FILE_PATH_2
+
+        self._model = FunctionAutomationChannelModel()
+
+        self.setTitle(title)
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(nfc := NFCComponent(STR_NFC1))
+        layout.addWidget(grade := GroupLabel(STR_GRADE))
+        layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX))
+
+        nfc.label.set_font_size(FUNCTION_NFC_FONT_SIZE)
+
+        nfc.setFixedHeight(FUNCTION_NFC_FIXED_HEIGHT)
+        data_matrix.setMinimumWidth(FUNCTION_LABEL_MINIMUM_WIDTH // 2)
+
+        self.nfc = nfc
+        self.grade_label = grade.label
+        self.data_matrix_label = data_matrix
+
+        nfc.nfc_data_out.connect(self.receive_nfc_data)
+
+        self._model.grade_changed.connect(self.grade_label.setText)
+        self._model.grade_color_changed.connect(self.grade_label.set_color)
+        self._model.data_matrix_changed.connect(self.data_matrix_label.setText)
 
         self._mssql = MSSQL(STR_AIR_LEAK)
-        self.update_db = UpdateDB()
-
-        # controller event connect
-
-        self.delay_write_count = 0
-        self.ng_screen_opened = False
-        self.process_name = STR_FUN
-        self.previous = {}
-
-        # file observer
         self.grade_file_observer = Target(signal=self.grade_signal)
         self.summary_file_observer = Target(signal=self.summary_signal)
 
         self.grade_signal.connect(self.grade_process)
         self.summary_signal.connect(self.summary_process)
-
-        self.data_matrix = None
+        self.delay_write_count = 0
 
     @Slot(dict)
     def receive_nfc_data(self, value):
@@ -155,8 +167,7 @@ class FunctionAutomationControl(QObject):
             return
 
         if (grade := value.get(STR_GRADE)) != self._model.grade:
-            self.nfc1_write.emit(f"{data_matrix},{self._model.grade}")
-            self.nfc2_write.emit(f"{data_matrix},{self._model.grade}")
+            self.sender().write(f"{data_matrix},{self._model.grade}")
             self.delay_write_count = 3
         else:
             self._model.data_matrix = data_matrix
@@ -188,15 +199,18 @@ class FunctionAutomationControl(QObject):
     @Slot(str)
     def summary_process(self, file_path):
         logger.debug(file_path)
+        if not self._model.grade:
+            return
         try:
             if self.summary_file_path == file_path:
                 return
             self.summary_file_path = file_path
-            self._model.status = 'Read Result...'
             sheet = open_workbook(file_path).sheet_by_name('Summary')
             self.parse_and_check_result(sheet)
             self.sql_update()
-            self._model.grade = ''
+            if self._model.data_matrix:
+                self._model.grade = ''
+                self._model.data_matrix = ''
         except ValueError as e:
             logger.error(type(e))
         except Exception as e:
@@ -223,14 +237,15 @@ class FunctionAutomationControl(QObject):
         self._model.machine_result = STR_NG if False in self._model.error_code_result.values() else self._model.grade
 
     def start_file_observe(self):
-        if self.start_grade_file_observe() and self.start_summary_file_observe():
+        if self.start_grade_file_observe() \
+                and self.start_summary_file_observe():
             self._model.status = 'Wait Result...'
         else:
             self._model.status = 'Click Right and Set File Path!!'
             self._model.status_color = RED
 
     def start_grade_file_observe(self):
-        if os.path.isdir(grade_path := get_config_audio_bus(GRADE_FILE_PATH)):
+        if os.path.isdir(grade_path := get_config_audio_bus(self.grade_file_path_option)):
             if self.grade_file_observer.is_alive():
                 self.grade_file_observer.observer.stop()
             self.grade_file_observer = Target(grade_path, self.grade_signal)
@@ -247,11 +262,8 @@ class FunctionAutomationControl(QObject):
             return True
         return False
 
-    def begin(self):
-        self.start_file_observe()
 
-
-class FunctionAutomationModel(BasicModel):
+class FunctionAutomationChannelModel(BasicModel):
     grade_changed = Signal(str)
     grade_color_changed = Signal(str)
 
@@ -266,9 +278,7 @@ class FunctionAutomationModel(BasicModel):
     }
 
     def __init__(self):
-        super(FunctionAutomationModel, self).__init__()
-        self.nfc1 = NFCModel()
-        self.nfc2 = NFCModel()
+        super(FunctionAutomationChannelModel, self).__init__()
         self.init_result()
 
     @property
@@ -281,7 +291,7 @@ class FunctionAutomationModel(BasicModel):
     def grade(self, value):
         if isinstance(value, float):
             if float(get_config_audio_bus(B_GRADE_MAX)) < value:
-                self._grade = ''
+                self._grade = STR_NG
             elif float(get_config_audio_bus(A_GRADE_MAX)) < value:
                 self._grade = STR_B
                 color = GREEN
@@ -292,38 +302,13 @@ class FunctionAutomationModel(BasicModel):
                 self._grade = STR_C
                 color = YELLOW
             else:
-                self._grade = ''
+                self._grade = STR_NG
             self.grade_changed.emit(f"{self._grade} : {value:.2f}")
-            self.grade_color = color
-            self.data_matrix = ''
+            self.grade_color_changed.emit(color)
         elif isinstance(value, str):
             self._grade = value
-            self.grade_changed.emit('')
-
-    @property
-    def grade_color(self):
-        return self._grade_color
-
-    @grade_color.setter
-    def grade_color(self, value):
-        self._grade_color = value
-        self.grade_color_changed.emit(value)
-
-    @property
-    def nfcs(self):
-        return self._nfcs
-
-    @nfcs.setter
-    def nfcs(self, value):
-        if not isinstance(value, dict):
-            return
-        self._nfcs = None
-        for port, nfc in value.items():
-            logger.debug(f"{port}:{nfc}")
-            if nfc == STR_NFC1:
-                self.nfc1.nfc_changed.emit(port)
-            if nfc == STR_NFC2:
-                self.nfc2.nfc_changed.emit(port)
+            self.grade_changed.emit(value)
+            self.grade_color = RED
 
     def get_error_code(self):
         return ','.join([
@@ -332,9 +317,6 @@ class FunctionAutomationModel(BasicModel):
 
     def init_result(self):
         self.error_code_result = {name: True for name in self.error_code}
-
-    def begin_config_read(self):
-        self.init_result()
 
 
 if __name__ == '__main__':

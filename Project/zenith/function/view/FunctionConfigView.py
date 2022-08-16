@@ -2,9 +2,9 @@ from PySide2.QtCore import Slot, Qt
 from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGroupBox, QGridLayout
 
 from process_package.component.CustomComponent import LeftAlignLabel, Label, Button, LineEdit
-from process_package.resource.size import AUDIO_BUS_CONFIG_BUTTON_MIN_WIDTH, \
-    AUDIO_BUS_PATH_LINE_EDIT_MIN_WIDTH, AUDIO_BUS_CONFIG_GRADE_EDIT_FIXED_WIDTH, AUDIO_BUS_GRADE_LINE_EDIT_FONT_SIZE, \
-    AUDIO_BUS_PATH_LINE_EDIT_FONT_SIZE
+from process_package.resource.size import FUNCTION_CONFIG_BUTTON_MIN_WIDTH, \
+    FUNCTION_PATH_LINE_EDIT_MIN_WIDTH, FUNCTION_CONFIG_GRADE_EDIT_FIXED_WIDTH, FUNCTION_GRADE_LINE_EDIT_FONT_SIZE, \
+    FUNCTION_PATH_LINE_EDIT_FONT_SIZE
 
 
 class FunctionConfigView(QDialog):
@@ -20,8 +20,8 @@ class FunctionConfigView(QDialog):
         main_config_box.setLayout(main_config := QGridLayout())
         main_config.addWidget(LeftAlignLabel("Grade Path"), 0, 0)
         main_config.addWidget(LeftAlignLabel("Result Path"), 1, 0)
-        main_config.addWidget(grade_path := LineEdit(font_size=AUDIO_BUS_PATH_LINE_EDIT_FONT_SIZE), 0, 1)
-        main_config.addWidget(summary_path := LineEdit(font_size=AUDIO_BUS_PATH_LINE_EDIT_FONT_SIZE), 1, 1)
+        main_config.addWidget(grade_path := LineEdit(font_size=FUNCTION_PATH_LINE_EDIT_FONT_SIZE), 0, 1)
+        main_config.addWidget(summary_path := LineEdit(font_size=FUNCTION_PATH_LINE_EDIT_FONT_SIZE), 1, 1)
         main_config.addWidget(grade_path_button := Button('..'), 0, 2)
         main_config.addWidget(summary_path_button := Button('..'), 1, 2)
 
@@ -30,31 +30,31 @@ class FunctionConfigView(QDialog):
         setting_layout.addWidget(LeftAlignLabel('A Grade'), 0, 0)
         setting_layout.addWidget(LeftAlignLabel('B Grade'), 1, 0)
         setting_layout.addWidget(LeftAlignLabel('C Grade'), 2, 0)
-        setting_layout.addWidget(grade_a_min := LineEdit(font_size=AUDIO_BUS_GRADE_LINE_EDIT_FONT_SIZE), 0, 1)
+        setting_layout.addWidget(grade_a_min := LineEdit(font_size=FUNCTION_GRADE_LINE_EDIT_FONT_SIZE), 0, 1)
         setting_layout.addWidget(Label(' ~ '), 0, 2)
-        setting_layout.addWidget(grade_a_max := LineEdit(font_size=AUDIO_BUS_GRADE_LINE_EDIT_FONT_SIZE), 0, 3)
-        setting_layout.addWidget(grade_b_min := LineEdit(font_size=AUDIO_BUS_GRADE_LINE_EDIT_FONT_SIZE), 1, 1)
+        setting_layout.addWidget(grade_a_max := LineEdit(font_size=FUNCTION_GRADE_LINE_EDIT_FONT_SIZE), 0, 3)
+        setting_layout.addWidget(grade_b_min := LineEdit(font_size=FUNCTION_GRADE_LINE_EDIT_FONT_SIZE), 1, 1)
         setting_layout.addWidget(Label(' ~ '), 1, 2)
-        setting_layout.addWidget(grade_b_max := LineEdit(font_size=AUDIO_BUS_GRADE_LINE_EDIT_FONT_SIZE), 1, 3)
-        setting_layout.addWidget(grade_c_min := LineEdit(font_size=AUDIO_BUS_GRADE_LINE_EDIT_FONT_SIZE), 2, 1)
+        setting_layout.addWidget(grade_b_max := LineEdit(font_size=FUNCTION_GRADE_LINE_EDIT_FONT_SIZE), 1, 3)
+        setting_layout.addWidget(grade_c_min := LineEdit(font_size=FUNCTION_GRADE_LINE_EDIT_FONT_SIZE), 2, 1)
         setting_layout.addWidget(Label(' ~ '), 2, 2)
-        setting_layout.addWidget(grade_c_max := LineEdit(font_size=AUDIO_BUS_GRADE_LINE_EDIT_FONT_SIZE), 2, 3)
+        setting_layout.addWidget(grade_c_max := LineEdit(font_size=FUNCTION_GRADE_LINE_EDIT_FONT_SIZE), 2, 3)
 
         layout.addLayout(buttonLayout := QHBoxLayout())
         buttonLayout.addWidget(saveButton := Button('SAVE'))
         buttonLayout.addWidget(cancelButton := Button('CANCEL'))
 
-        grade_path.setMinimumWidth(AUDIO_BUS_PATH_LINE_EDIT_MIN_WIDTH)
-        summary_path.setMinimumWidth(AUDIO_BUS_PATH_LINE_EDIT_MIN_WIDTH)
-        grade_a_min.setFixedWidth(AUDIO_BUS_CONFIG_GRADE_EDIT_FIXED_WIDTH)
-        grade_a_max.setFixedWidth(AUDIO_BUS_CONFIG_GRADE_EDIT_FIXED_WIDTH)
-        grade_b_min.setFixedWidth(AUDIO_BUS_CONFIG_GRADE_EDIT_FIXED_WIDTH)
-        grade_b_max.setFixedWidth(AUDIO_BUS_CONFIG_GRADE_EDIT_FIXED_WIDTH)
-        grade_c_min.setFixedWidth(AUDIO_BUS_CONFIG_GRADE_EDIT_FIXED_WIDTH)
-        grade_c_max.setFixedWidth(AUDIO_BUS_CONFIG_GRADE_EDIT_FIXED_WIDTH)
+        grade_path.setMinimumWidth(FUNCTION_PATH_LINE_EDIT_MIN_WIDTH)
+        summary_path.setMinimumWidth(FUNCTION_PATH_LINE_EDIT_MIN_WIDTH)
+        grade_a_min.setFixedWidth(FUNCTION_CONFIG_GRADE_EDIT_FIXED_WIDTH)
+        grade_a_max.setFixedWidth(FUNCTION_CONFIG_GRADE_EDIT_FIXED_WIDTH)
+        grade_b_min.setFixedWidth(FUNCTION_CONFIG_GRADE_EDIT_FIXED_WIDTH)
+        grade_b_max.setFixedWidth(FUNCTION_CONFIG_GRADE_EDIT_FIXED_WIDTH)
+        grade_c_min.setFixedWidth(FUNCTION_CONFIG_GRADE_EDIT_FIXED_WIDTH)
+        grade_c_max.setFixedWidth(FUNCTION_CONFIG_GRADE_EDIT_FIXED_WIDTH)
 
-        saveButton.setMinimumWidth(AUDIO_BUS_CONFIG_BUTTON_MIN_WIDTH)
-        cancelButton.setMinimumWidth(AUDIO_BUS_CONFIG_BUTTON_MIN_WIDTH)
+        saveButton.setMinimumWidth(FUNCTION_CONFIG_BUTTON_MIN_WIDTH)
+        cancelButton.setMinimumWidth(FUNCTION_CONFIG_BUTTON_MIN_WIDTH)
 
         self.grade_path = grade_path
         self.summary_path = summary_path

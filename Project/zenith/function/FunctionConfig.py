@@ -10,9 +10,8 @@ from process_package.component.CustomComponent import style_sheet_setting
 
 
 class FunctionConfig(QObject):
-    def __init__(self, parent_model, parent_control):
+    def __init__(self, parent_control):
         super(FunctionConfig, self).__init__()
-        self._parent_model = parent_model
         self._parent_control = parent_control
         self._model = FunctionConfigModel()
         self._control = FunctionConfigControl(self._model)

@@ -7,9 +7,9 @@ from process_package.component.CustomComponent import Widget
 from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.PreviousCheckGroupLabel import PreviousCheckerGroupLabelWithNGScreen
-from process_package.resource.size import AIR_LEAK_STATUS_FIXED_HEIGHT, AUDIO_BUS_LABEL_MINIMUM_WIDTH, \
-    AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT, \
-    AUDIO_BUS_NFC_FIXED_HEIGHT, AUDIO_BUS_NFC_FONT_SIZE
+from process_package.resource.size import AIR_LEAK_STATUS_FIXED_HEIGHT, FUNCTION_LABEL_MINIMUM_WIDTH, \
+    FUNCTION_PREVIOUS_PROCESS_FIXED_HEIGHT, \
+    FUNCTION_NFC_FIXED_HEIGHT, FUNCTION_NFC_FONT_SIZE
 from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_PREVIOUS_PROCESS, STR_GRADE, STR_STATUS, \
     STR_WRITE_STATUS, STR_FUN, STR_NETWORK
 
@@ -38,14 +38,14 @@ class FunctionView(Widget):
         layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS, is_nfc=True))
         layout.addWidget(status := GroupLabel(STR_STATUS))
 
-        status.label.setMinimumWidth(AUDIO_BUS_LABEL_MINIMUM_WIDTH)
-        nfc_in.setFixedHeight(AUDIO_BUS_NFC_FIXED_HEIGHT)
-        nfc_in.label.set_font_size(AUDIO_BUS_NFC_FONT_SIZE)
-        nfc1.setFixedHeight(AUDIO_BUS_NFC_FIXED_HEIGHT)
-        nfc1.label.set_font_size(AUDIO_BUS_NFC_FONT_SIZE)
-        nfc2.setFixedHeight(AUDIO_BUS_NFC_FIXED_HEIGHT)
-        nfc2.label.set_font_size(AUDIO_BUS_NFC_FONT_SIZE)
-        previous_process.setFixedHeight(AUDIO_BUS_PREVIOUS_PROCESS_FIXED_HEIGHT)
+        status.label.setMinimumWidth(FUNCTION_LABEL_MINIMUM_WIDTH)
+        nfc_in.setFixedHeight(FUNCTION_NFC_FIXED_HEIGHT)
+        nfc_in.label.set_font_size(FUNCTION_NFC_FONT_SIZE)
+        nfc1.setFixedHeight(FUNCTION_NFC_FIXED_HEIGHT)
+        nfc1.label.set_font_size(FUNCTION_NFC_FONT_SIZE)
+        nfc2.setFixedHeight(FUNCTION_NFC_FIXED_HEIGHT)
+        nfc2.label.set_font_size(FUNCTION_NFC_FONT_SIZE)
+        previous_process.setFixedHeight(FUNCTION_PREVIOUS_PROCESS_FIXED_HEIGHT)
         status.setFixedHeight(AIR_LEAK_STATUS_FIXED_HEIGHT)
 
         self.previous_process = previous_process
@@ -90,6 +90,6 @@ class FunctionView(Widget):
         action = menu.exec_(self.mapToGlobal(e.pos()))
 
         if action == file_action:
-            FunctionConfig(self._model, self._control)
+            FunctionConfig(self._control)
         if action == db_action:
             MSSqlDialog()
