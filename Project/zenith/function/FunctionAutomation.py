@@ -27,7 +27,7 @@ from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-FUNCTION_AUTOMATION_VERSION = f"{STR_FUNCTION} Automation v0.3"
+FUNCTION_AUTOMATION_VERSION = f"{STR_FUNCTION} Automation v0.4"
 
 
 class FunctionAutomation(QApplication):

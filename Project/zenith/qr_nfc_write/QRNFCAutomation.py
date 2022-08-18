@@ -14,7 +14,7 @@ from qr_nfc_write.control.QRNFCWriterControl import QRNFCWriterControl
 from qr_nfc_write.model.QRNFCWriterModel import QRNFCWriterModel
 from qr_nfc_write.view.QRNFCWriterView import QRNFCWriterView
 
-QR_MATCHING_AUTOMATION_VERSION = 'v0.1'
+QR_MATCHING_AUTOMATION_VERSION = 'v0.2'
 
 
 class QRNFCAutomation(QApplication):

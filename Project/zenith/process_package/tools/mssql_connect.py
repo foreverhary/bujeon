@@ -101,8 +101,7 @@ class MSSQL(QObject):
         self.con.commit()
         return True
 
-    def get_mssql_conn(self):  # sourcery skip: use-fstring-for-concatenation
-        logger.debug('get_mssql_conn')
+    def get_mssql_conn(self):
         self.con = pymssql.connect(server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
                                    user=get_config_mssql(MSSQL_ID),
                                    password=get_config_mssql(MSSQL_PASSWORD),

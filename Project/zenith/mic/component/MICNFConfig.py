@@ -2,7 +2,7 @@ from PySide2.QtCore import QObject, Signal, Slot, Qt
 from PySide2.QtWidgets import QDialog, QVBoxLayout, QGroupBox, QHBoxLayout, QFileDialog
 
 from process_package.component.CustomComponent import LeftAlignLabel, LineEdit, Button
-from process_package.resource.size import AUDIO_BUS_PATH_LINE_EDIT_FONT_SIZE, AUDIO_BUS_PATH_LINE_EDIT_MIN_WIDTH
+from process_package.resource.size import FUNCTION_PATH_LINE_EDIT_FONT_SIZE, FUNCTION_PATH_LINE_EDIT_MIN_WIDTH
 from process_package.resource.string import FILE_PATH, MIC_SECTION
 from process_package.tools.Config import set_config_value, get_config_value
 
@@ -19,14 +19,14 @@ class MICNFCConfig(QDialog):
         layout.addWidget(box := QGroupBox('File Path'))
         file_box_layout = QHBoxLayout(box)
         file_box_layout.addWidget(LeftAlignLabel("File Path"))
-        file_box_layout.addWidget(path := LineEdit(font_size=AUDIO_BUS_PATH_LINE_EDIT_FONT_SIZE))
+        file_box_layout.addWidget(path := LineEdit(font_size=FUNCTION_PATH_LINE_EDIT_FONT_SIZE))
         file_box_layout.addWidget(path_button := Button('...'))
 
         layout.addLayout(button_layout := QHBoxLayout())
         button_layout.addWidget(save_button := Button('SAVE'))
         button_layout.addWidget(cancel_button := Button('CANCEL'))
 
-        path.setMinimumWidth(AUDIO_BUS_PATH_LINE_EDIT_MIN_WIDTH)
+        path.setMinimumWidth(FUNCTION_PATH_LINE_EDIT_MIN_WIDTH)
 
         # signal
         path_button.clicked.connect(self._control.open_set_directory)

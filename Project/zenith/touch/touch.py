@@ -10,7 +10,7 @@ from process_package.component.CustomComponent import style_sheet_setting
 from process_package.tools.CommonFunction import logger
 
 
-TOUCH_VERSION = f"{STR_TOUCH_PROCESS} v1.31"
+TOUCH_VERSION = f"{STR_TOUCH_PROCESS} v1.32"
 
 
 class Touch(QApplication):

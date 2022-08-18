@@ -10,8 +10,7 @@ from process_package.resource.string import STR_FUNCTION
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 
-
-FUNCTION_VERSION = f"{STR_FUNCTION} v1.32"
+FUNCTION_VERSION = f"{STR_FUNCTION} v1.33"
 
 
 class Function(QApplication):

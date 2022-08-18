@@ -1,6 +1,7 @@
 import socket
+from threading import Thread
 
-from PySide2.QtCore import QTimer
+from PySide2.QtCore import QTimer, Signal
 from PySide2.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QComboBox
 
 from process_package.component.CustomComponent import Label, Button, LabelTimerClean, LabelBlink, LabelNFC
@@ -8,6 +9,7 @@ from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayou
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.size import DEFAULT_FONT_SIZE
 from process_package.resource.string import STR_NG
+from process_package.tools.mssql_connect import MSSQL
 
 
 class SerialComportGroupBox(QGroupBox):
@@ -102,14 +104,20 @@ class HBoxComboButton(QHBoxLayout):
 
 
 class NetworkStatusGroupLabel(GroupLabel):
+    network_label_color_changed = Signal(str)
+
     def __init__(self, *args, **kwargs):
         super(NetworkStatusGroupLabel, self).__init__(*args, **kwargs)
-        self.network_check_timer = QTimer(self)
-        self.network_check_timer.timeout.connect(self.check_network)
-        self.network_check_timer.start(1000)
+        Thread(target=self.check_network, args=(RED,), daemon=True).start()
+        self.network_label_color_changed.connect(self.label.set_background_color)
 
-    def check_network(self):
-        if socket.gethostbyname(socket.gethostname()) == '127.0.0.1':
-            self.label.set_background_color(RED)
+    def check_network(self, value):
+        self.network_label_color_changed.emit(value)
+        mssql = MSSQL()
+        try:
+            mssql.get_mssql_conn()
+        except:
+            Thread(target=self.check_network, args=(RED,), daemon=True).start()
         else:
-            self.label.set_background_color(LIGHT_SKY_BLUE)
+            Thread(target=self.check_network, args=(LIGHT_SKY_BLUE,), daemon=True).start()
+
