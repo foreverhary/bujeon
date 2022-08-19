@@ -12,7 +12,7 @@ from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 from SensorChannel import SensorChannel
 
-SENSOR_VERSION = 'IR SENSOR v1.32'
+SENSOR_VERSION = 'IR SENSOR v1.33'
 
 
 class SensorProcess(QApplication):

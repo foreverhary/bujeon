@@ -22,7 +22,7 @@ from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-AIR_LEAK_VERSION = 'v1.35'
+AIR_LEAK_VERSION = 'v1.36'
 
 
 class AirLeakQR(QApplication):

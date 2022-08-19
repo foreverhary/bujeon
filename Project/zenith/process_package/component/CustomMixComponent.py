@@ -110,6 +110,7 @@ class NetworkStatusGroupLabel(GroupLabel):
         super(NetworkStatusGroupLabel, self).__init__(*args, **kwargs)
         Thread(target=self.check_network, args=(RED,), daemon=True).start()
         self.network_label_color_changed.connect(self.label.set_background_color)
+        self.fail_count = 0
 
     def check_network(self, value):
         self.network_label_color_changed.emit(value)
@@ -117,7 +118,13 @@ class NetworkStatusGroupLabel(GroupLabel):
         try:
             mssql.get_mssql_conn()
         except:
-            Thread(target=self.check_network, args=(RED,), daemon=True).start()
+            self.fail_count += 1
         else:
-            Thread(target=self.check_network, args=(LIGHT_SKY_BLUE,), daemon=True).start()
+            self.fail_count = 0
+        finally:
+            if self.fail_count >= 3:
+                self.fail_count = 3
+                Thread(target=self.check_network, args=(RED,), daemon=True).start()
+            else:
+                Thread(target=self.check_network, args=(LIGHT_SKY_BLUE,), daemon=True).start()
 
