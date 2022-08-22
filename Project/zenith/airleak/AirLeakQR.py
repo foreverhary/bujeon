@@ -22,7 +22,7 @@ from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-AIR_LEAK_VERSION = 'v1.36'
+AIR_LEAK_VERSION = 'v1.37'
 
 
 class AirLeakQR(QApplication):
@@ -88,8 +88,10 @@ class AirLeakQRView(Widget):
     def input_keyboard_line(self, value):
         if STR_AIR_LEAK_SLOT1 == value:
             self.channel_count = 1
+            return
         if STR_AIR_LEAK_SLOT2 == value:
             self.channel_count = 2
+            return
         if STR_CHANGE in value and self.channel_count == 2:
             self.change_channel()
             return
@@ -102,7 +104,7 @@ class AirLeakQRView(Widget):
                 self.left_air_leak.receive_keyboard.emit(value)
 
     def is_allowed_unit4(self, enabled_slot, disabled_slot):
-        return not (self.check_unit_count(enabled_slot) == 3 and self.check_unit_count(disabled_slot))
+        return not (self.check_unit_count(enabled_slot) == 3 and self.check_unit_count(disabled_slot) and disabled_slot.result.text() != STR_NG)
 
     def check_unit_count(self, slot):
         count = 0
@@ -203,6 +205,7 @@ class AirLeakChannel(QGroupBox):
         if value:
             self.unit_label.set_background_color(LIGHT_SKY_BLUE)
             self.result_label.set_background_color()
+            self.clean_units()
             self.result.clean()
         else:
             self.unit_label.set_background_color()
