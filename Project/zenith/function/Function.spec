@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['Function.py'],
-             pathex=['../'],
+             pathex=['../', './'],
              binaries=[],
              datas=[],
              hiddenimports=[],

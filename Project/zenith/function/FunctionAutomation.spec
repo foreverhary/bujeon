@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['FunctionAutomation.py'],
-             pathex=['../'],
+             pathex=['../', './'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='FunctionAutomation v.0.5',
+          name='FunctionAutomation v0.6',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
