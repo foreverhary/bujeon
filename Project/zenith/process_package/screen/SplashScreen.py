@@ -109,7 +109,6 @@ class SplashScreen(QMainWindow):
 
             # SHOW MAIN WINDOW
             # self.close()
-            print(self.ser_list)
             self.start_signal.emit(self.ser_list)
             self.start_signal_old.emit(self.ser_list_old)
             # self.start_signal.emit()

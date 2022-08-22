@@ -17,6 +17,8 @@ from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_mssql
 
+GRADE_CHECKER_VER = "Grade Checker v0.2"
+
 
 class GradeChecker(QApplication):
     def __init__(self, sys_argv):
@@ -24,6 +26,7 @@ class GradeChecker(QApplication):
         self._model = GradeCheckerModel()
         self._control = GradeCheckerControl(self._model)
         self._view = GradeCheckerView(self._model, self._control)
+        self._view.setWindowTitle(GRADE_CHECKER_VER)
         self.load_nfc_window = SplashScreen('Grade Checker')
         self.load_nfc_window.start_signal.connect(self.show_main_window)
 
@@ -102,10 +105,9 @@ class GradeCheckerControl(QObject):
 
     @Slot(dict)
     def receive_nfc_data(self, value):
-        if not (data_matrix := value.get(STR_DATA_MATRIX)):
-            return
-
-        if not (grade := value.get(STR_GRADE)):
+        if not (data_matrix := value.get(STR_DATA_MATRIX)) or not (grade := value.get(STR_GRADE)):
+            self._model.data_matrix = ''
+            self._model.grade = ''
             return
 
         self._model.data_matrix = data_matrix
@@ -160,10 +162,8 @@ class GradeCheckerView(Widget):
         layout = QVBoxLayout(self)
         layout.addWidget(nfc := NFCComponentGradeChecker(STR_NFC))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX))
-        layout.addWidget(grade := GroupLabel(title=STR_GRADE))
+        layout.addWidget(grade := GroupLabel(title=STR_GRADE, is_clean=True, clean_time=1000))
         layout.addWidget(status := GroupLabel(title=STR_STATUS))
-
-        self.setWindowTitle("Grade Checker v0.1")
 
         # size
         nfc.setFixedHeight(80)
