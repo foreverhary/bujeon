@@ -4,7 +4,31 @@ import os
 from process_package.resource.string import CONFIG_FILE_NAME, POP_SECTION, ORDER_NUMBER, MSSQL_SECTION, \
     AUDIO_BUS_SECTION, COMPORT_SECTION, MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE, GRADE_FILE_PATH, \
     SUMMARY_FILE_PATH, A_GRADE_MIN, A_GRADE_MAX, B_GRADE_MIN, B_GRADE_MAX, C_GRADE_MIN, C_GRADE_MAX, MIC_SECTION, \
-    FILE_PATH
+    FILE_PATH, GRADE_FILE_PATH_2, PROCESS_ORDER_SECTION, PROCESS_NAMES_WITHOUT_AIR_LEAK
+
+DEFAULT_CONFIG = {
+    MSSQL_SECTION: {
+        MSSQL_IP: '10.10.0.4',
+        MSSQL_PORT: '1430',
+        MSSQL_ID: 'POPDB',
+        MSSQL_PASSWORD: 'bjpop6981',
+        MSSQL_DATABASE: 'POP_LIV'
+    },
+    MIC_SECTION: {
+        FILE_PATH: 'C:/TestData/BK9041'
+    },
+    AUDIO_BUS_SECTION: {
+        GRADE_FILE_PATH: 'C:/Users/Admin/Desktop/BEM788/GRADE',
+        GRADE_FILE_PATH_2: 'C:/Users/Admin/Desktop/BEM788/GRADE',
+        SUMMARY_FILE_PATH: 'C:/Users/Admin/Desktop/BEM788',
+        A_GRADE_MIN: '123',
+        A_GRADE_MAX: '125',
+        B_GRADE_MIN: '125.1',
+        B_GRADE_MAX: '127',
+        C_GRADE_MIN: '121',
+        C_GRADE_MAX: '122.9'
+    }
+}
 
 
 class Empty:
@@ -74,26 +98,6 @@ class Config:
         config[POP_SECTION][ORDER_NUMBER] = ''
         config.add_section(COMPORT_SECTION)
 
-        config.add_section(MSSQL_SECTION)
-        config[MSSQL_SECTION][MSSQL_IP] = '10.10.0.4'
-        config[MSSQL_SECTION][MSSQL_PORT] = '1430'
-        config[MSSQL_SECTION][MSSQL_ID] = 'POPDB'
-        config[MSSQL_SECTION][MSSQL_PASSWORD] = 'bjpop6981'
-        config[MSSQL_SECTION][MSSQL_DATABASE] = 'POP_LIV'
-
-        config.add_section(MIC_SECTION)
-        config[MIC_SECTION][FILE_PATH] = 'C:/TestData/BK9041'
-
-        config.add_section(AUDIO_BUS_SECTION)
-        config[AUDIO_BUS_SECTION][GRADE_FILE_PATH] = 'C:/Users/Admin/Desktop/BEM788/GRADE'
-        config[AUDIO_BUS_SECTION][SUMMARY_FILE_PATH] = 'C:/Users/Admin/Desktop/BEM788'
-        config[AUDIO_BUS_SECTION][A_GRADE_MIN] = '123'
-        config[AUDIO_BUS_SECTION][A_GRADE_MAX] = '125'
-        config[AUDIO_BUS_SECTION][B_GRADE_MIN] = '125.1'
-        config[AUDIO_BUS_SECTION][B_GRADE_MAX] = '127'
-        config[AUDIO_BUS_SECTION][C_GRADE_MIN] = '121'
-        config[AUDIO_BUS_SECTION][C_GRADE_MAX] = '122.9'
-
         with open(self.filename, 'w') as configfile:
             config.write(configfile)
 
@@ -116,8 +120,15 @@ class Config:
                 return_value = str(return_value)
             return return_value
         except KeyError:
-            self.set_value(section, option, '')
+            self.set_default_value(section, option)
             return get_value(self.config[section][option])
+
+    def set_default_value(self, section, option):
+        if (section_config := DEFAULT_CONFIG.get(section)) \
+                and (value := section_config.get(option)):
+            self.set_value(section, option, value)
+        else:
+            self.set_value(section, option, '')
 
     def set_value(self, section, option, value):
         self.config.read(self.filename)

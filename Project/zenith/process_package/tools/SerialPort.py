@@ -8,6 +8,7 @@ from process_package.tools.CommonFunction import logger
 
 class SerialPort(QObject):
     line_out_signal = Signal(str)
+    line_out_without_decode_signal = Signal(bytes)
     serial_connection_signal = Signal(bool)
 
     def set_port(self, port):
@@ -25,7 +26,10 @@ class SerialPort(QObject):
 
     def write(self, value):
         if self._serial.is_open:
-            self._serial.write(value.encode())
+            if isinstance(value, str):
+                self._serial.write(value.encode())
+            if isinstance(value, bytes):
+                self._serial.write(value)
 
     def connect_toggle(self):
         if self._serial.is_open:
@@ -78,13 +82,14 @@ class SerialPort(QObject):
     def read_line_data(self):
         while True:
             try:
-                tmp_data = self._serial.readline().decode().replace('\r', '').replace('\n', '').replace('\x00',
-                                                                                                        '').replace(
-                    '\x02', '')
+                tmp_data = self._serial.readline().replace(b'\r', b'').replace(b'\n', b'').replace(b'\x00', b'').replace(
+                        b'\x02', b'')
                 if self.out != tmp_data:
                     logger.debug(f"{self._serial.port} : {tmp_data}")
                 self.out = tmp_data
-                self.line_out_signal.emit(self.out)
+                self.line_out_signal.emit(self.out.decode())
+            except UnicodeDecodeError:
+                self.line_out_without_decode_signal.emit(self.out)
             except Exception as e:
                 logger.error(f"{self._serial.port}, {type(e)} : {e}")
                 self.is_open_close()

@@ -9,7 +9,8 @@ from process_package.component.CustomComponent import get_time
 from process_package.observer.FileObserver import Target
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, GRADE_FILE_PATH, \
-    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_FUNCTION, STR_NG, PROCESS_NAMES_WITHOUT_AIR_LEAK
+    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_FUNCTION, STR_NG, PROCESS_NAMES_WITHOUT_AIR_LEAK, STR_GRADE, \
+    STR_PROCESS_RESULTS
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.db_update_from_file import UpdateDB
@@ -20,6 +21,8 @@ class FunctionControl(QObject):
     nfc_in_write = Signal(str)
     nfc1_write = Signal(str)
     nfc2_write = Signal(str)
+    nfc1_write_bytes = Signal(bytes)
+    nfc2_write_bytes = Signal(bytes)
     grade_signal = Signal(str)
     summary_signal = Signal(str)
 
@@ -59,18 +62,12 @@ class FunctionControl(QObject):
         if not (data_matrix := value.get(STR_DATA_MATRIX)):
             return
 
-        if self.data_matrix != data_matrix or self._model.result != value.get(STR_FUN):
+        if self.data_matrix != data_matrix or self._model.result != value.get(STR_GRADE):
             self.data_matrix = data_matrix
-            msg = data_matrix
-            for name in PROCESS_NAMES_WITHOUT_AIR_LEAK:
-                if result := value.get(name):
-                    msg += f",{name}:{result}"
-                if name == self.process_name:
-                    msg += f",{name}:{self._model.result}"
-                    break
-            self.nfc1_write.emit(msg)
-            self.nfc2_write.emit(msg)
-            self.delay_write_count = 3
+            msg = data_matrix.encode() + b',' + (value.get(STR_PROCESS_RESULTS) or b'\x80') + self._model.result.encode()
+            self.nfc1_write_bytes.emit(msg)
+            self.nfc2_write_bytes.emit(msg)
+            self.delay_write_count = 2
         else:
             write_beep()
             self._model.nfc_input = data_matrix

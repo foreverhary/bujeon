@@ -50,11 +50,11 @@ class NFCComponent(GroupLabel):
 
         self.checker_on = False
 
-    def nfc_data_bridge(self, str):
+    def nfc_data_bridge(self, value):
         if self.checker_on:
-            self.nfc_data_out_to_checker.emit(str)
+            self.nfc_data_out_to_checker.emit(value)
         else:
-            self.nfc_data_out.emit(str)
+            self.nfc_data_out.emit(value)
 
     def open_checker(self):
         self.checker_on = True

@@ -50,6 +50,7 @@ class QRNFCWriterView(Widget):
 
         # connect widgets to controller
         self._control.nfc_write.connect(self.nfc.write)
+        self._control.nfc_write_bytes.connect(self.nfc.write)
 
         # listen for model event signals
         self.nfc.nfc_data_out.connect(self._control.receive_nfc_data)

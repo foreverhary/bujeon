@@ -3,7 +3,8 @@ from PySide2.QtWidgets import QDialog, QGridLayout, QGroupBox, QVBoxLayout, QHBo
 
 from process_package.component.CustomComponent import LineEdit, Label, Button
 from process_package.component.CustomMixComponent import GroupLabel
-from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_AIR, STR_MIC, STR_FUN, STR_SEN, STR_GRADE
+from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_AIR, STR_MIC, STR_FUN, STR_SEN, STR_GRADE, \
+    STR_PROCESS_RESULTS, PROCESS_FULL_NAMES_NEW_VERSION, PROCESS_NAMES_WITHOUT_AIR_LEAK
 
 
 class NFCCheckerDialog(QDialog):
@@ -63,8 +64,12 @@ class NFCBox(QGroupBox):
         msg = input_msg.get(STR_UID)
         if data_matrix := input_msg.get(STR_DATA_MATRIX):
             msg += '\n' + data_matrix
-        if STR_AIR in input_msg or STR_MIC in input_msg or STR_FUN in input_msg or STR_SEN in input_msg or STR_GRADE in input_msg:
+        if STR_AIR in input_msg or STR_MIC in input_msg or STR_FUN in input_msg or STR_SEN in input_msg or STR_GRADE in input_msg or STR_PROCESS_RESULTS in input_msg:
             msg += '\n'
+        if process_results := input_msg.get(STR_PROCESS_RESULTS):
+            for order in range(2):
+                if process_results & 1 << order:
+                    msg += f"{PROCESS_NAMES_WITHOUT_AIR_LEAK[order]}:OK "
         if grade := input_msg.get(STR_GRADE):
             msg += f"{STR_GRADE}:{grade}"
         if air := input_msg.get(STR_AIR):

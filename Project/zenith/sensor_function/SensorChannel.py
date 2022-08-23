@@ -10,8 +10,8 @@ from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.string import STR_RESULT, STR_CON_OS, STR_POGO_OS, STR_LED, STR_HALL_IC, STR_VBAT_ID, \
     STR_C_TEST, STR_BATTERY, STR_PROX_TEST, STR_MIC, STR_PCM, STR_SEN, MACHINE_COMPORT_1, MACHINE_COMPORT_2, \
-    STR_DATA_MATRIX, PROCESS_NAMES, STR_SENSOR, STR_OK, STR_NG
-from process_package.tools.CommonFunction import write_beep
+    STR_DATA_MATRIX, STR_SENSOR, STR_OK, STR_NG, STR_PROCESS_RESULTS
+from process_package.tools.CommonFunction import write_beep, is_result_in_nfc, get_write_result_in_nfc
 from process_package.tools.mssql_connect import MSSQL
 
 RESULT_HEIGHT = 350
@@ -54,6 +54,7 @@ class SensorChannel(QGroupBox):
 
         # control connect view
         self._control.nfc_write.connect(nfc.write)
+        self._control.nfc_write_bytes.connect(nfc.write)
 
         # model connect view
         self._model.data_matrix_changed.connect(self.data_matrix.setText)
@@ -72,6 +73,7 @@ class SensorChannel(QGroupBox):
 
 class SensorChannelControl(QObject):
     nfc_write = Signal(str)
+    nfc_write_bytes = Signal(bytes)
 
     def __init__(self, model):
         super(SensorChannelControl, self).__init__()
@@ -125,17 +127,16 @@ class SensorChannelControl(QObject):
             self.delay_write_count -= 1
             return
 
-        if self.data_matrix != data_matrix or self._model.machine_result != value.get(STR_SEN):
+        machine_result_bit = 1 if self._model.machine_result == STR_OK else 0
+
+        if not (results_byte := value.get(STR_PROCESS_RESULTS)) \
+                or self.data_matrix != data_matrix \
+                or not is_result_in_nfc(self, results_byte, machine_result_bit):
             self.data_matrix = data_matrix
-            msg = data_matrix
-            for name in PROCESS_NAMES:
-                if name == self.process_name:
-                    msg += f",{name}:{self._model.machine_result}"
-                    break
-                if result := value.get(name):
-                    msg += f",{name}:{result}"
-            self.nfc_write.emit(msg)
-            self.delay_write_count = 3
+            msg = data_matrix.encode() + b','
+            msg += get_write_result_in_nfc(self, results_byte, machine_result_bit)
+            self.nfc_write_bytes.emit(msg)
+            self.delay_write_count = 2
         else:
             write_beep()
             self.sql_update()
@@ -150,9 +151,6 @@ class SensorChannelControl(QObject):
                                        STR_SENSOR,
                                        self._model.get_error_code(),
                                        socket.gethostbyname(socket.gethostname()))
-
-    def begin(self):
-        self._mssql.timer_for_db_connect()
 
 
 class SensorChannelModel(BasicModel):

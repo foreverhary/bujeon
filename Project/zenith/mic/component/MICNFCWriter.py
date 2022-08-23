@@ -9,10 +9,12 @@ from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
+from process_package.resource.number import is_bit_in_one_byte, input_bit_in_one_byte
 from process_package.resource.string import STR_NFC, STR_DATA_MATRIX, STR_MIC, STR_SPL, STR_THD, STR_IMP, STR_F0, \
     STR_R_AND_B, STR_POLARITY, STR_CURRENT, STR_SNR, STR_NOISE_LEVEL, \
-    STR_FRF, STR_OK, STR_NFC1, STR_NG, STR_SEN
+    STR_FRF, STR_OK, STR_NFC1, STR_NG, STR_SEN, STR_PROCESS_RESULTS, PROCESS_ORDER_SECTION
 from process_package.tools.CommonFunction import logger
+from process_package.tools.Config import get_config_value
 
 NFC_HEIGHT = 60
 NFC_FONT_SIZE = 15
@@ -46,6 +48,7 @@ class MICNFCWriter(QWidget):
 
         # NFC Signal
         self._control.nfc_write.connect(nfc.write)
+        self._control.nfc_write_bytes.connect(nfc.write)
         nfc.nfc_data_out.connect(self._control.receive_nfc_data)
 
         # listen for model event signals
@@ -82,6 +85,7 @@ class MICNFCWriter(QWidget):
 
 class MICNFCWriterControl(QObject):
     nfc_write = Signal(str)
+    nfc_write_bytes = Signal(bytes)
 
     def __init__(self, model, mssql):
         super(MICNFCWriterControl, self).__init__()
@@ -89,6 +93,7 @@ class MICNFCWriterControl(QObject):
         self._mssql = mssql
 
         self.delay_write_count = 0
+        self.process_name = STR_MIC
 
     def receive_nfc_data(self, value):
         if self.delay_write_count:
@@ -101,18 +106,41 @@ class MICNFCWriterControl(QObject):
         if not self._model.result:
             return
 
-        if self._model.result != value.get(STR_MIC):
-            writer = data_matrix
-            if result := value.get(STR_SEN):
-                writer += f",{STR_SEN}:{result}"
-            writer += f",{STR_MIC}:{self._model.result}"
-            self.nfc_write.emit(writer)
+        machine_result_bit = 1 if self._model.result == STR_OK else 0
+
+        if not (results_byte := value.get(STR_PROCESS_RESULTS)) \
+                or not self.is_result_in_nfc(results_byte, machine_result_bit):
+            msg = data_matrix.encode() + b','
+            msg += self.get_write_result_in_nfc(results_byte, machine_result_bit)
+            self.nfc_write_bytes.emit(msg)
             self._model.data_matrix = data_matrix
             self.delay_write_count = 2
         else:
-            self._model.nfc_status = value
+            self._model.nfc_status = {
+                STR_DATA_MATRIX: data_matrix,
+                self.process_name: self._model.result
+            }
             self.sql_update(data_matrix)
             self._model.result = ''
+
+        # if self._model.result != value.get(STR_MIC):
+        #     writer = data_matrix
+        #     if result := value.get(STR_SEN):
+        #         writer += f",{STR_SEN}:{result}"
+        #     writer += f",{STR_MIC}:{self._model.result}"
+        #     self.nfc_write.emit(writer)
+        #     self._model.data_matrix = data_matrix
+        #     self.delay_write_count = 2
+        # else:
+        #     self._model.nfc_status = value
+        #     self.sql_update(data_matrix)
+        #     self._model.result = ''
+
+    def is_result_in_nfc(self, byte, bit):
+        return is_bit_in_one_byte(byte, int(get_config_value(PROCESS_ORDER_SECTION, self.process_name)), bit)
+
+    def get_write_result_in_nfc(self, byte, bit):
+        return input_bit_in_one_byte(byte, int(get_config_value(PROCESS_ORDER_SECTION, self.process_name)), bit)
 
     def sql_update(self, data_matrix):
         self._mssql.start_query_thread(self._mssql.insert_pprd,

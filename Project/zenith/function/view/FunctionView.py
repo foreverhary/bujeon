@@ -64,6 +64,8 @@ class FunctionView(Widget):
         self._control.nfc_in_write.connect(nfc_in.write)
         self._control.nfc1_write.connect(nfc1.write)
         self._control.nfc2_write.connect(nfc2.write)
+        self._control.nfc1_write_bytes.connect(nfc1.write)
+        self._control.nfc2_write_bytes.connect(nfc2.write)
 
         # listen for model event signals
         self._model.nfc_in_change_port.connect(nfc_in.set_port)
