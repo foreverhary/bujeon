@@ -17,7 +17,7 @@ from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import logger
 from process_package.tools.Config import get_config_mssql
 
-GRADE_CHECKER_VER = "Grade Checker v0.2"
+GRADE_CHECKER_VER = "Grade Checker v0.3"
 
 
 class GradeChecker(QApplication):
@@ -48,7 +48,7 @@ class GradeCheckerControl(QObject):
         self.plc_thread.start()
 
     def start_timer(self, func):
-        timer = Timer(0.1, func)
+        timer = Timer(0.2, func)
         timer.daemon = True
         timer.start()
 
@@ -89,6 +89,7 @@ class GradeCheckerControl(QObject):
             return_value = self.pymc.batchread_bitunits(headdevice=addr, readsize=size)
             self.pymc.close()
             self._model.status = f"read : {addr}"
+            logger.debug(self._model.status)
         except TimeoutError:
             return_value = None
         return return_value
@@ -99,6 +100,7 @@ class GradeCheckerControl(QObject):
             self.pymc.batchwrite_bitunits(headdevice=addr, values=value)
             self.pymc.close()
             self._model.status = f"write : {addr}, {value}"
+            logger.debug(self._model.status)
             return True
         except TimeoutError:
             return False
@@ -108,6 +110,9 @@ class GradeCheckerControl(QObject):
         if not (data_matrix := value.get(STR_DATA_MATRIX)) or not (grade := value.get(STR_GRADE)):
             self._model.data_matrix = ''
             self._model.grade = ''
+            return
+
+        if data_matrix == self._model.data_matrix:
             return
 
         self._model.data_matrix = data_matrix
