@@ -22,7 +22,7 @@ from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
 
-AIR_LEAK_VERSION = 'v1.37'
+AIR_LEAK_VERSION = 'v1.38'
 
 
 class AirLeakQR(QApplication):
@@ -96,6 +96,9 @@ class AirLeakQRView(Widget):
             self.change_channel()
             return
 
+        if self.is_already_in_unit(value):
+            return
+
         if self.channel_count == 2 and not self.left_qr_enable:
             if self.is_allowed_unit4(self.right_air_leak, self.left_air_leak):
                 self.right_air_leak.receive_keyboard.emit(value)
@@ -103,8 +106,16 @@ class AirLeakQRView(Widget):
             if self.is_allowed_unit4(self.left_air_leak, self.right_air_leak):
                 self.left_air_leak.receive_keyboard.emit(value)
 
+    def is_already_in_unit(self, value):
+        for left, right in zip(self.left_air_leak.units, self.right_air_leak.units):
+            if left.text() == value or right.text() == value:
+                return True
+        else:
+            return False
+
     def is_allowed_unit4(self, enabled_slot, disabled_slot):
-        return not (self.check_unit_count(enabled_slot) == 3 and self.check_unit_count(disabled_slot) and disabled_slot.result.text() != STR_NG)
+        return not (self.check_unit_count(enabled_slot) == 3 and self.check_unit_count(
+            disabled_slot) and disabled_slot.result.text() != STR_NG)
 
     def check_unit_count(self, slot):
         count = 0
