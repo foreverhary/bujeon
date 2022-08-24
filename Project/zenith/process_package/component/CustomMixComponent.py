@@ -1,10 +1,9 @@
-import socket
 from threading import Thread
 
-from PySide2.QtCore import QTimer, Signal
+from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QComboBox
 
-from process_package.component.CustomComponent import Label, Button, LabelTimerClean, LabelBlink, LabelNFC
+from process_package.component.CustomComponent import Label, Button
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.size import DEFAULT_FONT_SIZE
@@ -47,26 +46,12 @@ class GroupLabelNumber(QGroupBox):
 
 
 class GroupLabel(QGroupBox):
-    def __init__(self, title='', font_size=DEFAULT_FONT_SIZE, blink_time=0, is_clean=False, clean_time=2000,
-                 is_nfc=False):
+    def __init__(self, title='', label=None):
         super(GroupLabel, self).__init__()
+        self.label = label or Label()
         self.setTitle(title)
         layout = QVBoxLayout(self)
-        if is_nfc:
-            layout.addWidget(label := LabelNFC(font_size=font_size,
-                                               is_clean=is_clean,
-                                               clean_time=clean_time))
-        elif is_clean:
-            layout.addWidget(label := LabelTimerClean(font_size=font_size,
-                                                      is_clean=is_clean,
-                                                      clean_time=clean_time))
-        elif blink_time:
-            layout.addWidget(label := LabelBlink(font_size=font_size,
-                                                 blink_time=blink_time))
-        else:
-            layout.addWidget(label := Label(font_size=font_size))
-
-        self.label = label
+        layout.addWidget(self.label)
 
     def set_font_size(self, value):
         self.label.set_font_size(value)
@@ -109,7 +94,7 @@ class NetworkStatusGroupLabel(GroupLabel):
     def __init__(self, *args, **kwargs):
         super(NetworkStatusGroupLabel, self).__init__(*args, **kwargs)
         Thread(target=self.check_network, args=(RED,), daemon=True).start()
-        self.network_label_color_changed.connect(self.label.set_background_color)
+        self.network_label_color_changed.connect(self.set_background_color)
         self.fail_count = 0
 
     def check_network(self, value):
@@ -117,7 +102,8 @@ class NetworkStatusGroupLabel(GroupLabel):
         mssql = MSSQL()
         try:
             mssql.get_mssql_conn()
-        except:
+        except Exception as e:
+            print(e)
             self.fail_count += 1
         else:
             self.fail_count = 0
@@ -127,4 +113,3 @@ class NetworkStatusGroupLabel(GroupLabel):
                 Thread(target=self.check_network, args=(RED,), daemon=True).start()
             else:
                 Thread(target=self.check_network, args=(LIGHT_SKY_BLUE,), daemon=True).start()
-

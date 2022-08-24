@@ -4,8 +4,9 @@ from threading import Timer
 from PySide2.QtCore import Qt, QDate, QTimer, Signal
 from PySide2.QtGui import QCursor
 from PySide2.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QWidget, QDesktopWidget, QMessageBox
-from resource.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW, BLUE, LIGHT_SKY_BLUE
-from resource.size import DEFAULT_FONT_SIZE
+
+from process_package.resource.color import WHITE, BACK_GROUND_COLOR, RED, LIGHT_YELLOW, LIGHT_SKY_BLUE, BLUE, LIGHT_BLUE
+from process_package.resource.size import DEFAULT_FONT_SIZE
 
 
 class Widget(QWidget):
@@ -310,6 +311,7 @@ def window_top_left(window):
     cp = QDesktopWidget().availableGeometry().topLeft()
     qr.moveTopLeft(cp)
     window.move(qr.topLeft())
+
 
 def get_time():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))

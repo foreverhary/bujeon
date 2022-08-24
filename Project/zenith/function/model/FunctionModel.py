@@ -44,6 +44,7 @@ class FunctionModel(BasicModel):
         if isinstance(value, float):
             if float(get_config_audio_bus(B_GRADE_MAX)) < value:
                 self._grade = STR_NG
+                color = RED
             elif float(get_config_audio_bus(A_GRADE_MAX)) < value:
                 self._grade = STR_B
                 color = GREEN
@@ -55,6 +56,7 @@ class FunctionModel(BasicModel):
                 color = YELLOW
             else:
                 self._grade = STR_NG
+                color = RED
             self.grade_changed.emit(f"{self._grade} : {value:.2f}")
             self.grade_color = color
         elif isinstance(value, str):

@@ -76,10 +76,7 @@ class SearchDataMatrixLocalControl(QObject):
         self._model = model
         sqlite_init()
 
-        self.keyboard_listener = LineReadKeyboard()
-
-        # controller event connect
-        self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
+        self.keyboard_listener = LineReadKeyboard(self.input_keyboard_line)
 
     @Slot(str)
     def input_keyboard_line(self, value):

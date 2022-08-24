@@ -15,17 +15,6 @@ class AirLeakAutomationModel(BasicModel):
         self.result = ''
         self.data_matrix = ''
         self.name = STR_AIR_LEAK
-        self.baudrate = 38400
-        self.comport = get_config_value(COMPORT_SECTION, MACHINE_COMPORT_1)
-
-    @property
-    def comport(self):
-        return self._comport
-
-    @comport.setter
-    def comport(self, value):
-        self._comport = value
-        set_config_value(COMPORT_SECTION, MACHINE_COMPORT_1, value)
 
     @property
     def nfcs(self):

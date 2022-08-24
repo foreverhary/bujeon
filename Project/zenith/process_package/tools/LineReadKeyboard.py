@@ -8,15 +8,17 @@ from pynput.keyboard import Key
 class LineReadKeyboard(QObject):
     keyboard_input_signal = Signal(str)
 
-    def __init__(self):
+    def __init__(self, keyboard_input_receiver=None):
         super(LineReadKeyboard, self).__init__()
         self.thread = None
         self._line_data = ''
         self.start_listen_keyboard()
 
+        self.keyboard_input_signal.connect(keyboard_input_receiver)
+
     def get_line(self):
         listener = keyboard.Listener(
-            on_press=self.on_press
+                on_press=self.on_press
         )
         listener.start()
         listener.join()

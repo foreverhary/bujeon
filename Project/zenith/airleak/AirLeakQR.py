@@ -52,12 +52,13 @@ class AirLeakQRView(Widget):
         layout.addWidget(comport := SerialComportGroupBox(title=STR_MACHINE_COMPORT))
         comport.comport.serial_output_data.connect(self.receive_serial_data)
         layout.addLayout(channel_layout := QHBoxLayout())
-        channel_layout.addWidget(left_air_leak := AirLeakChannel("CH 1"))
-        channel_layout.addWidget(right_air_leak := AirLeakChannel("CH 2"))
+        channel_layout.addWidget(left_air_leak := AirLeakChannel("CH 1", self))
+        channel_layout.addWidget(right_air_leak := AirLeakChannel("CH 2", self))
 
         order.setFixedHeight(COMPORT_FIXED_HEIGHT)
         network.setFixedHeight(COMPORT_FIXED_HEIGHT)
         comport.setFixedHeight(COMPORT_FIXED_HEIGHT)
+
         left_air_leak.qr_enable.emit(True)
         right_air_leak.qr_enable.emit(False)
 
@@ -66,14 +67,9 @@ class AirLeakQRView(Widget):
         self.left_air_leak = left_air_leak
         self.right_air_leak = right_air_leak
 
-        self.left_air_leak.dm_full.connect(self.receive_dm_full)
-        self.right_air_leak.dm_full.connect(self.receive_dm_full)
-
-        self.keyboard_listener = LineReadKeyboard()
-        self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
+        self.keyboard_listener = LineReadKeyboard(self.input_keyboard_line)
 
         self.left_qr_enable = True
-        self.channel_count = self.channel_count
 
     def receive_dm_full(self, value):
         if value and self.channel_count == 2:
@@ -95,27 +91,20 @@ class AirLeakQRView(Widget):
         if STR_CHANGE in value and self.channel_count == 2:
             self.change_channel()
             return
-
         if self.is_already_in_unit(value):
             return
-
         if self.channel_count == 2 and not self.left_qr_enable:
             if self.is_allowed_unit4(self.right_air_leak, self.left_air_leak):
                 self.right_air_leak.receive_keyboard.emit(value)
-        else:
-            if self.is_allowed_unit4(self.left_air_leak, self.right_air_leak):
-                self.left_air_leak.receive_keyboard.emit(value)
+        elif self.is_allowed_unit4(self.left_air_leak, self.right_air_leak):
+            self.left_air_leak.receive_keyboard.emit(value)
 
     def is_already_in_unit(self, value):
-        for left, right in zip(self.left_air_leak.units, self.right_air_leak.units):
-            if left.text() == value or right.text() == value:
-                return True
-        else:
-            return False
+        return any(left.text() == value or right.text() == value for left, right in zip(self.left_air_leak.units, self.right_air_leak.units))
 
     def is_allowed_unit4(self, enabled_slot, disabled_slot):
         return not (self.check_unit_count(enabled_slot) == 3 and self.check_unit_count(
-            disabled_slot) and disabled_slot.result.text() != STR_NG)
+                disabled_slot) and disabled_slot.result.text() != STR_NG)
 
     def check_unit_count(self, slot):
         count = 0
@@ -126,7 +115,7 @@ class AirLeakQRView(Widget):
         return count
 
     def change_channel(self):
-        self.left_qr_enable = False if self.left_qr_enable else True
+        self.left_qr_enable = not self.left_qr_enable
         self.left_air_leak.qr_enable.emit(self.left_qr_enable)
         self.right_air_leak.qr_enable.emit(not self.left_qr_enable)
 
@@ -181,7 +170,7 @@ class AirLeakChannel(QGroupBox):
     receive_serial = Signal(str)
     receive_keyboard = Signal(str)
 
-    def __init__(self, channel):
+    def __init__(self, channel, parent):
         super(AirLeakChannel, self).__init__()
 
         # UI
@@ -202,6 +191,8 @@ class AirLeakChannel(QGroupBox):
         self.unit_label = unit_label
         self.result_label = result_label
         self.result = result
+
+        self.dm_full.connect(parent.receive_dm_full)
 
         self.qr_enable.connect(self.received_change)
         self.receive_serial.connect(self.received_serial)
@@ -263,11 +254,7 @@ class AirLeakChannel(QGroupBox):
                     break
 
     def is_dm_full(self):
-        for unit in self.units:
-            if not unit.text():
-                return False
-        else:
-            return True
+        return all(unit.text() for unit in self.units)
 
     def clean_units(self):
         for unit in self.units:

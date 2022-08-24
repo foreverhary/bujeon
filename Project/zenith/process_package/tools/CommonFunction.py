@@ -1,10 +1,16 @@
+from PySide2.QtSerialPort import QSerialPortInfo
 from winsound import Beep
 
-from process_package.resource.string import PROCESS_ORDER_SECTION, PROCESS_NAMES_WITHOUT_AIR_LEAK
-from process_package.tools.Config import get_config_value
+from process_package.resource.string import PROCESS_NAMES_WITHOUT_AIR_LEAK
 from process_package.tools.logger import get_logger
 
 logger = get_logger("My Logger")
+
+
+def get_serial_available_list():
+    return [port.portName()
+            for port in QSerialPortInfo.availablePorts()
+            if not port.isBusy()]
 
 
 def read_beep():
@@ -24,7 +30,7 @@ def input_bit_in_one_byte(one_byte, num, value) -> bytes:
 
 
 def get_bit_in_one_byte(one_byte, num) -> bool:
-    return bool(one_byte & (1 << num))
+    return bool((one_byte or 0x80) & (1 << num))
 
 
 def is_result_in_nfc(obj, byte, bit):
@@ -33,3 +39,4 @@ def is_result_in_nfc(obj, byte, bit):
 
 def get_write_result_in_nfc(obj, byte, bit):
     return input_bit_in_one_byte(byte, PROCESS_NAMES_WITHOUT_AIR_LEAK.index(obj.process_name), bit)
+

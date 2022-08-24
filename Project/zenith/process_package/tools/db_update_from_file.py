@@ -18,8 +18,7 @@ class UpdateDB(QObject):
         self.db_update_timer.start(CHECK_DB_UPDATE_TIME)
 
     def update_db(self):
-        self.thread = Thread(target=self.update_thread, daemon=True)
-        self.thread.start()
+        Thread(target=self.update_thread, daemon=True).start()
 
     def update_thread(self):
         mssql = MSSQL()
@@ -28,7 +27,8 @@ class UpdateDB(QObject):
             logger.debug(query)
             try:
                 mssql.insert_pprh(*query)
-            except:
+            except Exception as e:
+                logger.debug(e)
                 update_pprh_tryup(query[0], query[2])
             else:
                 update_pprh_up(query[0], query[2])
@@ -41,30 +41,3 @@ class UpdateDB(QObject):
                 update_pprd_tryup(*query[:2])
             else:
                 update_pprd_up(*query[:2])
-#
-# class UpdateDB(Thread):
-#     def __init__(self):
-#         super(UpdateDB, self).__init__()
-#         self.query_lines = []
-#         self.start()
-#
-#     def run(self):
-#         mssql = MSSQL()
-#         mssql.get_mssql_conn()
-#         for query in select_pprh_not_update():
-#             logger.debug(query)
-#             try:
-#                 mssql.insert_pprh(*query)
-#             except:
-#                 update_pprh_tryup(query[0], query[2])
-#             else:
-#                 update_pprh_up(query[0], query[2])
-#         for query in select_pprd_not_update():
-#             logger.debug(query)
-#             try:
-#                 mssql.insert_pprd(*query)
-#             except Exception as e:
-#                 logger.debug(f"{type(e)}:{e}")
-#                 update_pprd_tryup(*query[:2])
-#             else:
-#                 update_pprd_up(*query[:2])

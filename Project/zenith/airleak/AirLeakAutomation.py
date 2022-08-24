@@ -5,11 +5,10 @@ from PySide2.QtWidgets import QApplication
 from airleak.control.AirLeakAutomationControl import AirLeakAutomationControl
 from airleak.model.AirLeakAutomationModel import AirLeakAutomationModel
 from airleak.view.AirLeakAutomationView import AirLeakAutomationView
-from process_package.component.CustomComponent import style_sheet_setting, window_center
-from process_package.old.defined_serial_port import get_serial_available_list
+from process_package.component.CustomComponent import style_sheet_setting
 from process_package.resource.string import STR_AIR_LEAK
 from process_package.screen.SplashScreen import SplashScreen
-
+from process_package.tools.CommonFunction import get_serial_available_list
 
 AIR_LEAK_AUTOMATION_VERSION = f"{STR_AIR_LEAK} AUTOMATION v0.2"
 

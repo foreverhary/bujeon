@@ -10,8 +10,9 @@ from process_package.observer.FileObserver import Target
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, GRADE_FILE_PATH, \
     SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_FUNCTION, STR_NG, PROCESS_NAMES_WITHOUT_AIR_LEAK, STR_GRADE, \
-    STR_PROCESS_RESULTS
-from process_package.tools.CommonFunction import logger, write_beep
+    STR_PROCESS_RESULTS, PROCESS_OK_RESULTS
+from process_package.tools.CommonFunction import logger, write_beep, is_result_in_nfc, input_bit_in_one_byte, \
+    get_write_result_in_nfc
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
@@ -53,18 +54,23 @@ class FunctionControl(QObject):
     def receive_nfc_data(self, value):
         if not self._model.result:
             return
-
         self._model.nfc_color = LIGHT_SKY_BLUE
         if self.delay_write_count:
             self.delay_write_count -= 1
             return
-
         if not (data_matrix := value.get(STR_DATA_MATRIX)):
             return
-
-        if self.data_matrix != data_matrix or self._model.result != value.get(STR_GRADE):
+        if self._model.result not in PROCESS_OK_RESULTS:
+            self._model.nfc_input = data_matrix
+            self._model.status = f"{data_matrix} is {STR_WRITE_DONE}"
+        if self.data_matrix != data_matrix \
+                or self._model.result != value.get(STR_GRADE) \
+                or not (is_result_in_nfc(self, value.get(STR_PROCESS_RESULTS),
+                                    bool(self._model.result in PROCESS_OK_RESULTS))):
             self.data_matrix = data_matrix
-            msg = data_matrix.encode() + b',' + (value.get(STR_PROCESS_RESULTS) or b'\x80') + self._model.result.encode()
+            msg = data_matrix.encode() + b','
+            msg += get_write_result_in_nfc(self, value.get(STR_PROCESS_RESULTS), bool(self._model.result in PROCESS_OK_RESULTS))
+            msg += self._model.result.encode() if self._model.result in PROCESS_OK_RESULTS else b''
             self.nfc1_write_bytes.emit(msg)
             self.nfc2_write_bytes.emit(msg)
             self.delay_write_count = 2

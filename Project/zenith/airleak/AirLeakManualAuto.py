@@ -5,7 +5,8 @@ from PySide2.QtCore import Signal, Slot, QObject
 from PySide2.QtWidgets import QApplication, QVBoxLayout, QGroupBox, QGridLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import style_sheet_setting, window_center, Widget, get_time
+from process_package.component.CustomComponent import style_sheet_setting, window_center, Widget, get_time, LabelNFC, \
+    LabelTimerClean
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
@@ -62,8 +63,10 @@ class AirLeakSlot(QGroupBox):
 
         layout = QVBoxLayout(self)
         layout.addWidget(nfc := NFCComponent(nfc_name))
-        layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX, is_nfc=True, is_clean=True, clean_time=5000))
-        layout.addWidget(result := GroupLabel(STR_RESULT, is_clean=True, clean_time=5000))
+        layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX,
+                                                   label=LabelNFC(is_clean=True, clean_time=5000)))
+        layout.addWidget(result := GroupLabel(STR_RESULT,
+                                              label=LabelTimerClean(is_clean=True, clean_time=5000)))
 
         # size
         nfc.setFixedHeight(NFC_FIXED_HEIGHT)

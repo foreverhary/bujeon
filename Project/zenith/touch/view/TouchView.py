@@ -2,7 +2,7 @@ from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.OrderNumberDialog import OrderNumberDialog
-from process_package.component.CustomComponent import Widget
+from process_package.component.CustomComponent import Widget, Label, LabelTimerClean
 from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
 from process_package.old.defined_serial_port import get_serial_available_list
@@ -33,13 +33,14 @@ class TouchView(Widget):
         # layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
         order = GroupLabel(STR_ORDER_NUMBER)
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX,
-                                                   font_size=TOUCH_DATA_MATRIX_FONT_SIZE))
+                                                   label=Label(font_size=TOUCH_DATA_MATRIX_FONT_SIZE)))
         layout.addWidget(data_matrix_waiting := GroupLabel(title=STR_DATA_MATRIX_WAITING,
-                                                           font_size=TOUCH_DATA_MATRIX_FONT_SIZE))
+                                                           label=Label(font_size=TOUCH_DATA_MATRIX_FONT_SIZE)))
         layout.addWidget(machine := GroupLabel(title=STR_MACHINE_RESULT,
-                                               font_size=TOUCH_MACHINE_RESULT_FONT_SIZE,
-                                               is_clean=True,
-                                               clean_time=4000))
+                                               label=LabelTimerClean(
+                                                       font_size=TOUCH_MACHINE_RESULT_FONT_SIZE,
+                                                       is_clean=True,
+                                                       clean_time=4000)))
 
         # shape size
         comport_box.setMaximumHeight(TOUCH_COMPORT_MAXIMUM_HEIGHT)

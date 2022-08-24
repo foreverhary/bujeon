@@ -3,7 +3,7 @@ from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu
 
 from function.FunctionConfig import FunctionConfig
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import Widget
+from process_package.component.CustomComponent import Widget, LabelNFC, LabelTimerClean
 from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.PreviousCheckGroupLabel import PreviousCheckerGroupLabelWithNGScreen
@@ -27,15 +27,16 @@ class FunctionView(Widget):
         nfc_layout.addWidget(nfc1 := NFCComponent(STR_NFC1))
         nfc_layout.addWidget(nfc2 := NFCComponent(STR_NFC2))
         layout.addWidget(
-            previous_process := PreviousCheckerGroupLabelWithNGScreen(
-                STR_PREVIOUS_PROCESS,
-                is_clean=True,
-                clean_time=3000,
-                process_name=STR_FUN
-            )
+                previous_process := PreviousCheckerGroupLabelWithNGScreen(
+                        STR_PREVIOUS_PROCESS,
+                        label=LabelTimerClean(
+                                is_clean=True,
+                                clean_time=3000),
+                        process_name=STR_FUN
+                )
         )
         layout.addWidget(grade := GroupLabel(STR_GRADE))
-        layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS, is_nfc=True))
+        layout.addWidget(nfc := GroupLabel(STR_WRITE_STATUS, label=LabelNFC()))
         layout.addWidget(status := GroupLabel(STR_STATUS))
 
         status.label.setMinimumWidth(FUNCTION_LABEL_MINIMUM_WIDTH)

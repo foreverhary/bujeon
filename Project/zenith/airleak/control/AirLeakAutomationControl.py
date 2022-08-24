@@ -28,9 +28,3 @@ class AirLeakAutomationControl(QObject):
         result = STR_OK if STR_OK in value else STR_NG
 
         self.set_result_slot.emit(channel, result)
-
-    def begin(self):
-        pass
-
-    def mid_clicked(self):
-        pass

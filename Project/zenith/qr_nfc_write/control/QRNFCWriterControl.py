@@ -15,18 +15,16 @@ from process_package.tools.mssql_connect import MSSQL
 
 class QRNFCWriterControl(QObject):
     nfc_write = Signal(str)
+    nfc_write_bytes = Signal(bytes)
 
     def __init__(self, model):
         super(QRNFCWriterControl, self).__init__()
         self._model = model
 
-        self.keyboard_listener = LineReadKeyboard()
+        self.keyboard_listener = LineReadKeyboard(self.input_keyboard_line)
         self._mssql = MSSQL(STR_TOUCH)
         self._mssql.data_matrix_with_air_touch_result_signal.connect(self.receive_previous_result)
         self.update_db = UpdateDB()
-
-        # controller event connect
-        self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
 
         self.keyboard_disabled = False
         self.delay_write_count = 0

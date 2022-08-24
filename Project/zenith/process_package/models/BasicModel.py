@@ -5,29 +5,9 @@ from process_package.tools.Config import set_config_mssql, get_config_mssql, set
 from process_package.resource.string import MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
 
 
-class BasicModel(QObject):
-    order_number_changed = Signal(str)
-
+class DataMatrixModel(QObject):
     data_matrix_changed = Signal(str)
     data_matrix_background_color_changed = Signal(str)
-
-    machine_result_changed = Signal(str)
-    machine_result_background_color_changed = Signal(str)
-
-    status_changed = Signal(str)
-    status_color_changed = Signal(str)
-
-    @property
-    def order_number(self):
-        if not hasattr(self, '_order_number'):
-            self._order_number = ''
-        return self._order_number
-
-    @order_number.setter
-    def order_number(self, value):
-        self._order_number = value
-        self.order_number_changed.emit(value)
-        set_order_number(value)
 
     @property
     def data_matrix(self):
@@ -51,6 +31,11 @@ class BasicModel(QObject):
         self._data_matrix_color = value
         self.data_matrix_background_color_changed.emit(value)
 
+
+class MachineResultModel(QObject):
+    machine_result_changed = Signal(str)
+    machine_result_background_color_changed = Signal(str)
+
     @property
     def machine_result(self):
         if not hasattr(self, '_machine_result'):
@@ -72,6 +57,27 @@ class BasicModel(QObject):
     def machine_result_background_color(self, value):
         self._machine_result_background_color = value
         self.machine_result_background_color_changed.emit(value)
+
+
+class OrderNumModel(QObject):
+    order_number_changed = Signal(str)
+
+    @property
+    def order_number(self):
+        if not hasattr(self, '_order_number'):
+            self._order_number = ''
+        return self._order_number
+
+    @order_number.setter
+    def order_number(self, value):
+        self._order_number = value
+        self.order_number_changed.emit(value)
+        set_order_number(value)
+
+
+class BasicModel(DataMatrixModel, MachineResultModel, OrderNumModel):
+    status_changed = Signal(str)
+    status_color_changed = Signal(str)
 
     @property
     def status(self):

@@ -3,7 +3,7 @@ import sys
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QVBoxLayout, QApplication
 
-from process_package.component.CustomComponent import Widget, style_sheet_setting
+from process_package.component.CustomComponent import Widget, style_sheet_setting, LabelNFC
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, GREEN
@@ -21,7 +21,7 @@ class MICWriteOKView(Widget):
         layout = QVBoxLayout(self)
         layout.addWidget(nfc := NFCComponent())
         layout.addWidget(
-            data_matrix := GroupLabel(title=STR_DATA_MATRIX, font_size=50, is_nfc=True))
+            data_matrix := GroupLabel(title=STR_DATA_MATRIX, label=LabelNFC(font_size=50)))
 
         nfc.setFixedHeight(70)
         data_matrix.setMinimumSize(420, 230)

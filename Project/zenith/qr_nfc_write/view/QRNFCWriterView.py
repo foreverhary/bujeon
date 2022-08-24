@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QVBoxLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import Widget
+from process_package.component.CustomComponent import Widget, LabelNFC, LabelTimerClean
 from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.PreviousCheckGroupLabel import PreviousCheckerGroupLabelAirTouch
@@ -22,14 +22,13 @@ class QRNFCWriterView(Widget):
         layout.addWidget(NetworkStatusGroupLabel(STR_NETWORK))
         layout.addWidget(nfc := NFCComponent(STR_NFC))
         # layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
-        layout.addWidget(
-            previous := PreviousCheckerGroupLabelAirTouch(
-                STR_PREVIOUS_PROCESS,
-                is_clean=True,
-                clean_time=1000,
-                process_name=STR_MIC
-            ))
-        layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, is_nfc=True))
+        layout.addWidget(previous := PreviousCheckerGroupLabelAirTouch(STR_PREVIOUS_PROCESS,
+                                                                       label=LabelTimerClean(
+                                                                               is_clean=True,
+                                                                               clean_time=1000),
+                                                                       process_name=STR_MIC
+                                                                       ))
+        layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX, label=LabelNFC()))
         # layout.addWidget(status := GroupLabel(STR_STATUS))
         status = GroupLabel(STR_STATUS)
         nfc.setFixedHeight(NFC_FIXED_HEIGHT)

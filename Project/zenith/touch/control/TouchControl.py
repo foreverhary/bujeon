@@ -17,12 +17,9 @@ class TouchControl(QObject):
         super(TouchControl, self).__init__()
         self._model = model
 
-        self.keyboard_listener = LineReadKeyboard()
+        self.keyboard_listener = LineReadKeyboard(self.input_keyboard_line)
         self._mssql = MSSQL(STR_TOUCH)
         self.update_db = UpdateDB()
-
-        # controller event connect
-        self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
 
     @Slot(str)
     def input_keyboard_line(self, value):

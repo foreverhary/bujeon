@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QVBoxLayout
 
-from process_package.component.CustomComponent import Widget
+from process_package.component.CustomComponent import Widget, LabelTimerClean
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.resource.size import RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_DATA_MATRIX_FIXED_HEIGHT, \
     RELEASE_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, RELEASE_RESULT_MIN_HEIGHT
@@ -16,12 +16,14 @@ class ReleaseProcessView(Widget):
         layout = QVBoxLayout(self)
         layout.addWidget(nfc := GroupLabel(STR_NFC1))
         layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX,
-                                                   is_clean=True,
-                                                   clean_time=2000))
+                                                   label=LabelTimerClean(
+                                                           is_clean=True,
+                                                           clean_time=2000)))
         layout.addWidget(result := GroupLabel(STR_RESULT,
-                                              font_size=RELEASE_RESULT_FONT_SIZE,
-                                              is_clean=True,
-                                              clean_time=1500))
+                                              label=LabelTimerClean(
+                                                      font_size=RELEASE_RESULT_FONT_SIZE,
+                                                      is_clean=True,
+                                                      clean_time=1500)))
 
         nfc.setFixedHeight(NFC_FIXED_HEIGHT)
         data_matrix.setFixedHeight(RELEASE_DATA_MATRIX_FIXED_HEIGHT)

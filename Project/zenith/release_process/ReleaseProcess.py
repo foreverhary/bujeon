@@ -3,7 +3,7 @@ import sys
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QApplication, QVBoxLayout
 
-from process_package.component.CustomComponent import style_sheet_setting, window_center, Widget
+from process_package.component.CustomComponent import style_sheet_setting, window_center, Widget, LabelTimerClean
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.models.BasicModel import BasicModel
@@ -12,12 +12,12 @@ from process_package.resource.size import RELEASE_RESULT_FONT_SIZE, NFC_FIXED_HE
     RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_RESULT_MIN_HEIGHT, RELEASE_GRADE_FONT_SIZE
 from process_package.resource.string import STR_RELEASE, STR_NFC1, STR_DATA_MATRIX, STR_RESULT, STR_NFC, STR_FUN, \
     STR_MISS, PROCESS_OK_RESULTS, PROCESS_FULL_NAMES, STR_NG, STR_A, STR_B, STR_C, grade_colors, \
-    PROCESS_NAMES_WITHOUT_AIR_LEAK
+    PROCESS_NAMES_WITHOUT_AIR_LEAK, STR_PROCESS_RESULTS, STR_GRADE
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import read_beep, logger
 from process_package.tools.NFCSerialPort import NFCSerialPort
 
-RELEASE_PROCESS_VERSION = "v1.30"
+RELEASE_PROCESS_VERSION = "v1.31"
 
 
 class ReleaseProcess(QApplication):
@@ -47,12 +47,14 @@ class ReleaseProcessView(Widget):
         layout = QVBoxLayout(self)
         layout.addWidget(nfc := NFCComponent(STR_NFC1))
         layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX,
-                                                   is_clean=True,
-                                                   clean_time=2000))
+                                                   label=LabelTimerClean(
+                                                           is_clean=True,
+                                                           clean_time=2000)))
         layout.addWidget(result := GroupLabel(STR_RESULT,
-                                              font_size=RELEASE_RESULT_FONT_SIZE,
-                                              is_clean=True,
-                                              clean_time=1500))
+                                              label=LabelTimerClean(
+                                                      font_size=RELEASE_RESULT_FONT_SIZE,
+                                                      is_clean=True,
+                                                      clean_time=1500)))
 
         nfc.setFixedHeight(NFC_FIXED_HEIGHT)
         data_matrix.setFixedHeight(RELEASE_DATA_MATRIX_FIXED_HEIGHT)
@@ -96,25 +98,18 @@ class ReleaseProcessControl(QObject):
 
     def display_result(self, value):
         msg = ''
-        if self.check_previous_process(value):
-            msg += value.get(STR_FUN)
+        if self.check_previous_process(value.get(STR_PROCESS_RESULTS) or 0):
+            msg += value.get(STR_GRADE) or STR_NG
         else:
-            for process in PROCESS_NAMES_WITHOUT_AIR_LEAK:
-                if not (result := value.get(process)):
-                    result = STR_MISS
-                if result not in PROCESS_OK_RESULTS:
+            for index, process in enumerate(PROCESS_NAMES_WITHOUT_AIR_LEAK):
+                if not (value.get(STR_PROCESS_RESULTS) & (1 << index)):
                     if msg:
                         msg += '\n'
-                    msg += f"{PROCESS_FULL_NAMES[process]} : {result}"
+                    msg += f"{PROCESS_FULL_NAMES[process]} : {STR_NG}"
         self._model.result = msg or STR_NG
 
     def check_previous_process(self, value):
-        return not any(
-            previous_process not in value
-            or value.get(previous_process)
-            not in PROCESS_OK_RESULTS
-            for previous_process in PROCESS_NAMES_WITHOUT_AIR_LEAK
-        )
+        return all(value & (1 << index) for index in range(len(PROCESS_NAMES_WITHOUT_AIR_LEAK) - 1))
 
     def right_clicked(self):
         self.close_signal.emit()

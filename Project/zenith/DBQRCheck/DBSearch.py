@@ -7,6 +7,7 @@ from PySide2.QtWidgets import QVBoxLayout, QTableWidget, QTableWidgetItem, QHBox
 
 from process_package.check_string import check_dm
 from process_package.component.CustomComponent import Label, LineEdit, Widget, style_sheet_setting
+from process_package.models.BasicModel import DataMatrixModel
 from process_package.tools.CommonFunction import logger
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.mssql_connect import MSSQL
@@ -78,10 +79,7 @@ class DBSearchControl(QObject):
         self._model = model
         self._mssql = MSSQL()
 
-        self.keyboard_listener = LineReadKeyboard()
-
-        # controller event connect
-        self.keyboard_listener.keyboard_input_signal.connect(self.input_keyboard_line)
+        self.keyboard_listener = LineReadKeyboard(self.input_keyboard_line)
 
     @Slot(str)
     def input_keyboard_line(self, value):
@@ -93,21 +91,11 @@ class DBSearchControl(QObject):
         self._model.pprd_list = self._mssql(self._mssql.select_pprd_with_data_matrix, data_matrix)
 
 
-class DBSearchModel(QObject):
-    data_matrix_changed = Signal(str)
+class DBSearchModel(DataMatrixModel):
     pprd_list_changed = Signal(list)
 
     def __init__(self):
         super(DBSearchModel, self).__init__()
-
-    @property
-    def data_matrix(self):
-        return self._data_matrix
-
-    @data_matrix.setter
-    def data_matrix(self, value):
-        self._data_matrix = value
-        self.data_matrix_changed.emit(value)
 
     @property
     def pprd_list(self):

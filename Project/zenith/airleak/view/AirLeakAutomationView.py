@@ -4,7 +4,7 @@ from PySide2.QtCore import Signal, QObject, Slot
 from PySide2.QtWidgets import QVBoxLayout, QGroupBox, QGridLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import Widget, get_time
+from process_package.component.CustomComponent import Widget, get_time, LabelNFC
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.SerialComboHBoxLayout import SerialComboHBoxLayout
@@ -64,7 +64,7 @@ class AirLeakSlot(QGroupBox):
         layout.addLayout(comport := SerialComboHBoxLayout(button_text='CONN',
                                                           port_cfg=f"{MACHINE_COMPORT}{nfc_name[-1]}"))
         layout.addWidget(nfc := NFCComponent(nfc_name))
-        layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX, is_nfc=True))
+        layout.addWidget(data_matrix := GroupLabel(STR_DATA_MATRIX, label=LabelNFC()))
         layout.addWidget(result := GroupLabel(STR_RESULT))
 
         # size
@@ -256,7 +256,7 @@ class AirLeakAutomationView(Widget):
         # assign
         self.slots = slots
         # self.comport = comport
-        self.slot_enables = [True for l in range(SLOT_COUNT)]
+        self.slot_enables = [True for _ in range(SLOT_COUNT)]
 
         # odd & even event
         self.open_odd_signal.connect(self.open_odd)

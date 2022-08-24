@@ -8,7 +8,7 @@ from PySide2.QtWidgets import QApplication, QVBoxLayout, QMenu
 
 from NFCForGradeChecker import NFCComponentGradeChecker
 from PLCDialog import PLCDialog
-from process_package.component.CustomComponent import Widget, style_sheet_setting, window_center
+from process_package.component.CustomComponent import Widget, style_sheet_setting, window_center, LabelTimerClean
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.models.BasicModel import BasicModel
 from process_package.resource.string import STR_NFC, STR_DATA_MATRIX, STR_GRADE, grade_colors, STR_A, STR_B, STR_C, \
@@ -167,7 +167,8 @@ class GradeCheckerView(Widget):
         layout = QVBoxLayout(self)
         layout.addWidget(nfc := NFCComponentGradeChecker(STR_NFC))
         layout.addWidget(data_matrix := GroupLabel(title=STR_DATA_MATRIX))
-        layout.addWidget(grade := GroupLabel(title=STR_GRADE, is_clean=True, clean_time=1000))
+        layout.addWidget(grade := GroupLabel(title=STR_GRADE,
+                                             label=LabelTimerClean(is_clean=True, clean_time=1000)))
         layout.addWidget(status := GroupLabel(title=STR_STATUS))
 
         # size

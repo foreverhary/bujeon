@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QDialog, QGridLayout, QGroupBox, QVBoxLayout, QHBo
 from process_package.component.CustomComponent import LineEdit, Label, Button
 from process_package.component.CustomMixComponent import GroupLabel
 from process_package.resource.string import STR_UID, STR_DATA_MATRIX, STR_AIR, STR_MIC, STR_FUN, STR_SEN, STR_GRADE, \
-    STR_PROCESS_RESULTS, PROCESS_FULL_NAMES_NEW_VERSION, PROCESS_NAMES_WITHOUT_AIR_LEAK
+    STR_PROCESS_RESULTS, PROCESS_NAMES_WITHOUT_AIR_LEAK
 
 
 class NFCCheckerDialog(QDialog):
