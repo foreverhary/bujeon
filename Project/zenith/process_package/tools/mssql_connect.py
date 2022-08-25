@@ -102,7 +102,7 @@ class MSSQL(QObject):
         return True
 
     def get_mssql_conn(self):
-        self.con = pymssql.connect(server=get_config_mssql(MSSQL_IP) + f":{get_config_mssql(MSSQL_PORT)}",
+        self.con = pymssql.connect(server=f"{get_config_mssql(MSSQL_IP)}:{get_config_mssql(MSSQL_PORT)}",
                                    user=get_config_mssql(MSSQL_ID),
                                    password=get_config_mssql(MSSQL_PASSWORD),
                                    database=get_config_mssql(MSSQL_DATABASE),

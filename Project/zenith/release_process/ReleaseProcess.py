@@ -10,8 +10,8 @@ from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import WHITE, BACK_GROUND_COLOR, RED
 from process_package.resource.size import RELEASE_RESULT_FONT_SIZE, NFC_FIXED_HEIGHT, RELEASE_DATA_MATRIX_FIXED_HEIGHT, \
     RELEASE_LABEL_MINIMUM_WIDTH, RELEASE_RESULT_MIN_HEIGHT, RELEASE_GRADE_FONT_SIZE
-from process_package.resource.string import STR_RELEASE, STR_NFC1, STR_DATA_MATRIX, STR_RESULT, STR_NFC, STR_FUN, \
-    STR_MISS, PROCESS_OK_RESULTS, PROCESS_FULL_NAMES, STR_NG, STR_A, STR_B, STR_C, grade_colors, \
+from process_package.resource.string import STR_RELEASE, STR_NFC1, STR_DATA_MATRIX, STR_RESULT, STR_NFC, \
+    PROCESS_FULL_NAMES, STR_NG, STR_A, STR_B, STR_C, grade_colors, \
     PROCESS_NAMES_WITHOUT_AIR_LEAK, STR_PROCESS_RESULTS, STR_GRADE
 from process_package.screen.SplashScreen import SplashScreen
 from process_package.tools.CommonFunction import read_beep, logger
@@ -110,9 +110,6 @@ class ReleaseProcessControl(QObject):
 
     def check_previous_process(self, value):
         return all(value & (1 << index) for index in range(len(PROCESS_NAMES_WITHOUT_AIR_LEAK) - 1))
-
-    def right_clicked(self):
-        self.close_signal.emit()
 
 
 class ReleaseProcessModel(BasicModel):

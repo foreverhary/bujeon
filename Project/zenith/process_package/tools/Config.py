@@ -1,4 +1,5 @@
 import configparser
+import contextlib
 import os
 
 from process_package.resource.string import CONFIG_FILE_NAME, POP_SECTION, ORDER_NUMBER, MSSQL_SECTION, \
@@ -36,14 +37,10 @@ class Empty:
 
 
 def get_value(value):
-    try:
+    with contextlib.suppress(NameError, SyntaxError):
         eval_value = eval(value)
         if type(eval_value) in [int, float, list, tuple, dict]:
             return eval_value
-    except NameError:
-        pass
-    except SyntaxError:
-        pass
     return value
 
 

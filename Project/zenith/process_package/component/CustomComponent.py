@@ -2,11 +2,11 @@ import time
 from threading import Timer
 
 import qdarkstyle
-from PySide2.QtCore import Qt, QDate, QTimer, Signal, Slot
+from PySide2.QtCore import Qt, QDate, QTimer, Signal
 from PySide2.QtGui import QCursor, QFontDatabase, QFont
 from PySide2.QtWidgets import QPushButton, QLineEdit, QComboBox, QLabel, QDateEdit, QWidget, QDesktopWidget, QMessageBox
 
-from process_package.resource.color import WHITE, BACK_GROUND_COLOR, LIGHT_BLUE, RED, LIGHT_YELLOW, BLUE, LIGHT_SKY_BLUE
+from process_package.resource.color import WHITE, BACK_GROUND_COLOR, RED, LIGHT_YELLOW, BLUE, LIGHT_SKY_BLUE
 from process_package.resource.size import DEFAULT_FONT_SIZE
 from process_package.resource.style import STYLE
 
@@ -135,9 +135,9 @@ class Label(QLabel):
         super().setText(txt)
         if not txt:
             self.clean()
-        if txt in ['OK', 'PASS']:
+        if txt in {'OK', 'PASS'}:
             self.set_background_color(LIGHT_SKY_BLUE)
-        elif txt in ['NG', 'FAIL']:
+        elif txt in {'NG', 'FAIL'}:
             self.set_background_color(RED)
 
 
@@ -262,21 +262,3 @@ def style_sheet_setting(app):
 
 def get_time():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-
-
-def make_error_popup(text):
-    msg = QMessageBox()
-    msg.setWindowTitle("ERROR")
-    msg.setText(text)
-    msg.setIcon(QMessageBox.Critical)
-    x = msg.exec_()
-
-# def trace(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         logger.debug(f'{func.__name__}({args!r}, {kwargs!r}')
-#         result = func(*args, **kwargs)
-#         logger.debug(f'{func.__name__} -> {result!r}')
-#         return result
-#
-#     return wrapper

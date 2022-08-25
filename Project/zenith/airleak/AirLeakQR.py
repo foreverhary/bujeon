@@ -1,15 +1,13 @@
 import socket
 import sys
 
-from PySide2.QtCore import Signal, QTimer
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QGroupBox, QHBoxLayout, QGridLayout, QMenu
+from PySide2 import QtCore, QtWidgets
 
 from process_package.MSSqlDialog import MSSqlDialog
 from process_package.OrderNumberDialog import OrderNumberDialog
 from process_package.check_string import check_dm
 from process_package.component.CustomComponent import style_sheet_setting, Widget, Label, get_time, window_center
 from process_package.component.CustomMixComponent import GroupLabel, SerialComportGroupBox, NetworkStatusGroupLabel
-from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.color import LIGHT_SKY_BLUE
 from process_package.resource.number import AIR_LEAK_UNIT_COUNT
 from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT_MINIMUM_WIDTH, COMPORT_FIXED_HEIGHT, \
@@ -17,6 +15,7 @@ from process_package.resource.size import AIR_LEAK_UNIT_FONT_SIZE, AIR_LEAK_UNIT
 from process_package.resource.string import STR_MACHINE_COMPORT, STR_RESET, STR_CHANGE, STR_UNIT, STR_RESULT, \
     STR_ORDER_NUMBER, STR_OK, STR_NG, STR_AIR, STR_NETWORK, CHANNEL, AIR_LEAK_SECTION, STR_AIR_LEAK_SLOT1, \
     STR_AIR_LEAK_SLOT2
+from process_package.tools.CommonFunction import get_serial_available_list
 from process_package.tools.Config import get_order_number, get_config_value, set_config_value
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
@@ -25,7 +24,7 @@ from process_package.tools.mssql_connect import MSSQL
 AIR_LEAK_VERSION = 'v1.38'
 
 
-class AirLeakQR(QApplication):
+class AirLeakQR(QtWidgets.QApplication):
     def __init__(self, sys_argv):
         super(AirLeakQR, self).__init__(sys_argv)
         style_sheet_setting(self)
@@ -45,13 +44,13 @@ class AirLeakQRView(Widget):
         super(AirLeakQRView, self).__init__()
 
         # UI
-        layout = QVBoxLayout(self)
-        layout.addLayout(option_layout := QHBoxLayout())
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addLayout(option_layout := QtWidgets.QHBoxLayout())
         option_layout.addWidget(order := GroupLabel(STR_ORDER_NUMBER))
         option_layout.addWidget(network := NetworkStatusGroupLabel(title=STR_NETWORK))
         layout.addWidget(comport := SerialComportGroupBox(title=STR_MACHINE_COMPORT))
         comport.comport.serial_output_data.connect(self.receive_serial_data)
-        layout.addLayout(channel_layout := QHBoxLayout())
+        layout.addLayout(channel_layout := QtWidgets.QHBoxLayout())
         channel_layout.addWidget(left_air_leak := AirLeakChannel("CH 1", self))
         channel_layout.addWidget(right_air_leak := AirLeakChannel("CH 2", self))
 
@@ -100,7 +99,8 @@ class AirLeakQRView(Widget):
             self.left_air_leak.receive_keyboard.emit(value)
 
     def is_already_in_unit(self, value):
-        return any(left.text() == value or right.text() == value for left, right in zip(self.left_air_leak.units, self.right_air_leak.units))
+        return any(left.text() == value or right.text() == value
+                   for left, right in zip(self.left_air_leak.units, self.right_air_leak.units))
 
     def is_allowed_unit4(self, enabled_slot, disabled_slot):
         return not (self.check_unit_count(enabled_slot) == 3 and self.check_unit_count(
@@ -121,7 +121,7 @@ class AirLeakQRView(Widget):
 
     def contextMenuEvent(self, e):
 
-        menu = QMenu(self)
+        menu = QtWidgets.QMenu(self)
 
         order_action = menu.addAction('Order Number Setting')
         db_action = menu.addAction('DB Setting')
@@ -164,18 +164,18 @@ class AirLeakQRView(Widget):
         self.right_air_leak.result.clean()
 
 
-class AirLeakChannel(QGroupBox):
-    qr_enable = Signal(bool)
-    dm_full = Signal(bool)
-    receive_serial = Signal(str)
-    receive_keyboard = Signal(str)
+class AirLeakChannel(QtWidgets.QGroupBox):
+    qr_enable = QtCore.Signal(bool)
+    dm_full = QtCore.Signal(bool)
+    receive_serial = QtCore.Signal(str)
+    receive_keyboard = QtCore.Signal(str)
 
     def __init__(self, channel, parent):
         super(AirLeakChannel, self).__init__()
 
         # UI
         self.setTitle(channel)
-        layout = QGridLayout(self)
+        layout = QtWidgets.QGridLayout(self)
         layout.addWidget(unit_label := Label(STR_UNIT), 0, 0)
         layout.addWidget(result_label := Label(STR_RESULT), 0, 1)
         self.units = [Label(font_size=AIR_LEAK_UNIT_FONT_SIZE) for _ in range(AIR_LEAK_UNIT_COUNT)]
@@ -200,7 +200,7 @@ class AirLeakChannel(QGroupBox):
 
         self._mssql = MSSQL(STR_AIR)
 
-        self.timer_result_clean = QTimer(self)
+        self.timer_result_clean = QtCore.QTimer(self)
         self.timer_result_clean.timeout.connect(self.result.clean)
 
     def received_change(self, value):
