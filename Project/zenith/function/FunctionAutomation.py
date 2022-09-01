@@ -9,7 +9,7 @@ from xlrd import open_workbook
 
 from FunctionConfig2Grade import FunctionConfig2Grade
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import style_sheet_setting, window_right, Widget, get_time
+from process_package.component.CustomComponent import style_sheet_setting, window_right, Widget, get_time, window_center
 from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.models.BasicModel import BasicModel
@@ -35,10 +35,8 @@ class FunctionAutomation(QApplication):
         super(FunctionAutomation, self).__init__(sys_argv)
         self._model = FunctionAutomationModel()
         self._control = FunctionAutomationControl(self._model)
-        self._view = FunctionAutomationView(self._model, self._control)
+        self._view = FunctionAutomationView(self)
         self._view.setWindowTitle(FUNCTION_AUTOMATION_VERSION)
-        self.load_nfc_window = SplashScreen(STR_FUNCTION)
-        self.load_nfc_window.start_signal.connect(self.show_main_window)
 
     def show_main_window(self, nfcs):
         style_sheet_setting(self)
@@ -52,9 +50,9 @@ class FunctionAutomation(QApplication):
 
 
 class FunctionAutomationView(Widget):
-    def __init__(self, *args):
+    def __init__(self, app):
         super(FunctionAutomationView, self).__init__()
-        self._model, self._control = args
+        self.app, self._model, self._control = app, app._model, app._control
 
         # UI
         layout = QVBoxLayout(self)
@@ -73,6 +71,29 @@ class FunctionAutomationView(Widget):
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
+        self.load_nfc()
+
+    def load_nfc(self):
+        self.channel1.nfc.close_force()
+        self.channel2.nfc.close_force()
+        self.app.setStyleSheet("QWidget{};")
+        self.hide()
+        self.load_nfc_window = SplashScreen(STR_FUNCTION)
+        self.load_nfc_window.start_signal.connect(self.show_main_window)
+
+    def show_main_window(self, nfcs):
+        style_sheet_setting(self.app)
+        for port, nfc_name in nfcs.items():
+            if nfc_name == STR_NFC1:
+                self.channel1.nfc.set_port(port)
+            elif nfc_name == STR_NFC2:
+                self.channel2.nfc.set_port(port)
+
+        self.show()
+
+        window_center(self)
+        self.load_nfc_window.close()
+
     def start_file_observe(self):
         self.channel1.start_file_observe()
         self.channel2.start_file_observe()
@@ -90,14 +111,16 @@ class FunctionAutomationView(Widget):
 
         file_action = menu.addAction('Function File Setting')
         db_action = menu.addAction('DB Setting')
+        nfc_action = menu.addAction('Load NFC Port')
 
         action = menu.exec_(self.mapToGlobal(e.pos()))
 
         if action == file_action:
             FunctionConfig2Grade(self)
-            # FunctionConfig(self)
         if action == db_action:
             MSSqlDialog()
+        elif action == nfc_action:
+            self.load_nfc()
 
 
 class FunctionAutomationControl(QObject):
@@ -168,7 +191,7 @@ class FunctionAutomationChannel(QGroupBox):
 
         if (grade := value.get(STR_GRADE)) != self._model.grade:
             self.sender().write(f"{data_matrix},{self._model.grade}")
-            self.delay_write_count = 3
+            self.delay_write_count = 1
         else:
             self._model.data_matrix = data_matrix
 

@@ -11,9 +11,8 @@ from process_package.models.BasicModel import BasicModel
 from process_package.resource.color import LIGHT_SKY_BLUE, RED
 from process_package.resource.string import STR_NFC, STR_DATA_MATRIX, STR_MIC, STR_SPL, STR_THD, STR_IMP, STR_F0, \
     STR_R_AND_B, STR_POLARITY, STR_CURRENT, STR_SNR, STR_NOISE_LEVEL, \
-    STR_FRF, STR_OK, STR_NFC1, STR_NG, STR_PROCESS_RESULTS, PROCESS_ORDER_SECTION
+    STR_FRF, STR_OK, STR_NFC1, STR_NG, STR_PROCESS_RESULTS
 from process_package.tools.CommonFunction import logger, is_result_in_nfc, get_write_result_in_nfc
-from process_package.tools.Config import get_config_value
 
 NFC_HEIGHT = 60
 NFC_FONT_SIZE = 15
@@ -83,6 +82,9 @@ class MICNFCWriter(QWidget):
             if STR_CURRENT in k:
                 self._model.error_code_result[STR_CURRENT] = v
 
+    def close_force(self):
+        self.nfc.close_force()
+
 
 class MICNFCWriterControl(QObject):
     nfc_write = Signal(str)
@@ -100,13 +102,10 @@ class MICNFCWriterControl(QObject):
         if self.delay_write_count:
             self.delay_write_count -= 1
             return
-
         if not (data_matrix := value.get(STR_DATA_MATRIX)):
             return
-
         if not self._model.result:
             return
-
         machine_result_bit = 1 if self._model.result == STR_OK else 0
 
         if not (results_byte := value.get(STR_PROCESS_RESULTS)) \
@@ -115,7 +114,7 @@ class MICNFCWriterControl(QObject):
             msg += get_write_result_in_nfc(self, results_byte, machine_result_bit)
             self.nfc_write_bytes.emit(msg)
             self._model.data_matrix = data_matrix
-            self.delay_write_count = 2
+            self.delay_write_count = 1
         else:
             self._model.nfc_status = {
                 STR_DATA_MATRIX: data_matrix,
@@ -123,19 +122,6 @@ class MICNFCWriterControl(QObject):
             }
             self.sql_update(data_matrix)
             self._model.result = ''
-
-        # if self._model.result != value.get(STR_MIC):
-        #     writer = data_matrix
-        #     if result := value.get(STR_SEN):
-        #         writer += f",{STR_SEN}:{result}"
-        #     writer += f",{STR_MIC}:{self._model.result}"
-        #     self.nfc_write.emit(writer)
-        #     self._model.data_matrix = data_matrix
-        #     self.delay_write_count = 2
-        # else:
-        #     self._model.nfc_status = value
-        #     self.sql_update(data_matrix)
-        #     self._model.result = ''
 
     def sql_update(self, data_matrix):
         self._mssql.start_query_thread(self._mssql.insert_pprd,

@@ -17,7 +17,6 @@ jumper = 10
 
 class SplashScreen(QMainWindow):
     serial_check_signal = Signal()
-    start_signal_old = Signal(dict)
     start_signal = Signal(dict)
 
     def __init__(self, app_name):
@@ -26,8 +25,9 @@ class SplashScreen(QMainWindow):
         self.ui.setupUi(self, app_name)
 
         self.ports = get_serial_available_list()
+        if not self.ports:
+            self.start_signal.emit({})
 
-        self.ser_list_old = {}
         self.ser_list = {}
 
         self.counter = 0
@@ -109,8 +109,6 @@ class SplashScreen(QMainWindow):
             # SHOW MAIN WINDOW
             # self.close()
             self.start_signal.emit(self.ser_list)
-            self.start_signal_old.emit(self.ser_list_old)
-            # self.start_signal.emit()
 
         # INCREASE COUNTER
         self.counter += 0.5

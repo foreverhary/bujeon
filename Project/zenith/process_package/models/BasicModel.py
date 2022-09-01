@@ -1,8 +1,7 @@
 from PySide2.QtCore import QObject, Signal
 
 from process_package.resource.color import BACK_GROUND_COLOR
-from process_package.tools.Config import set_config_mssql, get_config_mssql, set_order_number, get_order_number
-from process_package.resource.string import MSSQL_IP, MSSQL_PORT, MSSQL_ID, MSSQL_PASSWORD, MSSQL_DATABASE
+from process_package.tools.Config import set_order_number, get_order_number
 
 
 class DataMatrixModel(QObject):

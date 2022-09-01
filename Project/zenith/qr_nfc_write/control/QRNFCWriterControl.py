@@ -1,12 +1,9 @@
-import socket
-
 from PySide2.QtCore import QObject, Signal
 
 from process_package.check_string import check_dm
-from process_package.component.CustomComponent import get_time
 from process_package.component.SearchDataMatrixLocal import SearchDataMatrixLocal
 from process_package.resource.color import LIGHT_SKY_BLUE
-from process_package.resource.string import STR_OK, STR_DATA_MATRIX, STR_TOUCH, STR_AIR
+from process_package.resource.string import STR_DATA_MATRIX, STR_TOUCH, STR_AIR
 from process_package.tools.CommonFunction import logger, write_beep
 from process_package.tools.LineReadKeyboard import LineReadKeyboard
 from process_package.tools.db_update_from_file import UpdateDB
@@ -37,7 +34,6 @@ class QRNFCWriterControl(QObject):
         if self.delay_write_count:
             self.delay_write_count -= 1
             return
-
         if not self._model.data_matrix:
             return
 
@@ -48,7 +44,7 @@ class QRNFCWriterControl(QObject):
         else:
             logger.debug("WRITE!!")
             self.nfc_write.emit(self._model.data_matrix)
-            self.delay_write_count = 2
+            self.delay_write_count = 1
 
     def input_keyboard_line(self, value):
         if self.keyboard_disabled:
@@ -66,12 +62,10 @@ class QRNFCWriterControl(QObject):
     def receive_previous_result(self, value):
         db_result_to_dict = {STR_DATA_MATRIX: self.temp_data_matrix}
         for fetch in value:
-            if fetch[3] == 'AIR':
-                if not db_result_to_dict.get(STR_AIR):
-                    db_result_to_dict[STR_AIR] = fetch[2]
-            if fetch[3] == 'TOUCH':
-                if not db_result_to_dict.get(STR_TOUCH):
-                    db_result_to_dict[STR_TOUCH] = fetch[2]
+            if fetch[3] == 'AIR' and not db_result_to_dict.get(STR_AIR):
+                db_result_to_dict[STR_AIR] = fetch[2]
+            if fetch[3] == 'TOUCH' and not db_result_to_dict.get(STR_TOUCH):
+                db_result_to_dict[STR_TOUCH] = fetch[2]
         self._model.previous_result = db_result_to_dict
 
     def mid_clicked(self):

@@ -9,10 +9,9 @@ from process_package.component.CustomComponent import get_time
 from process_package.observer.FileObserver import Target
 from process_package.resource.color import RED, LIGHT_SKY_BLUE
 from process_package.resource.string import STR_AIR_LEAK, STR_DATA_MATRIX, GRADE_FILE_PATH, \
-    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_FUNCTION, STR_NG, PROCESS_NAMES_WITHOUT_AIR_LEAK, STR_GRADE, \
+    SUMMARY_FILE_PATH, STR_FUN, STR_WRITE_DONE, STR_FUNCTION, STR_NG, STR_GRADE, \
     STR_PROCESS_RESULTS, PROCESS_OK_RESULTS
-from process_package.tools.CommonFunction import logger, write_beep, is_result_in_nfc, input_bit_in_one_byte, \
-    get_write_result_in_nfc
+from process_package.tools.CommonFunction import logger, write_beep, is_result_in_nfc, get_write_result_in_nfc
 from process_package.tools.Config import get_config_audio_bus
 from process_package.tools.db_update_from_file import UpdateDB
 from process_package.tools.mssql_connect import MSSQL
@@ -73,7 +72,7 @@ class FunctionControl(QObject):
             msg += self._model.result.encode() if self._model.result in PROCESS_OK_RESULTS else b''
             self.nfc1_write_bytes.emit(msg)
             self.nfc2_write_bytes.emit(msg)
-            self.delay_write_count = 2
+            self.delay_write_count = 1
         else:
             write_beep()
             self._model.nfc_input = data_matrix

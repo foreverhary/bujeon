@@ -2,7 +2,7 @@
 
 
 block_cipher = None
-
+QR_VER = 'v1.35'
 
 a = Analysis(['QRNFCWriter.py'],
              pathex=['../'],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='QRNFCWriter_v1.35',
+          name=f'QRNFCWriter_{QR_VER}',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

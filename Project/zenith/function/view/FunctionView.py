@@ -3,7 +3,8 @@ from PySide2.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu
 
 from function.FunctionConfig import FunctionConfig
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import Widget, LabelNFC, LabelTimerClean
+from process_package.component.CustomComponent import Widget, LabelNFC, LabelTimerClean, style_sheet_setting, \
+    window_center
 from process_package.component.CustomMixComponent import GroupLabel, NetworkStatusGroupLabel
 from process_package.component.NFCComponent import NFCComponent
 from process_package.component.PreviousCheckGroupLabel import PreviousCheckerGroupLabelWithNGScreen
@@ -11,13 +12,14 @@ from process_package.resource.size import AIR_LEAK_STATUS_FIXED_HEIGHT, FUNCTION
     FUNCTION_PREVIOUS_PROCESS_FIXED_HEIGHT, \
     FUNCTION_NFC_FIXED_HEIGHT, FUNCTION_NFC_FONT_SIZE
 from process_package.resource.string import STR_NFC1, STR_NFCIN, STR_NFC2, STR_PREVIOUS_PROCESS, STR_GRADE, STR_STATUS, \
-    STR_WRITE_STATUS, STR_FUN, STR_NETWORK
+    STR_WRITE_STATUS, STR_FUN, STR_NETWORK, STR_FUNCTION, STR_NFCIN1
+from process_package.screen.SplashScreen import SplashScreen
 
 
 class FunctionView(Widget):
-    def __init__(self, *args):
+    def __init__(self, app):
         super(FunctionView, self).__init__()
-        self._model, self._control = args
+        self.app, self._model, self._control = app, app._model, app._control
 
         # UI
         layout = QVBoxLayout(self)
@@ -53,6 +55,9 @@ class FunctionView(Widget):
         self.grade = grade.label
         self.nfc = nfc.label
         self.status = status.label
+        self.nfcin = nfc_in
+        self.nfc1 = nfc1
+        self.nfc2 = nfc2
 
         # connect widgets to controller
 
@@ -83,12 +88,38 @@ class FunctionView(Widget):
         self._model.status_color_changed.connect(self.status.set_color)
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.load_nfc()
+
+    def load_nfc(self):
+        self.nfcin.close_force()
+        self.nfc1.close_force()
+        self.nfc2.close_force()
+        self.app.setStyleSheet("QWidget{};")
+        self.hide()
+        self.load_nfc_window = SplashScreen(STR_FUNCTION)
+        self.load_nfc_window.start_signal.connect(self.show_main_window)
+
+    def show_main_window(self, nfcs):
+        style_sheet_setting(self.app)
+        for port, nfc_name in nfcs.items():
+            if nfc_name == STR_NFC1:
+                self.nfc1.set_port(port)
+            elif nfc_name == STR_NFC2:
+                self.nfc2.set_port(port)
+            elif nfc_name == STR_NFCIN1:
+                self.nfcin.set_port(port)
+
+        self.show()
+
+        window_center(self)
+        self.load_nfc_window.close()
 
     def contextMenuEvent(self, e):
         menu = QMenu(self)
 
         file_action = menu.addAction('Function File Setting')
         db_action = menu.addAction('DB Setting')
+        nfc_action = menu.addAction('Load NFC Port')
 
         action = menu.exec_(self.mapToGlobal(e.pos()))
 
@@ -96,3 +127,5 @@ class FunctionView(Widget):
             FunctionConfig(self._control)
         if action == db_action:
             MSSqlDialog()
+        elif action == nfc_action:
+            self.load_nfc()

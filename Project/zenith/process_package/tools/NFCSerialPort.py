@@ -1,3 +1,4 @@
+import contextlib
 from PySide2.QtCore import QTimer, Signal, Slot
 
 from process_package.check_string import check_nfc_uid, check_dm
@@ -9,6 +10,10 @@ from process_package.tools.SerialPort import SerialPort
 class NFCSerialPort(SerialPort):
     nfc_out_signal = Signal(dict)
     connection_signal = Signal(bool)
+
+    def close_force(self):
+        self._serial.close()
+        self.port = ''
 
     def is_nfc_connect(self):
         return self.is_open & self.nfc_connection
@@ -29,12 +34,11 @@ class NFCSerialPort(SerialPort):
 
     def check_comport_connection(self):
         if not self.is_open and self.port:
-            try:
+            with contextlib.suppress(Exception):
                 self.open()
-            except Exception as e:
-                pass
         if self.nfc_connection_state != self.is_open and self.nfc_connection and self._serial.dtr:
             self.nfc_connection_state = self.is_open and self.nfc_connection and self._serial.dtr
+
             self.connection_signal.emit(self.nfc_connection_state)
 
     @Slot(str)
@@ -71,7 +75,7 @@ class NFCSerialPort(SerialPort):
     def line_out_none_decode(self, value):
         split_data = {}
         splits = value.split(b',')
-        try:
+        with contextlib.suppress(IndexError):
             if uid := check_nfc_uid(splits[0].decode()):
                 split_data[STR_UID] = uid
             if data_matrix := check_dm(splits[1].decode()):
@@ -80,7 +84,5 @@ class NFCSerialPort(SerialPort):
                 split_data[STR_PROCESS_RESULTS] = splits[2][0]
             if chr(splits[2][1]) in [STR_A, STR_B, STR_C]:
                 split_data[STR_GRADE] = chr(splits[2][1])
-        except IndexError:
-            pass
         if split_data:
             self.nfc_out_signal.emit(split_data)

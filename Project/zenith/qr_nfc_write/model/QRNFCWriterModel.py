@@ -7,7 +7,6 @@ from process_package.tools.CommonFunction import logger
 
 
 class QRNFCWriterModel(BasicModel):
-    nfc_changed = Signal(str)
     previous_result_changed = Signal(dict)
     status_changed = Signal(str)
     status_color_changed = Signal(str)
@@ -32,10 +31,7 @@ class QRNFCWriterModel(BasicModel):
                     error_msg += f"{PROCESS_FULL_NAMES[process_name]} : {STR_NG}\n"
             else:
                 error_msg += f"{PROCESS_FULL_NAMES[process_name]} : {STR_MISS}\n"
-        if not error_msg:
-            self.data_matrix = value.get(STR_DATA_MATRIX)
-        else:
-            self.data_matrix = ''
+        self.data_matrix = '' if error_msg else value.get(STR_DATA_MATRIX)
 
     @property
     def status_color(self):
@@ -45,19 +41,3 @@ class QRNFCWriterModel(BasicModel):
     def status_color(self, value):
         self._status_color = value
         self.status_color_changed.emit(value)
-
-    @property
-    def nfc(self):
-        return self._nfc
-
-    @nfc.setter
-    def nfc(self, value):
-        if not isinstance(value, dict):
-            return
-        self._nfc = None
-        for port, nfc in value.items():
-            logger.debug(f"{port}:{nfc}")
-            if STR_NFC in nfc:
-                self._nfc = port
-                self.nfc_changed.emit(port)
-                break

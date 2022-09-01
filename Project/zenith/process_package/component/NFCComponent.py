@@ -12,6 +12,9 @@ class NFCComponent(GroupLabel):
     nfc_data_out_to_checker = Signal(dict)
     connection_signal = Signal(bool)
 
+    def close_force(self):
+        self._control.nfc.close_force()
+
     def is_nfc_connect(self):
         return self._control.nfc.is_nfc_connect()
 

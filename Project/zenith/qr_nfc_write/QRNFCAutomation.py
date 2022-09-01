@@ -22,18 +22,10 @@ class QRNFCAutomation(QApplication):
         super(QRNFCAutomation, self).__init__(sys_argv)
         self._model = QRNFCAutomationModel()
         self._control = QRNFCAutomationControl(self._model)
-        self._view = QRNFCAutomationView(self._model, self._control)
+        self._view = QRNFCAutomationView(self)
         self._view.order.setText(get_order_number())
         self._view.setWindowTitle(f"QR Matching {QR_MATCHING_AUTOMATION_VERSION}")
-        self.load_nfc_window = SplashScreen("QR MATCHING")
-        self.load_nfc_window.start_signal.connect(self.show_main_window)
-
-    def show_main_window(self, nfcs):
-        style_sheet_setting(self)
-        self._model.nfc = nfcs
-        self._view.show()
-        window_center(self._view)
-        self.load_nfc_window.close()
+        self._view.load_nfc()
 
 
 class QRNFCAutomationModel(QRNFCWriterModel):
@@ -59,9 +51,8 @@ class QRNFCAutomationControl(QRNFCWriterControl):
 
 
 class QRNFCAutomationView(QRNFCWriterView):
-    def __init__(self, *args):
-        super(QRNFCAutomationView, self).__init__(*args)
-        self._model, self._control = args
+    def __init__(self, app):
+        super(QRNFCAutomationView, self).__init__(app)
 
         # UI
         self.layout().insertWidget(1, order := GroupLabel(title=STR_ORDER_NUMBER))
@@ -73,12 +64,15 @@ class QRNFCAutomationView(QRNFCWriterView):
 
         order_action = menu.addAction('Order Number Setting')
         db_action = menu.addAction('DB Setting')
+        nfc_action = menu.addAction('Load NFC Port')
 
         action = menu.exec_(self.mapToGlobal(e.pos()))
         if action == db_action:
             MSSqlDialog()
         elif action == order_action:
             OrderNumberDialog(self.order)
+        elif nfc_action == nfc_action:
+            self.load_nfc()
 
 
 if __name__ == '__main__':

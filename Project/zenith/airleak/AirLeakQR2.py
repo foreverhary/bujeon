@@ -8,9 +8,9 @@ from process_package.OrderNumberDialog import OrderNumberDialog
 from process_package.check_string import check_dm
 from process_package.component.CustomComponent import style_sheet_setting, window_center, Widget, get_time
 from process_package.component.CustomMixComponent import GroupLabel, SerialComportGroupBox, NetworkStatusGroupLabel
-from process_package.old.defined_serial_port import get_serial_available_list
 from process_package.resource.string import STR_ORDER_NUMBER, MACHINE_COMPORT, STR_MACHINE_COMPORT, STR_SCANNER_COMPORT, \
     STR_RESET, STR_NETWORK
+from process_package.tools.CommonFunction import get_serial_available_list
 from process_package.tools.Config import get_order_number
 from process_package.tools.db_update_from_file import UpdateDB
 

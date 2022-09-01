@@ -136,7 +136,7 @@ class SensorChannelControl(QObject):
             msg = data_matrix.encode() + b','
             msg += get_write_result_in_nfc(self, results_byte, machine_result_bit)
             self.nfc_write_bytes.emit(msg)
-            self.delay_write_count = 2
+            self.delay_write_count = 1
         else:
             write_beep()
             self.sql_update()

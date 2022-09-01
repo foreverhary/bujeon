@@ -5,7 +5,7 @@ from PySide2.QtCore import QObject, Qt, Slot, Signal
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QMenu
 
 from process_package.MSSqlDialog import MSSqlDialog
-from process_package.component.CustomComponent import style_sheet_setting, Widget, get_time
+from process_package.component.CustomComponent import style_sheet_setting, Widget, get_time, window_center
 from process_package.resource.color import LIGHT_SKY_BLUE, WHITE, YELLOW
 from process_package.resource.string import STR_NFC1, STR_NFC2, STR_SEN, \
     STR_DATA_MATRIX, STR_OK, STR_A, STR_B, STR_C, STR_NG, STR_SENSOR
@@ -72,9 +72,9 @@ class SensorChannelAutomationModel(SensorChannelModel):
 
 
 class SensorAutomationView(Widget):
-    def __init__(self, *args):
+    def __init__(self, app):
         super(SensorAutomationView, self).__init__()
-        self._model, self._control = args
+        self.app, self._model, self._control = app, app._model, app._control
         layout = QVBoxLayout(self)
 
         layout.addLayout(process_layout := QHBoxLayout())
@@ -95,8 +95,20 @@ class SensorAutomationView(Widget):
         self.setMinimumWidth(640)
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)  # | Qt.FramelessWindowHint)
+        self.load_nfc()
 
-    def set_nfcs(self, nfcs):
+    def load_nfc(self):
+        self.channel1.nfc.close_force()
+        self.channel2.nfc.close_force()
+        self.channel1.comport.serial.close()
+        self.channel2.comport.serial.close()
+        self.app.setStyleSheet("QWidget{};")
+        self.hide()
+        self.load_nfc_window = SplashScreen("Sensor Process")
+        self.load_nfc_window.start_signal.connect(self.show_main_window)
+
+    def show_main_window(self, nfcs):
+        style_sheet_setting(self.app)
         nfc_ports = []
         for port, nfc_name in nfcs.items():
             if nfc_name == STR_NFC1:
@@ -107,6 +119,11 @@ class SensorAutomationView(Widget):
                 nfc_ports.append(port)
         self.channel1.exclude_nfc_ports(nfc_ports)
         self.channel2.exclude_nfc_ports(nfc_ports)
+        self.show()
+
+        window_center(self)
+        self.load_nfc_window.close()
+        self.begin()
 
     def begin(self):
         self.channel1.begin()
@@ -115,9 +132,12 @@ class SensorAutomationView(Widget):
     def contextMenuEvent(self, e):
         menu = QMenu(self)
         db_action = menu.addAction('DB Setting')
+        nfc_action = menu.addAction('Load NFC Port')
         action = menu.exec_(self.mapToGlobal(e.pos()))
         if action == db_action:
             MSSqlDialog()
+        elif action == nfc_action:
+            self.load_nfc()
 
 
 class SensorAutomationModel(QObject):
@@ -202,18 +222,8 @@ class SensorAutomation(QApplication):
         super(SensorAutomation, self).__init__(sys_argv)
         self._model = SensorAutomationModel()
         self._control = SensorAutomationControl(self._model)
-        self._view = SensorAutomationView(self._model, self._control)
+        self._view = SensorAutomationView(self)
         self._view.setWindowTitle(TITLE)
-        self.load_nfc_window = SplashScreen("Sensor Process")
-        self.load_nfc_window.start_signal.connect(self.show_main_window)
-
-    def show_main_window(self, nfcs):
-        style_sheet_setting(self)
-        self._view.set_nfcs(nfcs)
-        self._control.begin()
-        self._view.begin()
-        self._view.show()
-        self.load_nfc_window.close()
 
 
 if __name__ == '__main__':

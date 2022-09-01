@@ -32,3 +32,6 @@ class MICNFCReader(QWidget):
 
     def set_port(self, value):
         self.nfc.set_port(value)
+
+    def close_force(self):
+        self.nfc.close_force()

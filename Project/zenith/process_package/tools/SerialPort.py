@@ -24,6 +24,9 @@ class SerialPort(QObject):
             self.thread.start()
         self.serial_connection_signal.emit(True)
 
+    def close(self):
+        self._serial.close()
+
     def write(self, value):
         if self._serial.is_open:
             if isinstance(value, str):
@@ -82,7 +85,8 @@ class SerialPort(QObject):
     def read_line_data(self):
         while True:
             try:
-                tmp_data = self._serial.readline().replace(b'\r', b'').replace(b'\n', b'').replace(b'\x00', b'').replace(
+                tmp_data = self._serial.readline().replace(b'\r', b'').replace(b'\n', b'').replace(b'\x00',
+                                                                                                   b'').replace(
                         b'\x02', b'')
                 if self.out != tmp_data:
                     logger.debug(f"{self._serial.port} : {tmp_data}")
@@ -99,43 +103,3 @@ class SerialPort(QObject):
         if self._serial.is_open:
             self.serial_connection_signal.emit(False)
             self._serial.close()
-#
-# class SerialaPort(QSerialPort):
-#     line_out_signal = Signal(str)
-#
-#     def __init__(self, name):
-#         super(SerialPort, self).__init__()
-#         self.name = name
-#         self.readyRead.connect(self.receive)
-#         self.errorOccurred.connect(self.receive_error)
-#
-#     def set_port_baudrate(self, port, baudrate):
-#         self.setPortName(port)
-#         self.setBaudRate(baudrate)
-#
-#     @Slot()
-#     def receive_error(self, e):
-#         if e in [QSerialPort.SerialPortError.PermissionError,
-#                  QSerialPort.SerialPortError.DeviceNotFoundError]:
-#             self.close()
-#             self.line_out_signal.emit("error")
-#
-#     @Slot()
-#     def receive(self):
-#         while self.canReadLine():
-#             self.line_out_signal.emit(
-#                 self.readLine().data().decode().replace('\r', '').replace('\n', '')
-#             )
-#
-#     def write(self, text):
-#         super().write(text.encode())
-#
-#     def open(self):
-#         return super().open(QIODevice.ReadWrite)
-#
-#     def reset_dtr(self):
-#         self.setDataTerminalReady(False)
-#         self.setDataTerminalReady(True)
-#
-#     def connect_toggle(self):
-#         return self.close() if self.isOpen() else self.open()
