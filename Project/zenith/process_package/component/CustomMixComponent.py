@@ -12,6 +12,9 @@ from process_package.tools.mssql_connect import MSSQL
 
 
 class SerialComportGroupBox(QGroupBox):
+    """
+    GroupBox 내에 SerialComboHBoxLayout 생성
+    """
     def __init__(self, *argv, **kwargs):
         super(SerialComportGroupBox, self).__init__()
         self.setTitle(kwargs.pop('title'))
@@ -46,6 +49,9 @@ class GroupLabelNumber(QGroupBox):
 
 
 class GroupLabel(QGroupBox):
+    """
+    GroupBox 내에 Label 한개 생성
+    """
     def __init__(self, title='', label=None):
         super(GroupLabel, self).__init__()
         self.label = label or Label()
@@ -89,6 +95,10 @@ class HBoxComboButton(QHBoxLayout):
 
 
 class NetworkStatusGroupLabel(GroupLabel):
+    """
+    GroupLabel을 상속하며\n
+    DB 연결 상태는 색상으로 표기함
+    """
     network_label_color_changed = Signal(str)
 
     def __init__(self, *args, **kwargs):

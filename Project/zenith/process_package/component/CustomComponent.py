@@ -12,6 +12,10 @@ from process_package.resource.style import STYLE
 
 
 class Widget(QWidget):
+    """
+    Double click: maximize window
+    Drag: move window
+    """
     right_clicked = Signal()
     mid_clicked = Signal()
 
@@ -71,7 +75,6 @@ class LineEdit(QLineEdit):
         self.font_size = font_size
         self.setStyleSheet('font-weight: bold;'
                            f'font-size: {self.font_size}px;')
-        # self.setDisabled(True)
 
     def set_background_color(self, color=None):
         self.setStyleSheet('font-weight: bold;'
@@ -142,6 +145,9 @@ class Label(QLabel):
 
 
 class LabelTimerClean(Label):
+    """
+    지정 시간 후 clean 되는 라벨
+    """
     def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):
         super(LabelTimerClean, self).__init__(txt, font_size=font_size)
         self.is_clean = is_clean
@@ -159,6 +165,9 @@ class LabelTimerClean(Label):
 
 
 class LabelBlink(Label):
+    """
+    warning words => yellow, red toggle
+    """
     def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, blink_time=100):
         super(LabelBlink, self).__init__(txt, font_size)
 
@@ -173,6 +182,10 @@ class LabelBlink(Label):
 
 
 class LabelNFC(LabelTimerClean):
+    """
+    NFC 인식 확인용 라벨
+    background가 lightskyblue 일 때 default color로 100ms 이내로 돌아옴
+    """
     def __init__(self, txt='', font_size=DEFAULT_FONT_SIZE, is_clean=False, clean_time=2000):
         super(LabelNFC, self).__init__(txt, font_size, is_clean, clean_time)
 
@@ -253,6 +266,11 @@ def window_top_left(window):
 
 
 def style_sheet_setting(app):
+    """
+    qdarkstyle 적용\n
+    :param app
+    :return:
+    """
     app.setStyleSheet(STYLE)
     a = qdarkstyle.load_stylesheet_pyside2()
     fontDB = QFontDatabase()
@@ -261,4 +279,8 @@ def style_sheet_setting(app):
 
 
 def get_time():
+    """
+    get current time
+    :return:
+    """
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))

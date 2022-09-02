@@ -25,6 +25,13 @@ AIR_LEAK_VERSION = 'v1.38'
 
 
 class AirLeakQR(QtWidgets.QApplication):
+    """
+    QR로 진행하는 방수 검사\n
+    1개 채널 당 4개 슬롯을 사용\n
+    채널 1개, 2개 선택 기능\n
+    채널 토글 기능\n
+    """
+
     def __init__(self, sys_argv):
         super(AirLeakQR, self).__init__(sys_argv)
         style_sheet_setting(self)
@@ -165,6 +172,9 @@ class AirLeakQRView(Widget):
 
 
 class AirLeakChannel(QtWidgets.QGroupBox):
+    """
+    방수 1개 채널 정의
+    """
     qr_enable = QtCore.Signal(bool)
     dm_full = QtCore.Signal(bool)
     receive_serial = QtCore.Signal(str)

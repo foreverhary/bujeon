@@ -10,6 +10,14 @@ from process_package.tools.SerialPort import SerialPort
 
 
 class SerialComboHBoxLayout(QHBoxLayout):
+    """
+    HBoxLayout에 \n
+    UI: Comport List ComboBox 와 Connect 버튼으로 구성됨
+    Serial 객체 및 Serial I/O 컨트롤
+    Signal
+    comport_save: 연결된 Comport 저장 signal
+    serial_output_data: Serial Input data Signal
+    """
     comport_save = Signal(str)
     serial_output_data = Signal(str)
 
